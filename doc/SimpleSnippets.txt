@@ -1,0 +1,363 @@
+*SimpleSnippets.txt*    For Vim version 8.0 or later.
+
+        Simple Snippets Plugin for Vim and NeoVim~
+
+SimpleSnippets                                   *snippet* *snippets* *SimpleSnippets*
+
+1. Description                                   |SimpleSnippets-description|
+   1.1 Requirements                              |SimpleSnippets-requirements|
+   1.2 Acknowledgments                           |SimpleSnippets-acknowledgments|
+2. Installation and Updating                     |SimpleSnippets-installnupdate|
+3. Settings & Commands                           |SimpleSnippets-settings|
+   3.1 Settings                                  |SimpleSnippets-settings|
+   3.2 Commands                                  |SimpleSnippets-commands|
+   3.3 Mappings                                  |SimpleSnippets-mappings|
+   3.3 Snippet Search Path                       |SimpleSnippets-snippet-search-path|
+   3.5 Functions                                 |SimpleSnippets-functions|
+     3.5.1 SimpleSnippets#isExpandableOrJumpable |SimpleSnippets#isExpandableOrJumpable|
+     3.5.2 SimpleSnippets#expandOrJump           |SimpleSnippets#expandOrJump|
+     3.5.3 SimpleSnippets#expand                 |SimpleSnippets#expand|
+     3.5.4 SimpleSnippets#jump                   |SimpleSnippets#jump|
+     3.5.5 SimpleSnippets#jumpToLastPlaceholder  |SimpleSnippets#jumpToLastPlaceholder|
+4. Syntax                                        |SimpleSnippets-syntax|
+   4.1 Adding Snippets                           |SimpleSnippets-adding-snippets|
+   4.2 Placeholder Syntax                        |SimpleSnippets-placeholder-syntax|
+     4.2.1 Normal Placeholders                   |SimpleSnippets-normal-placeholder|
+     4.2.2 Mirror Placeholders                   |SimpleSnippets-mirror-placeholder|
+     4.2.3 Shell Placeholders                    |SimpleSnippets-shell-placeholder|
+5. Helping Out                                   |SimpleSnippets-helping|
+6. Contributors                                  |SimpleSnippets-contributors|
+
+This plugin only works if 'compatible' is not set.
+{Vi does not have any of these features}
+
+
+================================================================================
+1. Description                                        *SimpleSnippets-description*
+
+SimpleSnippets provides a sniple support of snippets to Vim and NeoVim editors.
+This plugin doesn't have any advantages over other snippet solutions, like Ultisnips,
+SnipMate, Neosnippets, and maybe others. The main reasons I've wrote this, because,
+I needed fast and simple plugin that let me define all my actions via single
+<Tab> key, and won't struggle on weak devices.
+
+                                                     *SimpleSnippets-requirements*
+1.1 Requirements
+----------------
+
+This plugin works with Vim version 7.4 or later. It only works if the
+'compatible' setting is not set.
+
+This plugin is tested against Vim 8.0 and NeoVim 0.3.0. All other versions are
+unsupported, but might work too.
+
+                                                  *SimpleSnippets-acknowledgments*
+1.2 Acknowledgments
+-------------------
+
+SimpleSnippets was inspired by the snippets feature of Ultisnips plugin
+(https://github.com/SirVer/ultisnips), the great snippet manager plugin by
+@SirVer. I higly recommend to try it out, as I think that this is one of the
+most advanced solutions for snippets in Vim.
+
+
+================================================================================
+2. Installation and Updating                       *SimpleSnippets-installnupdate*
+
+The recommended way of getting SimpleSnippets is to track
+andreyorst/simple-snippets.vim on github. The master branch is always stable.
+
+SimpleSnippets comes without snippets. There are no default snippets, for now,
+you should define them by yourselves.
+
+
+================================================================================
+3. Settings & Commands                                   *SimpleSnippets-settings*
+
+3.1 Settings
+------------
+
+SimpleSnippets has the only setting, and it is a snippet search path. You can
+define it by setting g:SimpleSnippets_search_path in your config file. The
+default value is `$HOME.'/.vim/snippets'` but you're free to redefine it to
+any other absolute path. Be sure to use absolute path, because plugin doesn't
+expand pathes automatically.
+
+g:SimpleSnippets_search_path    Defines a directory where snippets are stored.
+
+                                                         *SimpleSnippets-commands*
+3.2 Commands
+------------
+                                                             *:SimpleSnippetsEdit*
+3.2.1 SimpleSnippetsEdit
+
+The `:SimpleSnippetsEdit` command asks you to input a trigger. Then it searches
+for existing snippet for this filetype and opens a vertical split with it. If
+snippet isn't found, it creates new one with proposed trigger, and opens
+vertical split. You can define snippet's body there. Upon save the snippet is
+ready for use. No need to reload the editor.
+
+                                                         *SimpleSnippets-mappings*
+3.2 Mappings
+------------
+
+By default SimpleSnippets doesn't provide any mappings. It let's you to define
+mappings by yourselves. Mappings should use SimpleSnippets functions.
+
+                                              *SimpleSnippets-snippet-search-path*
+3.3 Snippet Search Path
+-----------------------
+
+SimpleSnippets snippet definition files are stored in many directories. Each
+filetype usually requires it's own snippets, so snippets are stored per
+filetype. For example if your snippet search path is defined to:
+
+  `$HOME.'/My_Avesome_Project/.snippets'`
+
+Snippets will be defined in subdirectories named accordingly to your filetype.
+So C++ snippets will be stored at:
+
+  `$HOME.'/My_Avesome_Project/.snippets/cpp'`
+
+And Ruby snippets will be stored at:
+
+  `$HOME.'/My_Avesome_Project/.snippets/ruby'`
+
+And so on.
+
+                                                        *SimpleSnippets-functions*
+3.5 Functions
+-------------
+
+SimpleSnippets provides some functions to use in mappings, or custom user
+VimL functions. It is higly recommended to use theese one, because others are
+closely rely on eachother and may not work separately.
+
+
+                                           *SimpleSnippets#isExpandableOrJumpable*
+3.5.1 SimpleSnippets#isExpandableOrJumpable
+
+The first function is SimpleSnippets#isExpandableOrJumpable. It looks for
+current word under cursor, and searches for it under snippet directories. If
+snippet is found it returns 1. You can use it at <expr> mappings with your
+expand or jump key.
+
+                                                     *SimpleSnippets#expandOrJump*
+3.5.2 SimpleSnippets#expandOrJump
+
+Another function to use in the mappings. You can use single key both to expand
+or jump to next placeholder. It looks to the word under the cursor to match
+any trigger, and expands it on success find. If item under cursor is not a
+trigger, it checks the state of the snippet editing process, and if it is
+active, it calls a jump function.
+
+                                                           *SimpleSnippets#expand*
+3.5.3 SimpleSnippets#expand
+
+Acts in the same way as previous function in terms of expanding a snippet. Can
+be used to define a key to expand only action.
+
+                                                             *SimpleSnippets#jump*
+3.5.4 SimpleSnippets#jump
+
+Acts the same way as expandOrJump functions in terms of jumping. Can be used
+to define a key to jump only action.
+
+                                            *SimpleSnippets#jumpToLastPlaceholder*
+3.5.5 SimpleSnippets#jumpToLastPlaceholder
+
+Acts the same way as previous function, except that it jumps directly to last
+placeholder. You can use it in mappings, to skip snippet editing process if
+you're happy with standard placeholder's contents.
+
+
+================================================================================
+4. Syntax                                                  *SimpleSnippets-syntax*
+
+This chapter describes how to write your own snippets and snippet definition
+syntax. Examples are used to help illustrate.
+
+
+                                                  *SimpleSnippets-adding-snippets*
+4.1 Adding Snippets
+-------------------
+
+See |:SimpleSnippetsEdit| for explanations of how to define a trigger for a
+snippet and |SimpleSnippets-snippet-search-path| for an explanation of where
+directories with snippet definitions should be located.
+
+As described above SimpleSnippets stores it's snippets one snippet per file at
+g:SimpleSnippets_search_path in directories named accordingly to filetypes.
+
+    snippet location and filename    filetype ~
+    ruby/trigger                     ruby
+    perl/trigger                     perl
+    c/trigger                        c
+    cpp/trigger                      cpp
+    all/trigger                      *all
+
+* The 'all' filetype is different. It represents snippets available for use in
+any document regardless of the filetype. It also used to search for snippet if
+ic can't be found for current fuletype.
+
+                                               *SimpleSnippets-placeholder-syntax*
+4.2 Placeholder Syntax
+------------------
+
+This plugin is slightly different in terms of snippet syntax. For example it
+provides three different placeholder syntaxes, and each acts differently.
+
+Supported placeholders are:
+
+    Placeholder type             Description ~
+    `${1:Normal}`                  Normal placeholder. Its contents are selectd
+                                 when jumped to it. You can redefine it's body
+                                 and jump to the next placeholder with your
+                                 mapping.
+
+    `${1|Mirrored}`                Mirrored placeholder. Upon jump to this
+                                 placeholder all occuriences of it's bode are
+                                 selected within snippet's body, and user
+                                 proposed to change the text to desired one.
+                                 Then text is applied to every occurience inside
+                                 placeholder's body, and automatc jump is
+                                 invoked.
+
+    `${1!Shell}`                   Shell command placeholder. When snippet body
+                                 is parsed upon expanding, its body is executed
+                                 as a shell command. Then the result is pasted
+                                 inside snippet's body.
+
+Each placeholder will be described later in this document.
+
+The snippets file syntax is simple. Snippet begins at the first line of the
+file, and ends with the last text line in the file. It can contain or not
+contain paceholders at all. Placoholders must contain jump order definition,
+wich can be set from 1 to n. 0 jump definition (let's call it Zero Placeholder)
+is used for last placeholder in the snippet. If your snippet contains only one
+placeholder it must be Zero placeholder, and if your snippet contains multiple
+placeholders, it must contain Zero placeholder, because it is used to end
+snippet editing process, and to jump skip all other placeholders.
+
+                                               *SimpleSnippets-normal-placeholder*
+4.2.1 Normal Placeholders
+
+Normal placeholder contains text entry that will be placed in your expanded
+snipet body. You can jump onto it, and change to another. For example:
+
+---- Begin of 'c/if' file ----
+`if (${1:true}) {`
+`    ${0:/* expression */}`
+`}`
+---- End of 'c/if' file ------
+
+So if you're editing .c file and on some line you will type `if` and then hit your
+expand key, SimpleSnippets will look in defined snippet search path for `c`
+folder, and expand `if`'s contents at your current position in document, and
+then will jump automatically to first placeholder, wich in this case is
+`true`. It will be selected in visual select mode, so you can edit this text,
+and then press your jump key to jump to the next placeholder, wich in this case
+is `/* expression */`, wich once again will be selected for you. As it is the
+last placeholder in this snippet, SimpleSnippets will change it's state to
+idle, and your jump mappings will not work until you expand another snippet.
+
+                                               *SimpleSnippets-mirror-placeholder*
+4.2.2 Mirror Placeholders
+
+The implementation of mirrored placeholders in this plugin is very different,
+form other snippet plugins. Mirrored placeholder's text is applied across
+whole snippet's body. Thats is, you can define any text, and upon jump to the
+mirrored placeholder you will be prompted to enter text wich you would like to
+use in snippet's body. For example:
+
+---- Begin of 'cpp/class' file ----
+`class ${1|Name} {`
+`public:`
+`    Name();`
+`    virtual ~Name();`
+
+`private:`
+`    ${0:/* data */}`
+`};`
+---- End of 'cpp/class' file ------
+
+The first action of every expand of any snippet is jump. In this case the
+placeholder, wich is being jumped is mirrored type. Wich means that we will be
+prompted to change `Name` to some other text, wich suits current situation.
+`Name` will be selected across whole snippet, and you will see such message in
+the command line:
+
+    `Replace placeholder "Name" with: |`
+
+Where `|` is your current cursor position. You can enter a desired name for a
+class here, and hit <Cr> to apply, or hit <Esc> to cancel renaming, wich can be
+useful, when you're expanding a snippet and you're happy with default
+placeholder's contents. If no text entered, and <Cr> key is pressed it acts
+the same way if you would hit <Esc>. Mirrored placeholders are automatically
+executing next jump for you.
+
+Some note about mirroring in other plugins. ~
+
+I kinda like and in the same way dislike how mirrored snippet are done in
+various plugins. The main differece here, that for example in UltiSnips the
+syntax for mirroring is done by definition several placeholders with same jump
+index. For example look at the syntax of `typedef struct` snippet wich I use in
+UltiSnips when writing in C at work:
+
+------ Struct snippet -------
+`snippet tstr "typedef struct"`
+`typedef struct ${1:Name} {`
+`    $2`
+`} $1; $0`
+`endsnippet`
+----------- End --------------
+
+* This syntax is illegal in SimpleSnippets.
+
+At some point it is good, because you're editing it in realtime, and `$1`
+placeholder is mirrored as you type, so you can see how it will affect
+snippet's body. In most cases it is better approach, and I higly recommend it
+as a default one. Byt in my case it was slowdown of my workflow because of weak
+hardware, so I've decided to change it to substitution-like method.
+
+                                                *SimpleSnippets-shell-placeholder*
+4.2.3 Shell Placeholders
+
+The implementation of shell placeholders relyes on Vim's `system()` function.
+Shell placeholders executes their contents as a command *wich can be jumped
+later, and yank it to your file via `@s` register.
+
+* Commands that resulting to more then single line of text are currently broke
+jumping. You can jump tho the next placeholder still, but don't rely on
+jumping to, for example, `cat /usr/share/licenses/clang/LICENSE` output. It is
+will still be expanded, but one jump will be missed.
+
+---- Begin of 'all/uname' file ----
+`My current Linux Kernel is:`
+`${0!uname --operating-system --kernel-release}`
+---- End of 'all/uname' file ------
+
+wich will be expanded to:
+
+`My current Linux Kernel is:`
+`4.15.15-1-ARCH GNU/Linux`
+
+=============================================================================
+5. Helping Out                                            *SimpleSnippets-helping*
+
+SimpleSnippets needs the help of the Vim community to keep improving. Please
+consider joining this effort by providing new features or bug reports.
+
+* Clone the repository on GitHub (git clone git@github.com:SirVer/ultisnips.git),
+  make your changes and send a pull request on GitHub.
+* Make a patch, report a bug/feature request (see below) and attach the patch
+  to it.
+
+You can contribute by fixing or reporting bugs in our issue tracker:
+https://github.com/sirver/ultisnips/issues
+
+=============================================================================
+6. Contributors                                      *SimpleSnippets-contributors*
+
+vim:tw=80:ts=8:ft=help:norl:
+
