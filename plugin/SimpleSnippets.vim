@@ -12,8 +12,8 @@ let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
 
 
-if !exists('g:snip_search_path')
-	let g:snip_search_path = $HOME . '/.vim/snippets/'
+if !exists('g:SimpleSnippets_search_path')
+	let g:SimpleSnippets_search_path = $HOME . '/.vim/snippets/'
 endif
 
 function! SimpleSnippets#isExpandable()
@@ -88,7 +88,7 @@ function! SimpleSnippets#expand()
 	let l:snip = expand("<cword>")
 	if SimpleSnippets#isExpandable()
 		let l:filetype = SimpleSnippets#getSnipFileType(l:snip)
-		let a:path = g:snip_search_path . l:filetype . '/' . l:snip
+		let a:path = g:SimpleSnippets_search_path . l:filetype . '/' . l:snip
 		let s:snip_line_count = 0
 		for i in readfile(a:path)
 			let s:snip_line_count +=1
@@ -108,7 +108,7 @@ function! SimpleSnippets#expand()
 			echo '[ERROR] Snippet body is empty'
 		endif
 	else
-		echo '[ERROR] No "' . l:snip . '" snippet in ' . g:snip_search_path . &ft . '/'
+		echo '[ERROR] No "' . l:snip . '" snippet in ' . g:SimpleSnippets_search_path . &ft . '/'
 	endif
 endfunction
 
@@ -116,12 +116,12 @@ endfunction
 "snippets. If snippet still not found returns -1
 function! SimpleSnippets#getSnipFileType(snip)
 	let l:filetype = SimpleSnippets#filetypeWrapper()
-	if filereadable(g:snip_search_path . l:filetype . '/' . a:snip)
+	if filereadable(g:SimpleSnippets_search_path . l:filetype . '/' . a:snip)
 		return l:filetype
-	elseif filereadable(g:snip_search_path . 'all/' . a:snip)
+	elseif filereadable(g:SimpleSnippets_search_path . 'all/' . a:snip)
 		return 'all'
 	else
-		echo "[ERROR] Can't" . ' find "' . a:snip . '" snippet in '. g:snip_search_path . l:filetype . '/'
+		echo "[ERROR] Can't" . ' find "' . a:snip . '" snippet in '. g:SimpleSnippets_search_path . l:filetype . '/'
 		return -1
 	endif
 endfunction
@@ -187,7 +187,7 @@ endfunction
 
 function! SimpleSnippets#Edit()
 	let l:filetype = SimpleSnippets#filetypeWrapper()
-	let l:path = g:snip_search_path . l:filetype
+	let l:path = g:SimpleSnippets_search_path . l:filetype
 	if !isdirectory(l:path)
 		call mkdir(l:path, "p")
 	endif
