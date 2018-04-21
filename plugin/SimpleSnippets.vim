@@ -32,6 +32,16 @@ function! SimpleSnippets#isExpandable()
 	endif
 endfunction
 
+function! SimpleSnippets#isExpandableOrJumpable()
+	if SimpleSnippets#isExpandable()
+		return 1
+	elseif SimpleSnippets#isJumpable()
+		return 1
+	else
+		return 0
+	endif
+endfunction
+
 function! SimpleSnippets#isInside()
 	if SimpleSnippets#isActive()
 		if s:current_file == @%
@@ -66,12 +76,12 @@ function! SimpleSnippets#isJumpable()
 	return 0
 endfunction
 
-function! ExpandOrJump()
+function! SimpleSnippets#expandOrJump()
 	if SimpleSnippets#isExpandable()
-		return SimpleSnippets#expand()
+		call SimpleSnippets#expand()
 	elseif SimpleSnippets#isJumpable()
-		return SimpleSnippets#jump()
-	else
+		call SimpleSnippets#jump()
+	endif
 endfunction
 
 function! SimpleSnippets#expand()
@@ -321,6 +331,11 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		call cursor(s:snip_start, 1)
 		call search('\<' .ph .'\>', 'c', s:snip_end)
 		let a:cursor_pos = getpos(".")
+		let l:reenable_cursorline = 0
+		if &cursorline == 1
+			set nocursorline
+			let l:reenable_cursorline = 1
+		endif
 		redraw
 		let l:rename = input('Replace placeholder "'.ph.'" with: ')
 		if l:rename != ''
@@ -334,6 +349,9 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		endwhile
 		redraw
 		call cursor(a:cursor_pos[1], a:cursor_pos[2])
+		if l:reenable_cursorline == 1
+			set cursorline
+		endif
 		call SimpleSnippets#jump()
 	endif
 endfunction
