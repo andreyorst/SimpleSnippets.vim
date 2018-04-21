@@ -8,7 +8,10 @@ let g:snip_start = 0
 let g:snip_end = 0
 let g:snippet_line_count = 0
 let g:currently_edited_file = ''
-let g:snip_search_path = $HOME . '/.vim/snippets/'
+
+if g:snip_search_path == ''
+	let g:snip_search_path = $HOME . '/.vim/snippets/'
+endif
 
 function! IsExpandable()
 	let l:mode = mode()
@@ -63,7 +66,7 @@ endfunction
 function! ExpandOrJump()
 	if IsExpandable()
 		return ExpandSnippet()
-	elseif IsInside()
+	elseif IsJumpable()
 		return Jump()
 	else
 endfunction
@@ -105,7 +108,7 @@ function! GetFileType(snip)
 	elseif filereadable(g:snip_search_path . 'all/' . a:snip)
 		return 'all'
 	else
-		echo "[ERROR] Can't".' find "'.a:snip.'" snippet in '.g:snip_search_path.l:filetype.'/'.a:snip
+		echo "[ERROR] Can't" . ' find "' . a:snip . '" snippet in '. g:snip_search_path . l:filetype . '/'
 		return -1
 	endif
 endfunction
@@ -172,7 +175,7 @@ endfunction
 let g:snip_edit_buf = 0
 let g:snip_edit_win = 0
 
-function! EditSnippet()
+function! simple-snippets#Edit()
 	let l:filetype = FiletypeWrapper()
 	let l:path = g:snip_search_path . l:filetype
 	if !isdirectory(l:path)
@@ -195,7 +198,7 @@ function! EditSnippet()
 	endif
 endfunction
 
-command! EditSnippet call EditSnippet()
+command! EditSnippet call SimpleSnippets#Edit()
 
 function! GetPhType()
 		if match(expand("<cWORD>"),'\v.*\$\{[0-9]+:') == 0
@@ -266,9 +269,7 @@ function! JumpToLast()
 	if IsInside()
 		let g:active = 0
 		let l:current_ph = escape(g:ph_contents[-1], '/\*')
-		if match(g:ph_types[-1], '0') == 0
-			call EmptyPlaceholder(l:current_ph)
-		elseif match(g:ph_types[-1], '1') == 0
+		if match(g:ph_types[-1], '1') == 0
 			call NormalPlaceholder(l:current_ph)
 		elseif match(g:ph_types[-1], '2') == 0
 			call MirrorPlaceholder(l:current_ph)
@@ -293,13 +294,6 @@ function! NormalPlaceholder(placeholder)
 	call search(ph, 'ce', g:snip_end)
 	normal! me
 	call feedkeys("`sv`e\<c-g>")
-endfunction
-
-function! EmptyPlaceholder(placeholder)
-	call cursor(g:snip_start, 1)
-	call search(a:placeholder, 'ce', g:snip_end)
-	exec "normal! a"
-	exec "normal! \<right>"
 endfunction
 
 function! MirrorPlaceholder(placeholder)
@@ -344,6 +338,10 @@ function! MirrorPlaceholder(placeholder)
 	endif
 endfunction
 
+function! ShellPlaceholder(placeholder)
+	call NormalPlaceholder(a:placeholder)
+endfunction
+
 function! FlashSnippet(snippet_defenition, line_count)
 	" Expands snippet that defined by user, for example by iabbr
 	" iabbr tag <esc>:call FlashSnippet('Tag N${1:1}: ${0:Name}', 1)<Cr>
@@ -358,9 +356,5 @@ function! FlashSnippet(snippet_defenition, line_count)
 		endif
 		silent call ParseAndInitPlaceholders()
 		call Jump()
-endfunction
-
-function! ShellPlaceholder(placeholder)
-	call NormalPlaceholder(a:placeholder)
 endfunction
 
