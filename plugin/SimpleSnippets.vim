@@ -11,10 +11,18 @@ let s:current_file = ''
 let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
 
-
 if !exists('g:SimpleSnippets_search_path')
 	let g:SimpleSnippets_search_path = $HOME . '/.vim/snippets/'
 endif
+
+if !exists('g:SimpleSnippets_dont_remap_tab')
+	nnoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
+	inoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
+	inoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
+	snoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
+	snoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
+endif
+
 
 function! SimpleSnippets#isExpandable()
 	let l:mode = mode()
@@ -336,8 +344,10 @@ function! SimpleSnippets#jumpMirror(placeholder)
 			set nocursorline
 			let l:reenable_cursorline = 1
 		endif
+		cnoremap <Tab> <Cr>
 		redraw
 		let l:rename = input('Replace placeholder "'.ph.'" with: ')
+		cunmap <Tab>
 		if l:rename != ''
 			execute s:snip_start . "," . s:snip_end . "s/\\<" . ph ."\\>/" . l:rename . "/g"
 			noh
