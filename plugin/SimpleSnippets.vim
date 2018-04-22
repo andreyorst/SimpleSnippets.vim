@@ -373,6 +373,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
 		let l:i = 0
 		let l:matchpositions = []
+		call cursor(s:snip_start, 1)
 		while l:i < l:count
 			call search('\<' .ph .'\>', '', s:snip_end)
 			let l:line = line('.')
