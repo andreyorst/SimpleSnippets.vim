@@ -1,4 +1,5 @@
 " Globals
+let s:flash_snippets = []
 let s:ph_contents = []
 let s:ph_types = []
 let s:ph_amount = 0
@@ -11,19 +12,22 @@ let s:current_file = ''
 let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
 
+" Settings
 if !exists('g:SimpleSnippets_search_path')
 	let g:SimpleSnippets_search_path = $HOME . '/.vim/snippets/'
 endif
 
 if !exists('g:SimpleSnippets_dont_remap_tab')
-	nnoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
-	inoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
-	inoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
-	snoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
-	snoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
+	if g:SimpleSnippets_dont_remap_tab == 0
+		nnoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
+		inoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
+		inoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
+		snoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
+		snoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
+	endif
 endif
 
-
+"Functions
 function! SimpleSnippets#isExpandable()
 	let l:mode = mode()
 	let l:snip = ''
@@ -96,36 +100,62 @@ function! SimpleSnippets#expand()
 	let l:snip = expand("<cword>")
 	if SimpleSnippets#isExpandable()
 		let l:filetype = SimpleSnippets#getSnipFileType(l:snip)
-		let a:path = g:SimpleSnippets_search_path . l:filetype . '/' . l:snip
-		let s:snip_line_count = 0
-		for i in readfile(a:path)
-			let s:snip_line_count +=1
-		endfor
-		if s:snip_line_count != 0
-			normal! diw
-			silent exec ':read' . a:path
-			silent exec "normal! i\<Bs>"
-			if s:snip_line_count != 1
-				let l:indent_lines = s:snip_line_count - 1
-				silent exec 'normal! V' . l:indent_lines . 'j='
-			else
-				normal! ==
-			endif
-			silent call SimpleSnippets#parseAndInit()
+		if l:filetype == 'flash snippet'
+			call SimpleSnippets#expandFlashSnippet(l:snip)
 		else
-			echo '[ERROR] Snippet body is empty'
+			let a:path = g:SimpleSnippets_search_path . l:filetype . '/' . l:snip
+			let s:snip_line_count = 0
+			for i in readfile(a:path)
+				let s:snip_line_count +=1
+			endfor
+			if s:snip_line_count != 0
+				normal! diw
+				silent exec ':read' . a:path
+				silent exec "normal! i\<Bs>"
+				if s:snip_line_count != 1
+					let l:indent_lines = s:snip_line_count - 1
+					silent exec 'normal! V' . l:indent_lines . 'j='
+				else
+					normal! ==
+				endif
+				silent call SimpleSnippets#parseAndInit()
+			else
+				echo '[ERROR] Snippet body is empty'
+			endif
 		endif
 	else
 		echo '[ERROR] No "' . l:snip . '" snippet in ' . g:SimpleSnippets_search_path . &ft . '/'
 	endif
 endfunction
 
-"Checks if snippet availible via current filetype, if not searches in all
-"snippets. If snippet still not found returns -1
+function! SimpleSnippets#expandFlashSnippet(snip)
+	normal! diw
+	let l:len = len(s:flash_snippets)
+	let l:i = 0
+	while l:i < l:len
+		if match(a:snip, s:flash_snippets[l:i][0]) == 0
+			let @s = s:flash_snippets[l:i][1]
+			let s:snip_line_count = s:flash_snippets[l:i][2]
+			break
+		endif
+		let l:i += 1
+	endwhile
+	normal! "sp
+	if s:snip_line_count != 1
+		let l:indent_lines = s:snip_line_count - 1
+		silent exec 'normal! V' . l:indent_lines . 'j='
+	else
+		normal! ==
+	endif
+	silent call SimpleSnippets#parseAndInit()
+endfunction
+
 function! SimpleSnippets#getSnipFileType(snip)
 	let l:filetype = SimpleSnippets#filetypeWrapper()
 	if filereadable(g:SimpleSnippets_search_path . l:filetype . '/' . a:snip)
 		return l:filetype
+	elseif SimpleSnippets#checkFlashSnippets(a:snip)
+		return 'flash snippet'
 	elseif filereadable(g:SimpleSnippets_search_path . 'all/' . a:snip)
 		return 'all'
 	else
@@ -134,14 +164,26 @@ function! SimpleSnippets#getSnipFileType(snip)
 	endif
 endfunction
 
+function! SimpleSnippets#checkFlashSnippets(snip)
+	let l:len = len(s:flash_snippets)
+	let l:i = 0
+	while l:i < l:len
+		if match(a:snip, s:flash_snippets[l:i][0]) == 0
+			return 1
+		endif
+		let l:i += 1
+	endwhile
+	return 0
+endfunction
+
 function! SimpleSnippets#filetypeWrapper()
 	let l:ft = &ft
 	if l:ft == ''
 		return 'all'
 	elseif l:ft == 'tex' || l:ft == 'plaintex'
-		 return 'tex'
+		return 'tex'
 	elseif l:ft == 'sh' || l:ft == 'bash' || l:ft == 'zsh'
-		 return 'bash'
+		return 'bash'
 	endif
 	return l:ft
 endfunction
@@ -216,16 +258,20 @@ function! SimpleSnippets#Edit()
 	endif
 endfunction
 
+function! SimpleSnippets#addFlashSnippet(trigger, snippet_defenition, line_count)
+	call add(s:flash_snippets, [a:trigger, a:snippet_defenition, a:line_count])
+endfunction
+
 command! SimpleSnippetsEdit call SimpleSnippets#Edit()
 
 function! SimpleSnippets#getPlaceholderType()
-		if match(expand("<cWORD>"),'\v.*\$\{[0-9]+:') == 0
-			return 1
-		elseif match(expand("<cWORD>"), '\v.*\$\{[0-9]+\|') == 0
-			return 2
-		elseif match(expand("<cWORD>"),'\v.*\$\{[0-9]+!') == 0
-			return 3
-		endif
+	if match(expand("<cWORD>"),'\v.*\$\{[0-9]+:') == 0
+		return 1
+	elseif match(expand("<cWORD>"), '\v.*\$\{[0-9]+\|') == 0
+		return 2
+	elseif match(expand("<cWORD>"),'\v.*\$\{[0-9]+!') == 0
+		return 3
+	endif
 endfunction
 
 function! SimpleSnippets#initPlaceholder(current, type)
@@ -311,7 +357,7 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	normal! ms
 	call search(ph, 'ce', s:snip_end)
 	normal! me
-	call feedkeys("`sv`e\<c-g>")
+	exec "normal! `sv`e\<c-g>"
 endfunction
 
 function! SimpleSnippets#jumpMirror(placeholder)
@@ -368,19 +414,5 @@ endfunction
 
 function! SimpleSnippets#jumpShell(placeholder)
 	call SimpleSnippets#jumpNormal(a:placeholder)
-endfunction
-
-function! SimpleSnippets#flashSnippet(snippet_defenition, line_count)
-		normal! diw
-		exec "normal! a " . a:snippet_defenition
-		let s:snip_line_count = a:line_count
-		if s:snip_line_count != 1
-			let l:indent_lines = s:snip_line_count - 1
-			silent exec 'normal! V' . l:indent_lines . 'j='
-		else
-			normal! ==
-		endif
-		silent call SimpleSnippets#parseAndInit()
-		call SimpleSnippets#jump()
 endfunction
 
