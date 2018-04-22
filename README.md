@@ -10,6 +10,25 @@ This plugin was inspired by other snippet managers, like UltiSnips, snipMate,
 Neosnippets, and others. However it has major differences in implementation, and
 features it provides.
 
+## Installation
+
+Assuming you using Vundle, place this in your .vimrc:
+
+```vim
+Plugin 'andreyorst/SimpleSnippets.vim'
+```
+
+Then run the following in Vim:
+
+```vim
+:source %
+:PluginInstall<Paste>
+```
+
+You re redy to use SimpleSnippets. However Simple snippets doesn't come with snippets.
+You should define it by yourselves for now. I'm planning to release separate plugin
+with snippets only.
+
 ## Why?
 
 Back in the days I didn't used snippets at all. Because, I thought, that I don't
@@ -102,9 +121,9 @@ languages.
 
 ## Why do I even may want to use it?
 
-You probably won't! I know that having a great advanced solution is great. 
-However often too powerful tool need a powerful hardware to run smoosely. 
-If you feel that other snippet solutions are making your Vim slow, 
+You probably won't! I know that having a great advanced solution is great.
+However often too powerful tool need a powerful hardware to run smoosely.
+If you feel that other snippet solutions are making your Vim slow,
 then you probably may want to use it.
 
 This plugin is fast. It is lightweight, and can be used on phones, netbooks, slow
