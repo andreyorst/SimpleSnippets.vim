@@ -22,10 +22,10 @@ Then run the following in Vim:
 
 ```vim
 :source %
-:PluginInstall<Paste>
+:PluginInstall
 ```
 
-You re redy to use SimpleSnippets. However Simple snippets doesn't come with snippets.
+You re redy to use SimpleSnippets. However SimpleSnippets.vim doesn't come with snippets.
 You should define it by yourselves for now. I'm planning to release separate plugin
 with snippets only.
 
