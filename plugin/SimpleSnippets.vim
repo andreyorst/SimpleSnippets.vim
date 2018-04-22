@@ -18,13 +18,11 @@ if !exists('g:SimpleSnippets_search_path')
 endif
 
 if !exists('g:SimpleSnippets_dont_remap_tab')
-	if g:SimpleSnippets_dont_remap_tab == 0
-		nnoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
-		inoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
-		inoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
-		snoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
-		snoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
-	endif
+	nnoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
+	inoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
+	inoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
+	snoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
+	snoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
 endif
 
 "Functions
@@ -245,12 +243,14 @@ function! SimpleSnippets#Edit()
 	if l:trigger != ''
 		if win_gotoid(s:snip_edit_win)
 			execute "edit " . l:path . '/' . l:trigger
+			execute "setf " . l:filetype
 		else
 			vertical new
 			try
 				exec "buffer " . s:snip_edit_buf
 			catch
 				execute "edit " . l:path . '/' . l:trigger
+				execute "setf " . l:filetype
 				let g:term_buf = bufnr("")
 			endtry
 			let s:snip_edit_win = win_getid()
