@@ -4,7 +4,7 @@ Simple snippets is a simple snippet manager for Vim and NeoVim, based on standar
 editor features, designed to be fast and lightweight. It provides basic support of
 snippet feature to vim.
 
-![simplesnippets](https://user-images.githubusercontent.com/19470159/39096138-82db4af0-4654-11e8-9535-f2cdce3a6751.gif)
+![simplesnippets](https://user-images.githubusercontent.com/19470159/39096685-103d060c-465c-11e8-8b52-a61ff37d7564.gif)
 
 This plugin was inspired by other snippet managers, like UltiSnips, snipMate,
 Neosnippets, and others. However it has major differences in implementation, and
@@ -112,7 +112,7 @@ Here are some gifs:
 
 Adding a snippeet:
 
-![adding a snippet](https://user-images.githubusercontent.com/19470159/39096411-5862176e-4658-11e8-8b0a-1850cf6aa034.gif)
+![adding a snippet](https://user-images.githubusercontent.com/19470159/39096706-36884290-465c-11e8-9177-d1407ff26f43.gif)
 
 Adding a Flash snippet:
 
