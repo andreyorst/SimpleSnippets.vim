@@ -261,6 +261,18 @@ function! SimpleSnippets#addFlashSnippet(trigger, snippet_defenition, line_count
 	call add(s:flash_snippets, [a:trigger, a:snippet_defenition, a:line_count])
 endfunction
 
+function! SimpleSnippets#removeFlashSnippet(trigger)
+	let l:i = 0
+	let l:len = len(s:flash_snippets)
+	while l:i < l:len
+		if match(a:trigger, s:flash_snippets[l:i][0]) == 0
+			call remove(s:flash_snippets, l:i)
+			break
+		endif
+		let l:i += 1
+	endwhile
+endfunction
+
 command! SimpleSnippetsEdit call SimpleSnippets#Edit()
 
 function! SimpleSnippets#getPlaceholderType()
