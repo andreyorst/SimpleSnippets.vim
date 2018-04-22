@@ -145,3 +145,6 @@ feel free to open an Issue at https://github.com/andreyorst/SimpleSnippets.vim/i
 
 ![adding flash snippet](https://user-images.githubusercontent.com/19470159/39096497-87df33b8-4659-11e8-9f10-2f7590f90987.gif)
 
+#### Shell and plaintext snippets:
+
+![shell and plaintext](https://user-images.githubusercontent.com/19470159/39097254-8cbc957a-4662-11e8-841b-65d239551517.gif)
