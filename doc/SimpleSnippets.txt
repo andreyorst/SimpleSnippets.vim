@@ -106,7 +106,7 @@ Vundle, Pathogen, dein.nvim or others. You can still install it manually by
 cloning master branch from github. Assuming you're using Vundle add this line
 to your configuration file:
 
-  `Plugin 'andreyorst/simple-snippets.vim'`
+  `Plugin 'andreyorst/SimpleSnippets.vim'`
 
 SimpleSnippets comes without snippets. There are no default snippets, for now,
 you should define them by yourselves. I'm planning on creating a separate plugin
@@ -535,7 +535,7 @@ or want to implement a new feature or simplify/extend an existing one, feel free
 to send pull requests to SimpleSnippets GitHub repository.
 
 You can contribute by fixing or reporting bugs in our issue tracker:
-https://github.com/andreyorst/simple-snippets.vim/issues
+https://github.com/andreyorst/SimpleSnippets.vim/issues
 
 vim:tw=80:ts=8:ft=help:norl:
 
