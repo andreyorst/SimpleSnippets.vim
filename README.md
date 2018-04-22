@@ -110,3 +110,10 @@ If after reading this you're still want to try it out, you re welcome to!
 This plugin is not that bad, how you may think of it.
 Here are some gifs:
 
+Adding a snippeet:
+
+![adding a snippet](https://user-images.githubusercontent.com/19470159/39096411-5862176e-4658-11e8-8b0a-1850cf6aa034.gif)
+
+Adding a Flash snippet:
+
+![adding flash snippet](https://user-images.githubusercontent.com/19470159/39096497-87df33b8-4659-11e8-9f10-2f7590f90987.gif)
