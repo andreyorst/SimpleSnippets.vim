@@ -157,7 +157,6 @@ function! SimpleSnippets#getSnipFileType(snip)
 	elseif filereadable(g:SimpleSnippets_search_path . 'all/' . a:snip)
 		return 'all'
 	else
-		echo "[ERROR] Can't" . ' find "' . a:snip . '" snippet in '. g:SimpleSnippets_search_path . l:filetype . '/'
 		return -1
 	endif
 endfunction
