@@ -25,7 +25,7 @@ Then run the following in Vim:
 :PluginInstall
 ```
 
-You re redy to use SimpleSnippets. However SimpleSnippets.vim doesn't come with snippets.
+You re ready to use SimpleSnippets. However SimpleSnippets.vim doesn't come with snippets.
 You should define it by yourselves for now. I'm planning to release separate plugin
 with snippets only.
 
@@ -35,7 +35,7 @@ Back in the days I didn't used snippets at all. Because, I thought, that I don't
 need them at all. I thought that it is not big difference in time spent on typing
 everything by myself, and not figuring out how to setup and use snippet managers.
 
-But then I've watched [this amasing talk](https://www.youtube.com/watch?v=XA2WjJbmmoM&t=937s) about how to do most of your thinks without
+But then I've watched [this amasing talk](https://www.youtube.com/watch?v=XA2WjJbmmoM&t=937s) about how to do most of your things without
 plugins. I was inspired with snippets, that can be created with abbreviations,
 and I've started experimenting.
 
@@ -56,7 +56,7 @@ this abbreviations, and confuse people with such "magic" ones:
 autocmd FileType cpp,h,hpp nnoremap <F3> <Esc>0:set nohlsearch<CR>/;<CR>y^?private<CR>:-1read $HOME/.vim/snippets/getSet.cpp<CR>0Pa()<Esc>bbyw~hiobtain<Esc>/;<CR>P:noh<CR>==j0==/)<CR>bPnbb~hiestablish<Esc>nPnb~/ =<CR>P/;<CR>Pnb~?obtain<CR>y^j/(<CR>p^:set hlsearch<CR>:noh<CR>
 ```
 
-(which generates getter and setter methods for current private variable under cursot in current class)
+(which generates getter and setter methods for current private variable under cursor in current class)
 
 I've even made some placeholder support with mappings, so I could jump to snippet
 body and edit things:
@@ -70,7 +70,7 @@ I highly recommend to went through this by yourselves, it boost's your Vim's
 movement knowledge beyond the limitations of any emacs user. But again, I decided
 to try snippet managers. I've tried many, and sticked with Ultisnips. It is great
 plugin, and I highly recommend you to use it, if you're using Vim (ultisnips works
-in neovim too, but it is not supported officially), and you have rather powerfull
+in neovim too, but it is not supported officially), and you have rather powerful
 machine, because ultisnips requires some resources and in my case it was performance
 killer on my GPD Pocket, and Nexus 5x (yes I use neovim on my smartpfone a lot).
 
@@ -78,7 +78,7 @@ So I've decided to try other plugins, but some of them were poor for functional,
 some were even slower, and some lacked functions to use in my mappings.
 
 I like the idea of single key for multiple things, wich is my case is <kbd>Tab</kbd>.
-I use <kbd>Tab</kbd> to scroll through autocompletion popup, provided by Deoplete,
+I use <kbd>Tab</kbd> to scroll through auto completion popup, provided by Deoplete,
 to expand snippets, provided by UltiSnips, and to jump between placeholders in
 the snippet body. I wasn't able to setup snipMate to such configuration, and it
 still was not that fast as I needed, and It needs two extra plugins, so I've
@@ -117,13 +117,13 @@ languages.
 - Shell placeholders, that output is more then single line can't be jumped
 - Every snippet **must** contain zero indexed placeholder, aka `${0:text}`
 - Jumping is based on searching for a string, so if you replace some part in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
-- No backjumping. Because of previous point.
+- No back jumping. Because of previous point.
 - There may be more, which I've not thought about.
 
 ## Why do I even may want to use it?
 
 You probably won't! I know that having a great advanced solution is great.
-However often too powerful tool need a powerful hardware to run smoosely.
+However often too powerful tool need a powerful hardware to run smoothly.
 If you feel that other snippet solutions are making your Vim slow,
 then you probably may want to use it.
 
@@ -146,6 +146,6 @@ feel free to open an Issue at https://github.com/andreyorst/SimpleSnippets.vim/i
 
 ![adding flash snippet](https://user-images.githubusercontent.com/19470159/39096497-87df33b8-4659-11e8-9f10-2f7590f90987.gif)
 
-#### Shell and plaintext snippets:
+#### Shell and plain text snippets:
 
-![shell and plaintext](https://user-images.githubusercontent.com/19470159/39097254-8cbc957a-4662-11e8-841b-65d239551517.gif)
+![shell and plain text](https://user-images.githubusercontent.com/19470159/39097254-8cbc957a-4662-11e8-841b-65d239551517.gif)

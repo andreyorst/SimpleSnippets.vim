@@ -36,8 +36,8 @@ SimpleSnippets                                   *snippet* *snippets* *SimpleSni
 1. Description                                        *SimpleSnippets-description*
 
 SimpleSnippets provides a simple support of snippets to Vim and NeoVim.
-This plugin doesn't have any advantages over other snippet solutions, like Ultisnips,
-SnipMate, Neosnippets, and maybe others. The main reasons I've wrote this,
+This plugin doesn't have any advantages over other snippet solutions, like UltiSnips,
+snipMate, Neosnippets, and maybe others. The main reasons I've wrote this,
 because, I needed fast and simple plugin that let me define all my actions via single
 <Tab> key, and won't struggle on weak devices.
 
@@ -294,7 +294,7 @@ closely rely on each other and may not work separately.
     `call SimpleSnippets#addFlashSnippet('print_struct_contents', 'print_struct_contents(${0:toy})', 1)`
 
   So when user will `input print_struct_contents|` and hit his expand key, the
-  result will be expanded flash snippet, wich will look like so:
+  result will be expanded flash snippet, which will look like so:
 
     `int main()`
     `{`
