@@ -118,7 +118,7 @@ feel free to open an Issue at https://github.com/andreyorst/SimpleSnippets.vim/i
 
 ## Some SimpleSnippets action gifs
 
-#### Adding a snippeet:
+#### Adding a snippet:
 
 ![adding a snippet](https://user-images.githubusercontent.com/19470159/39096706-36884290-465c-11e8-9177-d1407ff26f43.gif)
 
