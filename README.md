@@ -79,7 +79,7 @@ that it should have lot of limitations, and will have even poorer functional the
 other plugins?
 
 The answer is... Yes. It has limitations, and far less functions, than other
-snippet managers. It's main feature is speed, and lightweight. It provides *basic*
+snippet managers. It's main feature is speed, and lightweight. It provides **basic**
 snippet support to Vim. Which means that you can expand, jump, mirror, use shell
 commands, and there is even a small interface to integrate with completion and
 LSP plugins.
@@ -96,24 +96,33 @@ languages.
 - Mirror placeholders are based on substitution over snippet body.
 - Normal placeholders can't have same body as mirror placeholders.
 - Shell placeholders, that output is more then single line can't be jumped
-- Every snippet *must* contain zero indexed placeholder, aka `${0:text}`
+- Every snippet **must** contain zero indexed placeholder, aka `${0:text}`
 - Jumping is based on searching for a string, so if you replace some part in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
 - There may be more, which I've not thought about.
 
 ## Why do I even may want to use it?
+
+You probably won't! I know that having a great advanced solution is great. 
+However often too powerful tool need a powerful hardware to run smoosely. 
+If you feel that other snippet solutions are making your Vim slow, 
+then you probably may want to use it.
 
 This plugin is fast. It is lightweight, and can be used on phones, netbooks, slow
 PCs, via ssh, and maybe in more cases, wich I've not thought about now. There was
 a reason to call it _SimpleSnippets_, you know.
 
 If after reading this you're still want to try it out, you re welcome to!
-This plugin is not that bad, how you may think of it.
-Here are some gifs:
+This plugin is not that bad, how you may think of it. Please read the documentation
+provided with the plugins to understand how things work. If you encounter any problem
+feel free to open an Issue at https://github.com/andreyorst/SimpleSnippets.vim/issues/new
 
-Adding a snippeet:
+## Some SimpleSnippets action gifs
+
+#### Adding a snippeet:
 
 ![adding a snippet](https://user-images.githubusercontent.com/19470159/39096706-36884290-465c-11e8-9177-d1407ff26f43.gif)
 
-Adding a Flash snippet:
+#### Adding a Flash snippet:
 
 ![adding flash snippet](https://user-images.githubusercontent.com/19470159/39096497-87df33b8-4659-11e8-9f10-2f7590f90987.gif)
+
