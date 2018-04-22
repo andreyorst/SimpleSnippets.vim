@@ -117,6 +117,7 @@ languages.
 - Shell placeholders, that output is more then single line can't be jumped
 - Every snippet **must** contain zero indexed placeholder, aka `${0:text}`
 - Jumping is based on searching for a string, so if you replace some part in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
+- No backjumping. Because of previous point.
 - There may be more, which I've not thought about.
 
 ## Why do I even may want to use it?
