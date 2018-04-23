@@ -3,7 +3,17 @@ if !exists('g:SimpleSnippets_search_path')
 	let g:SimpleSnippets_search_path = $HOME . '/.vim/snippets/'
 endif
 
-if !exists('g:SimpleSnippets_dont_remap_tab')
+let s:allow_remap = 1
+
+if exists('g:SimpleSnippets_dont_remap_tab')
+	if g:SimpleSnippets_dont_remap_tab == 0
+		let s:allow_remap = 1
+	else
+		let s:allow_remap = 0
+	endif
+endif
+
+if s:allow_remap == 1
 	nnoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
 	inoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
 	inoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
