@@ -9,6 +9,7 @@ SimpleSnippets                                   *snippet* *snippets* *SimpleSni
    1.2 Limitations                               |SimpleSnippets-limitations|
    1.3 Acknowledgments                           |SimpleSnippets-acknowledgments|
 2. Installation and Updating                     |SimpleSnippets-installnupdate|
+   2.1 External snippet plugin                   |SimpleSnippets-external-snippet-plugin|
 3. Settings & Commands                           |SimpleSnippets-settings|
    3.1 Settings                                  |SimpleSnippets-settings|
      3.1.1 Snippet search path                   |SimpleSnippets-snippet-search-path|
@@ -111,9 +112,17 @@ to your configuration file:
 
   `Plugin 'andreyorst/SimpleSnippets.vim'`
 
-SimpleSnippets comes without snippets. There are no default snippets, for now,
-you should define them by yourselves. I'm planning on creating a separate plugin
-with snippets.
+                                          *SimpleSnippets-external-snippet-plugin*
+2.1 External snippet plugin
+---------------------------
+
+SimpleSnippets comes without snippets. If you don't want to create snippets by
+yourself, you can install my another plugin with some predefined snippets.
+This plugin doesn't features snippets for all languages yet, but you can
+extend it by sending pull requests, with your snippet definitions.
+You can install it by adding this line to your vimrc:
+
+  `Plugin 'andreyorst/SimpleSnippets-snippets'`
 
 
 ================================================================================
