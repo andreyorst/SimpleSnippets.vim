@@ -120,7 +120,7 @@ function! SimpleSnippets#expandFlashSnippet(snip)
 	while l:i < l:len
 		if match(a:snip, s:flash_snippets[l:i][0]) == 0
 			let @s = s:flash_snippets[l:i][1]
-			let s:snip_line_count = s:flash_snippets[l:i][2]
+			let s:snip_line_count = len(substitute(s:flash_snippets[l:i][1], '[^\n]', '', 'g')) + 1
 			break
 		endif
 		let l:i += 1
@@ -228,8 +228,8 @@ function! SimpleSnippets#parseSnippet(amount)
 	endwhile
 endfunction
 
-function! SimpleSnippets#addFlashSnippet(trigger, snippet_defenition, line_count)
-	call add(s:flash_snippets, [a:trigger, a:snippet_defenition, a:line_count])
+function! SimpleSnippets#addFlashSnippet(trigger, snippet_defenition)
+	call add(s:flash_snippets, [a:trigger, a:snippet_defenition])
 endfunction
 
 function! SimpleSnippets#removeFlashSnippet(trigger)
@@ -283,6 +283,10 @@ function! SimpleSnippets#initShell(current)
 	let l:result = system(l:command)
 	let l:result = substitute(l:result, '\n\+$', '', '')
 	let @s = l:result
+	let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g')) + 1
+	if l:result_line_count > 1
+		let s:snip_end += l:result_line_count - 1
+	endif
 	exe "normal! df}"
 	normal! "sp
 	call add(s:ph_contents, l:result)
