@@ -88,7 +88,7 @@ function! SimpleSnippets#expand()
 		if l:filetype == 'flash snippet'
 			call SimpleSnippets#expandFlashSnippet(l:snip)
 		else
-			let a:path = g:SimpleSnippets_search_path . l:filetype . '/' . l:snip
+			let a:path = SimpleSnippets#getSnipPath(l:snip, l:filetype)
 			let s:snip_line_count = 0
 			for i in readfile(a:path)
 				let s:snip_line_count +=1
@@ -135,7 +135,19 @@ function! SimpleSnippets#expandFlashSnippet(snip)
 	silent call SimpleSnippets#parseAndInit()
 endfunction
 
+function! SimpleSnippets#checkSnippetsPlugin()
+	if !exists('s:plugin_checked')
+		let s:plugin_checked = 1
+		if exists('g:SimpleSnippets_snippets_plugin_path')
+			let s:SimpleSnippets_snippets_plugin_installed = 1
+		else
+			let s:SimpleSnippets_snippets_plugin_installed = 0
+		endif
+	endif
+endfunction
+
 function! SimpleSnippets#getSnipFileType(snip)
+	call SimpleSnippets#checkSnippetsPlugin()
 	let l:filetype = SimpleSnippets#filetypeWrapper()
 	if filereadable(g:SimpleSnippets_search_path . l:filetype . '/' . a:snip)
 		return l:filetype
@@ -143,8 +155,26 @@ function! SimpleSnippets#getSnipFileType(snip)
 		return 'flash snippet'
 	elseif filereadable(g:SimpleSnippets_search_path . 'all/' . a:snip)
 		return 'all'
+	elseif s:SimpleSnippets_snippets_plugin_installed == 1
+		if filereadable(g:SimpleSnippets_snippets_plugin_path . l:filetype . '/' . a:snip)
+			return l:filetype
+		elseif filereadable(g:SimpleSnippets_snippets_plugin_path . 'all/' . a:snip)
+			return 'all'
+		else
+			return -1
+		endif
 	else
 		return -1
+	endif
+endfunction
+
+function! SimpleSnippets#getSnipPath(snip, filetype)
+	if filereadable(g:SimpleSnippets_search_path . a:filetype . '/' . a:snip)
+		return g:SimpleSnippets_search_path . a:filetype . '/' . a:snip
+	elseif s:SimpleSnippets_snippets_plugin_installed == 1
+		if filereadable(g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip)
+			return g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip
+		endif
 	endif
 endfunction
 
