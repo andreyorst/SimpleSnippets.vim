@@ -164,11 +164,20 @@ function! SimpleSnippets#filetypeWrapper()
 	let l:ft = &ft
 	if l:ft == ''
 		return 'all'
-	elseif l:ft == 'tex' || l:ft == 'plaintex'
-		return 'tex'
-	elseif l:ft == 'sh' || l:ft == 'bash' || l:ft == 'zsh'
-		return 'bash'
 	endif
+	let l:i = 0
+	let l:len = len(g:SimpleSnippets_similar_filetypes)
+	while l:i < l:len
+		let l:sublen = len(g:SimpleSnippets_similar_filetypes[l:i])
+		let l:j = 0
+		while l:j < l:sublen
+			if l:ft == g:SimpleSnippets_similar_filetypes[l:i][l:j]
+				return g:SimpleSnippets_similar_filetypes[l:i][0]
+			endif
+			let l:j += 1
+		endwhile
+		let l:i +=1
+	endwhile
 	return l:ft
 endfunction
 
@@ -219,31 +228,6 @@ function! SimpleSnippets#parseSnippet(amount)
 	endwhile
 endfunction
 
-function! SimpleSnippets#Edit()
-	let l:filetype = SimpleSnippets#filetypeWrapper()
-	let l:path = g:SimpleSnippets_search_path . l:filetype
-	if !isdirectory(l:path)
-		call mkdir(l:path, "p")
-	endif
-	let l:trigger = input('Select a trigger: ')
-	if l:trigger != ''
-		if win_gotoid(s:snip_edit_win)
-			execute "edit " . l:path . '/' . l:trigger
-			execute "setf " . l:filetype
-		else
-			vertical new
-			try
-				exec "buffer " . s:snip_edit_buf
-			catch
-				execute "edit " . l:path . '/' . l:trigger
-				execute "setf " . l:filetype
-				let g:term_buf = bufnr("")
-			endtry
-			let s:snip_edit_win = win_getid()
-		endif
-	endif
-endfunction
-
 function! SimpleSnippets#addFlashSnippet(trigger, snippet_defenition, line_count)
 	call add(s:flash_snippets, [a:trigger, a:snippet_defenition, a:line_count])
 endfunction
@@ -259,8 +243,6 @@ function! SimpleSnippets#removeFlashSnippet(trigger)
 		let l:i += 1
 	endwhile
 endfunction
-
-command! SimpleSnippetsEdit call SimpleSnippets#Edit()
 
 function! SimpleSnippets#getPlaceholderType()
 	if match(expand("<cWORD>"),'\v.*\$\{[0-9]+:') == 0
@@ -413,5 +395,30 @@ endfunction
 
 function! SimpleSnippets#jumpShell(placeholder)
 	call SimpleSnippets#jumpNormal(a:placeholder)
+endfunction
+
+function! SimpleSnippets#edit()
+	let l:filetype = SimpleSnippets#filetypeWrapper()
+	let l:path = g:SimpleSnippets_search_path . l:filetype
+	if !isdirectory(l:path)
+		call mkdir(l:path, "p")
+	endif
+	let l:trigger = input('Select a trigger: ')
+	if l:trigger != ''
+		if win_gotoid(s:snip_edit_win)
+			execute "edit " . l:path . '/' . l:trigger
+			execute "setf " . l:filetype
+		else
+			vertical new
+			try
+				exec "buffer " . s:snip_edit_buf
+			catch
+				execute "edit " . l:path . '/' . l:trigger
+				execute "setf " . l:filetype
+				let g:term_buf = bufnr("")
+			endtry
+			let s:snip_edit_win = win_getid()
+		endif
+	endif
 endfunction
 
