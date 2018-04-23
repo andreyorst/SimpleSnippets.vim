@@ -29,6 +29,9 @@ You re ready to use SimpleSnippets. However SimpleSnippets.vim doesn't come with
 You should define it by yourselves for now. I'm planning to release separate plugin
 with snippets only.
 
+If you want to change mappings, consider adding `let g:SimpleSnippets_dont_remap_tab = 1` to
+your vimrc. For other settings please read the documentation.
+
 ## Why?
 
 Back in the days I didn't used snippets at all. Because, I thought, that I don't
