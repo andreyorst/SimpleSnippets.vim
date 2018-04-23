@@ -11,8 +11,12 @@ if !exists('g:SimpleSnippets_dont_remap_tab')
 	snoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
 endif
 
-if !exists('g:SimpleSnippets_similar_filetypes')
-	let g:SimpleSnippets_similar_filetypes = [['tex', 'plaintex'], ['bash', 'zsh', 'sh']]
+let s:similar_filetypes = [['tex', 'plaintex'], ['bash', 'zsh', 'sh']]
+
+if exists('g:SimpleSnippets_similar_filetypes')
+	let g:SimpleSnippets_similar_filetypes += s:similar_filetypes
+else
+	let g:SimpleSnippets_similar_filetypes = s:similar_filetypes
 endif
 
 command! SimpleSnippetsEdit call SimpleSnippets#edit()
