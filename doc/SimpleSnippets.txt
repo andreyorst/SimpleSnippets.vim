@@ -291,12 +291,33 @@ closely rely on each other and may not work separately.
                                                   *SimpleSnippets#addFlashSnippet*
   3.4.6 SimpleSnippets#addFlashSnippet
 
-  This function is used to communicate with SimpleSnippets from other plugins.
+  Some plugins may provide snippets, that can be build from user's code on the
+  fly. This function is used to communicate with SimpleSnippets from other plugins.
   You may call this function to define a snippet, that is not stored for
   further usage after exiting Vim or NeoVim. This function saves snippet's
-  definition, snippet's trigger, and snippet's line count. The usage is:
+  trigger and snippet's body for current session. The usage is:
 
-    `call SimpleSnippets#addFlashSnippet('trigger', 'snippet body', line_count)`
+    `call SimpleSnippets#addFlashSnippet("trigger", "snippet body")`
+
+  General algorithm:
+
+    1. Semantic code analysis plugin detects a piece of code that can be
+       reused, such as functions, methods, etc. and defines a snippet
+       accordingly to SimpleSnippets snippet syntax, and calls for
+       `SimpleSnippets#addFlashSnippet(trigger, body)` function, passing
+       desired trigger and body to it.
+         I. Semantic code analysis plugin tells completion manager that
+            there is a trigger available, or uses another way of notifying
+            user about new trigger. (Optional step)
+        II. Semantic code analysis plugin can do housekeeping, if it decides,
+            that some Flash Snippet is not needed anymore, for example,
+            function was deleted, or file was closed, and that code is
+            unavailable - plugin can delete Flash Snippet by calling
+            `SimpleSnippets#removeFlashSnippet(trigger)`. (Optional step)
+    2. SimpleSnippets stores Flash Snippet in memory, waiting for user to
+       interact with it.
+    3. User completes the trigger if one available, and decides does he need
+       to expand Flash Snippet, or not.
 
   Which for example can be used to define function snippet, for parameter
   expansion. For example, imagine we're editing such file:
@@ -325,7 +346,7 @@ closely rely on each other and may not work separately.
   and it has single parameter. So it can call `SimpleSnippets#addFlashSnippet()`
   function, to store this C function as a snippet:
 
-    `call SimpleSnippets#addFlashSnippet('print_struct_contents', 'print_struct_contents(${0:toy})', 1)`
+    `call SimpleSnippets#addFlashSnippet('print_struct_contents', 'print_struct_contents(${0:toy})')`
 
   So when user will `input print_struct_contents|` and hit his expand key, the
   result will be expanded flash snippet, which will look like so:
@@ -345,7 +366,7 @@ closely rely on each other and may not work separately.
   3.4.6 SimpleSnippets#removeFlashSnippet
 
   Function to remove Flash Snippets. You can define your plugin to store for
-  example only last 10 Flash Snippets, by forsing it to remove unneded
+  example only last 10 Flash Snippets, by forcing it to remove unneeded
   snippets form SimpleSnippets's storage. This function accepts trigger, and
   removes Flash Snippet definition completely
 
