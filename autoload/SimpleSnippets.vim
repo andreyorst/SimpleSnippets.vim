@@ -18,9 +18,9 @@ function! SimpleSnippets#isExpandable()
 	let l:snip = ''
 	if l:mode == 'i'
 		let l:col = col('.') - 1
-		let l:snip = matchstr(getline('.'), '\v\w+%' . l:col . 'c.')
+		let l:snip = matchstr(getline('.'), '\v<(\W)?\w+%' . l:col . 'c.')
 	else
-		let l:snip = expand("<cword>")
+		let l:snip = expand("<cWORD>")
 	endif
 	if SimpleSnippets#getSnipFileType(l:snip) != -1
 		return 1
@@ -82,27 +82,21 @@ function! SimpleSnippets#expandOrJump()
 endfunction
 
 function! SimpleSnippets#expand()
-	let l:snip = expand("<cword>")
+	let l:snip = expand("<cWORD>")
 	if SimpleSnippets#isExpandable()
 		let l:filetype = SimpleSnippets#getSnipFileType(l:snip)
 		if l:filetype == 'flash snippet'
 			call SimpleSnippets#expandFlashSnippet(l:snip)
 		else
 			let a:path = SimpleSnippets#getSnipPath(l:snip, l:filetype)
-			let s:snip_line_count = 0
-			for i in readfile(a:path)
-				let s:snip_line_count +=1
-			endfor
 			if s:snip_line_count != 0
-				normal! diw
+				if l:snip =~ "\\W"
+					normal! diW
+				else
+					normal! diw
+				endif
 				silent exec ':read' . a:path
 				silent exec "normal! i\<Bs>"
-				if s:snip_line_count != 1
-					let l:indent_lines = s:snip_line_count - 1
-					silent exec 'normal! V' . l:indent_lines . 'j='
-				else
-					normal! ==
-				endif
 				silent call SimpleSnippets#parseAndInit()
 			else
 				echo '[ERROR] Snippet body is empty'
@@ -170,10 +164,28 @@ endfunction
 
 function! SimpleSnippets#getSnipPath(snip, filetype)
 	if filereadable(g:SimpleSnippets_search_path . a:filetype . '/' . a:snip)
-		return g:SimpleSnippets_search_path . a:filetype . '/' . a:snip
+		let s:snip_line_count = 0
+		for i in readfile(g:SimpleSnippets_search_path . a:filetype . '/' . a:snip)
+			let s:snip_line_count +=1
+		endfor
+		if a:snip =~ "\\W"
+			let l:snip = escape(a:snip, '/\*#|{}()"'."'")
+		else
+			let l:snip = a:snip
+		endif
+		return g:SimpleSnippets_search_path . a:filetype . '/' . l:snip
 	elseif s:SimpleSnippets_snippets_plugin_installed == 1
 		if filereadable(g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip)
-			return g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip
+			let s:snip_line_count = 0
+			for i in readfile(g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip)
+				let s:snip_line_count +=1
+			endfor
+			if a:snip =~ "\\W"
+				let l:snip = escape(a:snip, '/\*#|{}()"'."'")
+			else
+				let l:snip = a:snip
+			endif
+			return g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . l:snip
 		endif
 	endif
 endfunction
@@ -222,6 +234,12 @@ function! SimpleSnippets#parseAndInit()
 	let s:ph_amount = SimpleSnippets#countPlaceholders('\v\$(\{)?[0-9]+(:|!|\|)?')
 	if s:ph_amount != 0
 		call SimpleSnippets#parseSnippet(s:ph_amount)
+		if s:snip_line_count != 1
+			let l:indent_lines = s:snip_line_count - 1
+			silent exec 'normal! V' . l:indent_lines . 'j='
+		else
+			normal! ==
+		endif
 		call cursor(a:cursor_pos[1], a:cursor_pos[2])
 		call SimpleSnippets#jump()
 	else
