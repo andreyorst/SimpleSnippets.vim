@@ -18,7 +18,7 @@ function! SimpleSnippets#isExpandable()
 	let l:snip = ''
 	if l:mode == 'i'
 		let l:col = col('.') - 1
-		let l:snip = matchstr(getline('.'), '\v<(\W)?\w+%' . l:col . 'c.')
+		let l:snip = matchstr(getline('.'), '\v(\s)@!(\W+)?\w+%' . l:col . 'c.')
 	else
 		let l:snip = expand("<cWORD>")
 	endif
@@ -465,6 +465,9 @@ function! SimpleSnippets#edit()
 			try
 				exec "buffer " . s:snip_edit_buf
 			catch
+				if l:trigger =~ "\\W"
+					let l:trigger = escape(l:trigger, '/\*#|{}()"'."'")
+				endif
 				execute "edit " . l:path . '/' . l:trigger
 				execute "setf " . l:filetype
 				let g:term_buf = bufnr("")
