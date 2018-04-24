@@ -26,8 +26,8 @@ Then run the following in Vim:
 ```
 
 You re ready to use SimpleSnippets. However SimpleSnippets.vim doesn't come with snippets.
-You should define it by yourselves for now. I'm planning to release separate plugin
-with snippets only.
+Snippets can be installed with this plugin: [SimpleSnippets-snippets](https://github.com/andreyorst/SimpleSnippets-snippets).
+It's not full featured collections of snippets for now, but I will extend it over time.
 
 If you want to change mappings, consider adding `let g:SimpleSnippets_dont_remap_tab = 1` to
 your vimrc. For other settings please read the documentation.
