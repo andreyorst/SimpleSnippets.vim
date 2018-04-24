@@ -236,11 +236,13 @@ function! SimpleSnippets#parseAndInit()
 		call SimpleSnippets#parseSnippet(s:ph_amount)
 		if s:snip_line_count != 1
 			let l:indent_lines = s:snip_line_count - 1
-			silent exec 'normal! V' . l:indent_lines . 'j='
+			call cursor(s:snip_start, 1)
+			silent exec 'normal! V'
+			silent exec 'normal!'. l:indent_lines .'j='
 		else
 			normal! ==
 		endif
-		call cursor(a:cursor_pos[1], a:cursor_pos[2])
+		call cursor(s:snip_start, 1)
 		call SimpleSnippets#jump()
 	else
 		let s:active = 0
@@ -384,12 +386,11 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	if ph !~ "\\W"
 		let ph = '\<' . ph . '\>'
 	endif
-	call cursor(s:snip_start, 1)
 	call search(ph, 'c', s:snip_end)
-	normal! ms
+	normal! mq
 	call search(ph, 'ce', s:snip_end)
-	normal! me
-	exec "normal! `sv`e\<c-g>"
+	normal! mp
+	exec "normal! `qv`p\<c-g>"
 endfunction
 
 function! SimpleSnippets#jumpMirror(placeholder)
