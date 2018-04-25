@@ -415,6 +415,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 			call search('\<' .ph .'\>', 'ce', s:snip_end)
 			let l:length = col('.') - l:start + 1
 			call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
+			call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
 			let l:i += 1
 		endwhile
 		call cursor(s:snip_start, 1)
@@ -434,7 +435,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 			noh
 		endif
 		let l:i = 0
-		while l:i < l:count
+		while l:i < l:count * 2
 			call matchdelete(l:matchpositions[l:i])
 			let l:i += 1
 		endwhile
