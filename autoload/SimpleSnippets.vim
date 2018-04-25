@@ -229,7 +229,6 @@ function! SimpleSnippets#parseAndInit()
 	let s:ph_types = []
 	let s:active = 1
 	let s:jumped_ph = 0
-	let g:snippet_end = 0
 	let s:current_file = @%
 	let s:ph_amount = SimpleSnippets#countPlaceholders('\v\$(\{)?[0-9]+(:|!|\|)?')
 	if s:ph_amount != 0
