@@ -386,6 +386,7 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	if ph !~ "\\W"
 		let ph = '\<' . ph . '\>'
 	endif
+	call cursor(s:snip_start, 1)
 	call search(ph, 'c', s:snip_end)
 	normal! mq
 	call search(ph, 'ce', s:snip_end)
