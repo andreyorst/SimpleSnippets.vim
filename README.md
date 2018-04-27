@@ -107,7 +107,7 @@ I may extend the functionality of a plugin in the future, if I figure out how, t
 implement things in better way, without using third party plugins, or other
 languages.
 
-### List Of Limitations
+#### List Of Limitations
 Here I'll try to list all limitations that you may encounter when using Simple Snippets:
 
 - No tabstops.  
@@ -136,7 +136,7 @@ After reading this list you may want to ask me this question:
 
 ## Why do I even may want to use it?
 
-You probably won't! I understand this, because I've developed it for myself.
+You probably won't! I understand this, because I've developed it for myself in first place, and I can obey these restrictions and limitatuons because I need simple snippets and fast plugin for them.
 I know that having an advanced, full-featured, complex solution is great, because of powers, that you gain form it.
 However often too powerful tool need a powerful hardware to run smoothly.
 If you feel that other snippet solutions are making your Vim slow,
