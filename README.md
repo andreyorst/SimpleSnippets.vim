@@ -111,7 +111,7 @@ languages.
 Here I'll try to list all limitations that you may encounter when using Simple Snippets:
 
 - No tabstops.  
-Wich means that there is no support for `$1` placeholders. Why? Because jumping is based on text searching. Therefore mirroring is done differently.
+Wich means that there is no support for `$1` placeholders. Why? Because jumping is based on text searching. Because placeholders are deleted from snippet body when it is pasted to your file there is no way to find empty ones, because text behind them for example may change. If neovim will add ability to use multicursor and position it in text like in other modern editors this may be implemented. Because of this limitation mirroring is done differently too.
 - Placeholders have slightly different syntax than other plugins use.  
 SimpleSnippets supports normal: `${1:text}`, mirror: `${2|text}`, and shell: `${3!command}` placeholders.
 - Normal placeholders should contain per snippet unique bodies.  
@@ -127,7 +127,7 @@ I'm working on stack jump mechanics, that should remove this limitation.
 - Jumping is based on searching for a string.  
 As was already said before. So if you replace some part of snippets in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
 - No back jumping.  
-Because of previous point.
+Because of previous point. Actually I don't know how to get last user input to store it in vimscript to search for it inside snippet body.
 - Single snippet editing at time.
 If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet. I'm working on jump stack implementation wich may make availible multiple snippet editing.
 - There may be more, which I've not thought about.
