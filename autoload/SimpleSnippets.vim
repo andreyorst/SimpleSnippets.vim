@@ -11,30 +11,40 @@ let s:snip_line_count = 0
 let s:current_file = ''
 let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
+let s:trigger = ''
 
 "Functions
-function! SimpleSnippets#isExpandable()
-	let l:mode = mode()
-	let l:snip = ''
-	if l:mode == 'i'
-		let l:col = col('.') - 1
-		let l:snip = matchstr(getline('.'), '\v(\s)@!(\W+)?\w+%' . l:col . 'c.')
-	else
-		let l:snip = expand("<cWORD>")
+
+function! SimpleSnippets#getTrigger()
+	if s:trigger == ''
+		let l:mode = mode()
+		if l:mode == 'i'
+			let l:col = col('.') - 1
+			let s:trigger = matchstr(getline('.'), '\v(\w+|(\s+)@!\W+(\s)@<!(\w+)?)%' . l:col . 'c.')
+		else
+			let s:trigger = expand("<cWORD>")
+		endif
 	endif
-	if SimpleSnippets#getSnipFileType(l:snip) != -1
+endfunction
+
+function! SimpleSnippets#isExpandable()
+	call SimpleSnippets#getTrigger()
+	if SimpleSnippets#getSnipFileType(s:trigger) != -1
 		return 1
 	else
+		let s:trigger = ''
 		return 0
 	endif
 endfunction
 
 function! SimpleSnippets#isExpandableOrJumpable()
+	call SimpleSnippets#getTrigger()
 	if SimpleSnippets#isExpandable()
 		return 1
 	elseif SimpleSnippets#isJumpable()
 		return 1
 	else
+		let s:trigger = ''
 		return 0
 	endif
 endfunction
@@ -82,8 +92,9 @@ function! SimpleSnippets#expandOrJump()
 endfunction
 
 function! SimpleSnippets#expand()
-	let l:snip = expand("<cWORD>")
+	let l:snip = s:trigger
 	if SimpleSnippets#isExpandable()
+		let s:trigger = ''
 		let l:filetype = SimpleSnippets#getSnipFileType(l:snip)
 		if l:filetype == 'flash snippet'
 			call SimpleSnippets#expandFlashSnippet(l:snip)
@@ -103,7 +114,7 @@ function! SimpleSnippets#expand()
 			endif
 		endif
 	else
-		echo '[ERROR] No "' . l:snip . '" snippet in ' . g:SimpleSnippets_search_path . &ft . '/'
+		echo '[ERROR] No "' . s:trigger . '" snippet in ' . g:SimpleSnippets_search_path . &ft . '/'
 	endif
 endfunction
 
@@ -147,8 +158,6 @@ function! SimpleSnippets#getSnipFileType(snip)
 		return l:filetype
 	elseif SimpleSnippets#checkFlashSnippets(a:snip)
 		return 'flash snippet'
-	elseif filereadable(g:SimpleSnippets_search_path . 'all/' . a:snip)
-		return 'all'
 	elseif s:SimpleSnippets_snippets_plugin_installed == 1
 		if filereadable(g:SimpleSnippets_snippets_plugin_path . l:filetype . '/' . a:snip)
 			return l:filetype
@@ -157,6 +166,8 @@ function! SimpleSnippets#getSnipFileType(snip)
 		else
 			return -1
 		endif
+	elseif filereadable(g:SimpleSnippets_search_path . 'all/' . a:snip)
+		return 'all'
 	else
 		return -1
 	endif
@@ -269,7 +280,7 @@ function! SimpleSnippets#parseSnippet(amount)
 		if l:i == a:amount
 			let l:current = 0
 		endif
-		call search('\v\$(\{)?' . l:current . '(:)?', 'c')
+		call search('\v\$(\{)?' . l:current, 'c')
 		let l:type = SimpleSnippets#getPlaceholderType()
 		call SimpleSnippets#initPlaceholder(l:current, l:type)
 		let l:i += 1
@@ -294,11 +305,13 @@ function! SimpleSnippets#removeFlashSnippet(trigger)
 endfunction
 
 function! SimpleSnippets#getPlaceholderType()
-	if match(expand("<cWORD>"),'\v.*\$\{[0-9]+:') == 0
+	let l:col = col('.')
+	let l:ph = matchstr(getline('.'), '\v%'.l:col.'c\$\{[0-9]+.{-}\}')
+	if match(l:ph, '\v\$\{[0-9]+:.{-}\}') == 0
 		return 1
-	elseif match(expand("<cWORD>"), '\v.*\$\{[0-9]+\|') == 0
+	elseif match(l:ph, '\v\$\{[0-9]+\|.{-}\}') == 0
 		return 2
-	elseif match(expand("<cWORD>"),'\v.*\$\{[0-9]+!') == 0
+	elseif match(l:ph, '\v\$\{[0-9]+!.{-}\}') == 0
 		return 3
 	endif
 endfunction
@@ -343,7 +356,7 @@ endfunction
 
 function! SimpleSnippets#jump()
 	if SimpleSnippets#isInside()
-		let l:current_ph = escape(s:ph_contents[s:jumped_ph], '/\*')
+		let l:current_ph = escape(s:ph_contents[s:jumped_ph], '/\*~')
 		let l:current_jump = s:jumped_ph
 		let s:jumped_ph += 1
 		if s:jumped_ph == s:ph_amount
@@ -365,7 +378,7 @@ endfunction
 function! SimpleSnippets#jumpToLastPlaceholder()
 	if SimpleSnippets#isInside()
 		let s:active = 0
-		let l:current_ph = escape(s:ph_contents[-1], '/\*')
+		let l:current_ph = escape(s:ph_contents[-1], '/\*~')
 		if match(s:ph_types[-1], '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(s:ph_types[-1], '2') == 0
@@ -479,3 +492,22 @@ function! SimpleSnippets#edit()
 	endif
 endfunction
 
+function! SimpleSnippets#listSnippets()
+	let l:filetype = SimpleSnippets#filetypeWrapper()
+	let l:user_snips = g:SimpleSnippets_search_path . l:filetype . '/' . l:filetype . '.snippets.descriptions.txt'
+	echo system('echo "User snippets:"')
+		if filereadable(l:user_snips)
+			echo system('cat '. l:user_snips)
+		else
+			echo system('ls '. g:SimpleSnippets_search_path . l:filetype . '/')
+		endif
+	if s:SimpleSnippets_snippets_plugin_installed == 1
+		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path . l:filetype . '/' . l:filetype . '.snippets.descriptions.txt'
+		echo system('echo "Plugin snippets:"')
+		if filereadable(l:plug_snips)
+			echo system('cat '. l:plug_snips)
+		else
+			echo system('ls '. g:SimpleSnippets_snippets_plugin_path . l:filetype . '/')
+		endif
+	endif
+endfunction
