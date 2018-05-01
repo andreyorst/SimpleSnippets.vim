@@ -504,7 +504,7 @@ function! SimpleSnippets#listSnippets()
 		call SimpleSnippets#printSnippets("Plugin snippets:", l:plug_snips, l:filetype)
 	endif
 	if l:filetype != 'all'
-		call SimpleSnippets#printSnippets('User \"all\" snippets:', l:plug_snips, 'all')
+		call SimpleSnippets#printSnippets('User \"all\" snippets:', l:user_snips, 'all')
 		if s:SimpleSnippets_snippets_plugin_installed == 1
 			call SimpleSnippets#printSnippets('Plugin \"all\" snippets:', l:plug_snips, 'all')
 		endif
@@ -536,7 +536,7 @@ function! SimpleSnippets#availableSnippets()
 		let l:snippets += SimpleSnippets#getSnippetList(l:plug_snips, l:filetype)
 	endif
 	if l:filetype != 'all'
-		let l:snippets += SimpleSnippets#getSnippetList(l:plug_snips, 'all')
+		let l:snippets += SimpleSnippets#getSnippetList(l:user_snips, 'all')
 		if s:SimpleSnippets_snippets_plugin_installed == 1
 			let l:snippets += SimpleSnippets#getSnippetList(l:plug_snips, 'all')
 		endif
