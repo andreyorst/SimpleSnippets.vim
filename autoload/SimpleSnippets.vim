@@ -376,6 +376,7 @@ function! SimpleSnippets#jump()
 endfunction
 
 function! SimpleSnippets#jumpToLastPlaceholder()
+	cunmap <S-Tab>
 	if SimpleSnippets#isInside()
 		let s:active = 0
 		let l:current_ph = escape(s:ph_contents[-1], '/\*~')
@@ -439,6 +440,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 			let l:reenable_cursorline = 1
 		endif
 		cnoremap <Tab> <Cr>
+		cnoremap <S-Tab> <Esc><Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
 		redraw
 		let l:rename = input('Replace placeholder "'.ph.'" with: ')
 		cunmap <Tab>
