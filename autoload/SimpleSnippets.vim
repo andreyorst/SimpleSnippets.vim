@@ -11,28 +11,28 @@ let s:snip_line_count = 0
 let s:current_file = ''
 let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
-let s:trigger = ''
+let g:trigger = ''
 
 "Functions
 
 function! SimpleSnippets#getTrigger()
-	if s:trigger == ''
+	if g:trigger == ''
 		let l:mode = mode()
 		if l:mode == 'i'
 			let l:col = col('.') - 1
-			let s:trigger = matchstr(getline('.'), '\v(\w+|(\s+)@!\W+(\s)@<!(\w+)?)%' . l:col . 'c.')
+			let g:trigger = matchstr(getline('.'), '\v(\w+|(\s+)@!\W+(\s)@<!(\w+)?)%' . l:col . 'c.')
 		else
-			let s:trigger = expand("<cWORD>")
+			let g:trigger = expand("<cWORD>")
 		endif
 	endif
 endfunction
 
 function! SimpleSnippets#isExpandable()
 	call SimpleSnippets#getTrigger()
-	if SimpleSnippets#getSnipFileType(s:trigger) != -1
+	if SimpleSnippets#getSnipFileType(g:trigger) != -1
 		return 1
 	else
-		let s:trigger = ''
+		let g:trigger = ''
 		return 0
 	endif
 endfunction
@@ -44,7 +44,7 @@ function! SimpleSnippets#isExpandableOrJumpable()
 	elseif SimpleSnippets#isJumpable()
 		return 1
 	else
-		let s:trigger = ''
+		let g:trigger = ''
 		return 0
 	endif
 endfunction
@@ -92,29 +92,25 @@ function! SimpleSnippets#expandOrJump()
 endfunction
 
 function! SimpleSnippets#expand()
-	let l:snip = s:trigger
-	if SimpleSnippets#isExpandable()
-		let s:trigger = ''
-		let l:filetype = SimpleSnippets#getSnipFileType(l:snip)
-		if l:filetype == 'flash snippet'
-			call SimpleSnippets#expandFlashSnippet(l:snip)
-		else
-			let a:path = SimpleSnippets#getSnipPath(l:snip, l:filetype)
-			if s:snip_line_count != 0
-				if l:snip =~ "\\W"
-					normal! diW
-				else
-					normal! diw
-				endif
-				silent exec ':read' . a:path
-				silent exec "normal! i\<Bs>"
-				silent call SimpleSnippets#parseAndInit()
-			else
-				echo '[ERROR] Snippet body is empty'
-			endif
-		endif
+	let l:snip = g:trigger
+	let g:trigger = ''
+	let l:filetype = SimpleSnippets#getSnipFileType(l:snip)
+	if l:filetype == 'flash snippet'
+		call SimpleSnippets#expandFlashSnippet(l:snip)
 	else
-		echo '[ERROR] No "' . s:trigger . '" snippet in ' . g:SimpleSnippets_search_path . &ft . '/'
+		let a:path = SimpleSnippets#getSnipPath(l:snip, l:filetype)
+		if s:snip_line_count != 0
+			if l:snip =~ "\\W"
+				normal! diW
+			else
+				normal! diw
+			endif
+			silent exec ':read' . a:path
+			silent exec "normal! i\<Bs>"
+			silent call SimpleSnippets#parseAndInit()
+		else
+			echo '[ERROR] Snippet body is empty'
+		endif
 	endif
 endfunction
 
@@ -205,7 +201,7 @@ function! SimpleSnippets#checkFlashSnippets(snip)
 	let l:len = len(s:flash_snippets)
 	let l:i = 0
 	while l:i < l:len
-		if match(a:snip, s:flash_snippets[l:i][0]) == 0
+		if match(s:flash_snippets[l:i][0], a:snip) == 0
 			return 1
 		endif
 		let l:i += 1
@@ -376,7 +372,6 @@ function! SimpleSnippets#jump()
 endfunction
 
 function! SimpleSnippets#jumpToLastPlaceholder()
-	cunmap <S-Tab>
 	if SimpleSnippets#isInside()
 		let s:active = 0
 		let l:current_ph = escape(s:ph_contents[-1], '/\*~')
@@ -440,7 +435,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 			let l:reenable_cursorline = 1
 		endif
 		cnoremap <Tab> <Cr>
-		cnoremap <S-Tab> <Esc><Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
+		cnoremap <S-Tab> <Esc><Esc>:execute("cunmap <S-Tab>")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
 		redraw
 		let l:rename = input('Replace placeholder "'.ph.'" with: ')
 		cunmap <Tab>
@@ -503,6 +498,15 @@ function! SimpleSnippets#listSnippets()
 		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
 		call SimpleSnippets#printSnippets("Plugin snippets:", l:plug_snips, l:filetype)
 	endif
+	if s:flash_snippets != []
+		let l:string = ''
+		echo 'Flash snippets:'
+		for snippet in s:flash_snippets
+			let l:item = join(snippet, ": ")
+			let l:string .= l:item .'\n'
+		endfor
+		echo system('echo ' . shellescape(l:string) . '| nl')
+	endif
 	if l:filetype != 'all'
 		call SimpleSnippets#printSnippets('User \"all\" snippets:', l:user_snips, 'all')
 		if s:SimpleSnippets_snippets_plugin_installed == 1
@@ -540,6 +544,11 @@ function! SimpleSnippets#availableSnippets()
 		if s:SimpleSnippets_snippets_plugin_installed == 1
 			let l:snippets += SimpleSnippets#getSnippetList(l:plug_snips, 'all')
 		endif
+	endif
+	if s:flash_snippets != []
+		for snippet in s:flash_snippets
+			call add(l:snippets, [snippet[0], snippet[1]])
+		endfor
 	endif
 	return l:snippets
 endfunction
