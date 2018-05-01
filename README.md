@@ -123,13 +123,15 @@ It will be replaced along with mirror placeholders, wich later will make it unju
 - Shell placeholders, that output is more then single line can't be jumped.  
 I'm not sure if shell placeholders should be jumpable at all. This may change over time.
 - Every snippet **must** contain zero indexed placeholder, aka `${0:text}`  
-I'm working on stack jump mechanics, that should remove this limitation.
+(I'm working on stack jump mechanics, that should remove this limitation.)
 - Jumping is based on searching for a string.  
 As was already said before. So if you replace some part of snippets in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
 - No back jumping.  
 Because of previous point. Actually I don't know how to get last user input to store it in vimscript to search for it inside snippet body.
 - Single snippet editing at time.
-If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet. I'm working on jump stack implementation wich may make availible multiple snippet editing.
+If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet. (I'm working on jump stack implementation wich may make availible multiple snippet editing, however I'm not sure about it, because of substitution range limitation).
+- No nested placeholders.  
+It should expand correctly, however jumps will be broken. Current implementation wasn't meant to support this, unfortunately.
 - There may be more, which I've not thought about.
 
 After reading this list you may want to ask me this question:
