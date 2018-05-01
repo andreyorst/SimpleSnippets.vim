@@ -524,3 +524,42 @@ function! SimpleSnippets#printSnippets(message, path, filetype)
 		endif
 	endif
 endfunction
+
+function! SimpleSnippets#availableSnippets()
+	call SimpleSnippets#checkSnippetsPlugin()
+	let l:filetype = SimpleSnippets#filetypeWrapper()
+	let l:snippets = []
+	let l:user_snips = g:SimpleSnippets_search_path
+	let l:snippets = SimpleSnippets#getSnippetList(l:user_snips, l:filetype)
+	if s:SimpleSnippets_snippets_plugin_installed == 1
+		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
+		let l:snippets += SimpleSnippets#getSnippetList(l:plug_snips, l:filetype)
+	endif
+	if l:filetype != 'all'
+		let l:snippets += SimpleSnippets#getSnippetList(l:plug_snips, 'all')
+		if s:SimpleSnippets_snippets_plugin_installed == 1
+			let l:snippets += SimpleSnippets#getSnippetList(l:plug_snips, 'all')
+		endif
+	endif
+	return l:snippets
+endfunction
+
+function! SimpleSnippets#getSnippetList(path, filetype)
+	let l:snippets = []
+	if filereadable(a:path . a:filetype . '/' . a:filetype .'.snippets.descriptions.txt')
+		for i in readfile(a:path . a:filetype. '/' . a:filetype . '.snippets.descriptions.txt')
+			let l:trigger = matchstr(i, '\v^.{-}(:)@=')
+			let l:descr = matchstr(i, '\v(^.{-}:)@<=.*')
+			let l:descr = substitute(l:descr, '^\s*\(.\{-}\)\s*$', '\1', '')
+			call add(l:snippets, [l:trigger, l:descr])
+		endfor
+	elseif isdirectory(a:path . a:filetype . '/')
+		let l:dir = system('ls '. a:path . a:filetype . '/ | nl')
+		let l:dir = substitute(l:dir, '\n\+$', '', '')
+		let l:dir = split(l:dir)
+		for i in l:dir
+			call add(l:snippets, [i, 'no description'])
+		endfor
+	endif
+	return l:snippets
+endfunction
