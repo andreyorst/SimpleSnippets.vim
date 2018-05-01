@@ -514,12 +514,12 @@ endfunction
 function! SimpleSnippets#printSnippets(message, path, filetype)
 	if filereadable(a:path . a:filetype . '/' . a:filetype .'.snippets.descriptions.txt')
 		echo system('echo -n '.a:message)
-		echo system('cat '. a:path . a:filetype . '/' . a:filetype .'.snippets.descriptions.txt')
+		echo system('cat --number '. a:path . a:filetype . '/' . a:filetype .'.snippets.descriptions.txt')
 		echo system('echo ""')
 	else
 		if isdirectory(a:path . a:filetype . '/')
 			echo system('echo -n '.a:message)
-			echo system('ls '. a:path . a:filetype . '/')
+			echo system('ls '. a:path . a:filetype . '/ | nl')
 			echo system('echo ""')
 		endif
 	endif
