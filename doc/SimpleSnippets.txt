@@ -26,7 +26,8 @@ SimpleSnippets                                   *snippet* *snippets* *SimpleSni
      3.4.4 SimpleSnippets#jump ................... |SimpleSnippets#jump|
      3.4.5 SimpleSnippets#jumpToLastPlaceholder... |SimpleSnippets#jumpToLastPlaceholder|
      3.4.6 SimpleSnippets#addFlashSnippet ........ |SimpleSnippets#addFlashSnippet|
-     3.4.6 SimpleSnippets#removeFlashSnippet ..... |SimpleSnippets#removeFlashSnippet|
+     3.4.7 SimpleSnippets#removeFlashSnippet ..... |SimpleSnippets#removeFlashSnippet|
+     3.4.8 SimpleSnippets#availableSnippets ...... |SimpleSnippets#availableSnippets|
 4. Syntax ........................................ |SimpleSnippets-syntax|
    4.1 Adding Snippets ........................... |SimpleSnippets-adding-snippets|
      4.1.1 Flash Snippets ........................ |SimpleSnippets-flash-snippets|
@@ -266,7 +267,8 @@ filetypes mean same thing to SimpleSnippets.
   category. It can't deduce if you have complete list in this file, or just
   part of triggers, or nothing at all. If you don't want to define
   descriptions for your snippets, consider not adding description file and use
-  this function in `ls` mode.
+  this function in `ls` mode. This also applied to completion sources.
+
                                                          *SimpleSnippets-mappings*
 3.2 Mappings
 ------------
@@ -420,8 +422,8 @@ closely rely on each other and may not work separately.
   Where `[toy]` means visually selected placeholder, that user can replace
   with `buzz_lightyear` right away.
 
-                                            *SimpleSnippets#removeFlashSnippet*
-  3.4.6 SimpleSnippets#removeFlashSnippet
+                                               *SimpleSnippets#removeFlashSnippet*
+  3.4.7 SimpleSnippets#removeFlashSnippet
 
   Function to remove Flash Snippets. You can define your plugin to store for
   example only last 10 Flash Snippets, by forcing it to remove unneeded
@@ -430,6 +432,20 @@ closely rely on each other and may not work separately.
 
   `call SimpleSnippets#removeFlashSnippet('buzz_lightyear')`
 
+                                                *SimpleSnippets#availableSnippets*
+  3.4.8 SimpleSnippets#availableSnippets
+
+  Function to use for integration with other plugins. Returns list of all
+  available snippets as list of triggers and descriptions bundled in lists.
+
+  Example input:
+    `let snippets = SimpleSnippets#availableSnippets()`
+    `echo snippets`
+
+  Example output:
+    `[['for', 'for (;;) {...}'], ['main', 'main function'], ...]`
+
+  This function is meant to be used for completion sources.
 
 ================================================================================
 4. Syntax                                                  *SimpleSnippets-syntax*
@@ -462,7 +478,34 @@ mappings. For example, if you're using <Tab> key for expanding, `tab`
 character will be inserted.
 
                                                   *SimpleSnippets-flash-snippets*
-  4.1.1 Flash Snippets
+  4.1.1 Snippets Descriptions
+
+  Snippets can have descriptions, for each trigger. This descriptions are used
+  in |:SimpleSnippetsList| function, and in sources for completion managers.
+
+  Snippet description should have `trigger: description` format. This will be
+  used by custom sources for completion managers. However if there is no
+  `ft.snippets.descriptions.txt` file defined, descriptions are generated
+  by listing `ft` folder with system `ls`, and appending standard text entry
+  in description field.
+
+  Valid syntax for description file:
+
+    `for:  for(;;) {...}`
+    `main: main function`
+    `...`
+    `do:   do {...} while(...);`
+
+  Invalid syntax:
+
+    `for: for(;;) {...} main: main function`
+    `do do while`
+
+  If you're developing snippets for SimpleSnippets-snippets plugin, consider
+  reading it's documentation, which explains this in more detail.
+
+                                                  *SimpleSnippets-flash-snippets*
+  4.1.2 Flash Snippets
 
   This plugin has a feature called Flash Snippets. Snippets called 'flash' are
   filetype independent, and can be defined on the fly. It can be used by
