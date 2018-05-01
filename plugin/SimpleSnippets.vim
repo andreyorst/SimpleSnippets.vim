@@ -30,4 +30,5 @@ else
 endif
 
 command! SimpleSnippetsEdit call SimpleSnippets#edit()
+command! SimpleSnippetsList call SimpleSnippets#listSnippets()
 

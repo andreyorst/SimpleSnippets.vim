@@ -494,20 +494,31 @@ endfunction
 
 function! SimpleSnippets#listSnippets()
 	let l:filetype = SimpleSnippets#filetypeWrapper()
-	let l:user_snips = g:SimpleSnippets_search_path . l:filetype . '/' . l:filetype . '.snippets.descriptions.txt'
-	echo system('echo "User snippets:"')
-		if filereadable(l:user_snips)
-			echo system('cat '. l:user_snips)
-		else
-			echo system('ls '. g:SimpleSnippets_search_path . l:filetype . '/')
-		endif
+	call SimpleSnippets#checkSnippetsPlugin()
+	let l:user_snips = g:SimpleSnippets_search_path
+	call SimpleSnippets#printSnippets("User snippets:", l:user_snips, l:filetype)
 	if s:SimpleSnippets_snippets_plugin_installed == 1
-		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path . l:filetype . '/' . l:filetype . '.snippets.descriptions.txt'
-		echo system('echo "Plugin snippets:"')
-		if filereadable(l:plug_snips)
-			echo system('cat '. l:plug_snips)
-		else
-			echo system('ls '. g:SimpleSnippets_snippets_plugin_path . l:filetype . '/')
+		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
+		call SimpleSnippets#printSnippets("Plugin snippets:", l:plug_snips, l:filetype)
+	endif
+	if l:filetype != 'all'
+		call SimpleSnippets#printSnippets('User \"all\" snippets:', l:plug_snips, 'all')
+		if s:SimpleSnippets_snippets_plugin_installed == 1
+			call SimpleSnippets#printSnippets('Plugin \"all\" snippets:', l:plug_snips, 'all')
+		endif
+	endif
+endfunction
+
+function! SimpleSnippets#printSnippets(message, path, filetype)
+	if filereadable(a:path . a:filetype . '/' . a:filetype .'.snippets.descriptions.txt')
+		echo system('echo '.a:message)
+		echo system('cat '. a:path . a:filetype . '/' . a:filetype .'.snippets.descriptions.txt')
+		echo system('echo ""')
+	else
+		if isdirectory(a:path . a:filetype . '/')
+			echo system('echo '.a:message)
+			echo system('ls '. a:path . a:filetype . '/')
+			echo system('echo ""')
 		endif
 	endif
 endfunction
