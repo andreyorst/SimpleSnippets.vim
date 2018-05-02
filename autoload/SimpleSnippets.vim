@@ -518,16 +518,38 @@ function! SimpleSnippets#printSnippets(message, path, filetype)
 	let l:snippets = {}
 	let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, a:path, a:filetype)
 	if l:snippets != {}
+		let l:max = 0
+		for key in keys(l:snippets)
+			let l:len = len(key) + 2
+			if l:len > l:max
+				let l:max = l:len
+			endif
+		endfor
 		echo system('echo -n '.a:message)
 		let l:string = string(l:snippets)
 		let l:string = substitute(l:string, "',", '\n', 'g')
-		let l:string = substitute(l:string, '\\n', '\\\n', 'g')
-		let l:string = substitute(l:string, '\\r', '\\\\r', 'g')
 		let l:string = substitute(l:string, " '", '', 'g')
 		let l:string = substitute(l:string, "{'", '', 'g')
 		let l:string = substitute(l:string, "'}", '', 'g')
-		let l:string = substitute(l:string, '\n', '\\n', 'g')
+		let l:list = split(l:string, '\n')
+		let i = 0
+		for l:str in l:list
+			let l:trigger_len = len(matchstr(l:list[i], ".*':"))
+			let l:amount_of_spaces = l:max - l:trigger_len + 1
+			let j = 0
+			let l:delimeter = ':'
+			while j <= l:amount_of_spaces
+				let l:delimeter .= ' '
+				let j += 1
+			endwhile
+			let l:list[i] = substitute(l:str, "':", l:delimeter, 'g')
+			let i += 1
+		endfor
+		let l:string = join(l:list, "\n")
 		let l:string = substitute(l:string, "':", ': ', 'g')
+		let l:string = substitute(l:string, '\\n', '\\\n', 'g')
+		let l:string = substitute(l:string, '\\r', '\\\\r', 'g')
+		let l:string = substitute(l:string, '\n', '\\n', 'g')
 		echo system('echo -n ' . shellescape(l:string) . '| nl')
 		echo system('echo ')
 	endif
