@@ -11,28 +11,27 @@ let s:snip_line_count = 0
 let s:current_file = ''
 let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
-let g:trigger = ''
+let s:trigger = ''
 
 "Functions
-
 function! SimpleSnippets#getTrigger()
-	if g:trigger == ''
+	if s:trigger == ''
 		let l:mode = mode()
 		if l:mode == 'i'
 			let l:col = col('.') - 1
-			let g:trigger = matchstr(getline('.'), '\v(\w+|(\s+)@!\W+(\s)@<!(\w+)?)%' . l:col . 'c.')
+			let s:trigger = matchstr(getline('.'), '\v(\w+|(\s+)@!\W+(\s)@<!(\w+)?)%' . l:col . 'c.')
 		else
-			let g:trigger = expand("<cWORD>")
+			let s:trigger = expand("<cWORD>")
 		endif
 	endif
 endfunction
 
 function! SimpleSnippets#isExpandable()
 	call SimpleSnippets#getTrigger()
-	if SimpleSnippets#getSnipFileType(g:trigger) != -1
+	if SimpleSnippets#getSnipFileType(s:trigger) != -1
 		return 1
 	else
-		let g:trigger = ''
+		let s:trigger = ''
 		return 0
 	endif
 endfunction
@@ -44,7 +43,7 @@ function! SimpleSnippets#isExpandableOrJumpable()
 	elseif SimpleSnippets#isJumpable()
 		return 1
 	else
-		let g:trigger = ''
+		let s:trigger = ''
 		return 0
 	endif
 endfunction
@@ -92,8 +91,8 @@ function! SimpleSnippets#expandOrJump()
 endfunction
 
 function! SimpleSnippets#expand()
-	let l:snip = g:trigger
-	let g:trigger = ''
+	let l:snip = s:trigger
+	let s:trigger = ''
 	let l:filetype = SimpleSnippets#getSnipFileType(l:snip)
 	if l:filetype == 'flash snippet'
 		call SimpleSnippets#expandFlashSnippet(l:snip)
@@ -532,43 +531,47 @@ endfunction
 function! SimpleSnippets#availableSnippets()
 	call SimpleSnippets#checkSnippetsPlugin()
 	let l:filetype = SimpleSnippets#filetypeWrapper()
-	let l:snippets = []
+	let l:snippets = {}
 	let l:user_snips = g:SimpleSnippets_search_path
-	let l:snippets = SimpleSnippets#getSnippetList(l:user_snips, l:filetype)
+	let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:user_snips, l:filetype)
 	if s:SimpleSnippets_snippets_plugin_installed == 1
 		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
-		let l:snippets += SimpleSnippets#getSnippetList(l:plug_snips, l:filetype)
+		let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:plug_snips, l:filetype)
 	endif
 	if l:filetype != 'all'
-		let l:snippets += SimpleSnippets#getSnippetList(l:user_snips, 'all')
+		let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:user_snips, 'all')
 		if s:SimpleSnippets_snippets_plugin_installed == 1
-			let l:snippets += SimpleSnippets#getSnippetList(l:plug_snips, 'all')
+			let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:plug_snips, 'all')
 		endif
 	endif
 	if s:flash_snippets != []
 		for snippet in s:flash_snippets
-			call add(l:snippets, [snippet[0], snippet[1]])
+			let l:snippets[snippet[0]] = snippet[1]
 		endfor
 	endif
 	return l:snippets
 endfunction
 
-function! SimpleSnippets#getSnippetList(path, filetype)
-	let l:snippets = []
-	if filereadable(a:path . a:filetype . '/' . a:filetype .'.snippets.descriptions.txt')
-		for i in readfile(a:path . a:filetype. '/' . a:filetype . '.snippets.descriptions.txt')
-			let l:trigger = matchstr(i, '\v^.{-}(:)@=')
-			let l:descr = matchstr(i, '\v(^.{-}:)@<=.*')
-			let l:descr = substitute(l:descr, '^\s*\(.\{-}\)\s*$', '\1', '')
-			call add(l:snippets, [l:trigger, l:descr])
-		endfor
-	elseif isdirectory(a:path . a:filetype . '/')
-		let l:dir = system('ls '. a:path . a:filetype . '/ | nl')
+function! SimpleSnippets#getSnippetDict(dict, path, filetype)
+	if isdirectory(a:path . a:filetype . '/')
+		let l:dir = system('ls '. a:path . a:filetype . '/')
 		let l:dir = substitute(l:dir, '\n\+$', '', '')
 		let l:dir = split(l:dir)
 		for i in l:dir
-			call add(l:snippets, [i, 'no description'])
+			let l:descr = ''
+			for line in readfile(a:path.a:filetype.'/'.i)
+				let l:descr .= line
+			endfor
+			let a:dict[i] = l:descr
 		endfor
 	endif
-	return l:snippets
+	if filereadable(a:path . a:filetype . '/' . a:filetype .'.snippets.descriptions.txt')
+		for i in readfile(a:path . a:filetype. '/' . a:filetype . '.snippets.descriptions.txt')
+			let l:trigger = matchstr(i, '\v^.{-}(:)@=')
+			let l:descr = substitute(matchstr(i, '\v(^.{-}:)@<=.*'), '^\s*\(.\{-}\)\s*$', '\1', '')
+			let a:dict[l:trigger] = l:descr
+		endfor
+	endif
+	return a:dict
 endfunction
+

@@ -15,8 +15,8 @@ class Source(Base):
             'SimpleSnippets#availableSnippets()')
         for trigger in snippets:
             suggestions.append({
-                'word': trigger[0],
-                'menu': trigger[1],
+                'word': trigger,
+                'menu': self.mark + ' ' + snippets.get(trigger, ''),
                 'dup': 1
             })
         return suggestions
