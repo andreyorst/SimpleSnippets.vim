@@ -1,10 +1,11 @@
 # SimpleSnippets.vim
 
 Simple snippets is a simple snippet manager for Vim and NeoVim, based on standard
-editor features, designed to be fast and lightweight. It provides basic support of
+editor features, designed to be fast and lightweight. It integrates with deoplete
+to provide available snippets in popup menu and provides basic support of
 snippet feature to vim.
 
-![simplesnippets](https://user-images.githubusercontent.com/19470159/39096685-103d060c-465c-11e8-8b52-a61ff37d7564.gif)
+![simplesnippets](https://user-images.githubusercontent.com/19470159/39535519-c4904d2a-4e3c-11e8-9e1c-9796515f1913.gif)
 
 This plugin was inspired by other snippet managers, like UltiSnips, snipMate,
 Neosnippets, and others. However it has major differences in implementation, and
@@ -154,6 +155,10 @@ provided with the plugins to understand how things work. If you encounter any pr
 [feel free to file an Issue](https://github.com/andreyorst/SimpleSnippets.vim/issues/new)
 
 ## Some SimpleSnippets action gifs
+
+#### Deoplete completion popup
+
+![compmenu](https://user-images.githubusercontent.com/19470159/39534438-416411e0-4e3a-11e8-8b15-ae9d27c7f672.gif)
 
 #### Adding a snippet:
 
