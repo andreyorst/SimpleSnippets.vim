@@ -515,16 +515,21 @@ function! SimpleSnippets#listSnippets()
 endfunction
 
 function! SimpleSnippets#printSnippets(message, path, filetype)
-	if filereadable(a:path . a:filetype . '/' . a:filetype .'.snippets.descriptions.txt')
+	let l:snippets = {}
+	let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, a:path, a:filetype)
+	if l:snippets != {}
 		echo system('echo -n '.a:message)
-		echo system('cat --number '. a:path . a:filetype . '/' . a:filetype .'.snippets.descriptions.txt')
-		echo system('echo ""')
-	else
-		if isdirectory(a:path . a:filetype . '/')
-			echo system('echo -n '.a:message)
-			echo system('ls '. a:path . a:filetype . '/ | nl')
-			echo system('echo ""')
-		endif
+		let l:string = string(l:snippets)
+		let l:string = substitute(l:string, "',", '\n', 'g')
+		let l:string = substitute(l:string, '\\n', '\\\n', 'g')
+		let l:string = substitute(l:string, '\\r', '\\\\r', 'g')
+		let l:string = substitute(l:string, " '", '', 'g')
+		let l:string = substitute(l:string, "{'", '', 'g')
+		let l:string = substitute(l:string, "'}", '', 'g')
+		let l:string = substitute(l:string, '\n', '\\n', 'g')
+		let l:string = substitute(l:string, "':", ': ', 'g')
+		echo system('echo -n ' . shellescape(l:string) . '| nl')
+		echo system('echo ')
 	endif
 endfunction
 
@@ -561,7 +566,10 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 			let l:descr = ''
 			for line in readfile(a:path.a:filetype.'/'.i)
 				let l:descr .= substitute(line, '\v\$\{[0-9]+(:|!|\|)(.{-})\}', '\2', 'g')
+				break
 			endfor
+			let l:descr = substitute(l:descr, '\v(\S+)(\})', '\1 \2', 'g')
+			let l:descr = substitute(l:descr, '\v\{(\s+)?$', '', 'g')
 			let a:dict[i] = l:descr
 		endfor
 	endif
@@ -571,6 +579,14 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 			let l:descr = substitute(matchstr(i, '\v(^.{-}:)@<=.*'), '^\s*\(.\{-}\)\s*$', '\1', '')
 			let a:dict[l:trigger] = l:descr
 		endfor
+	endif
+	if has_key(a:dict, a:filetype.'.snippets.descriptions.txt')
+		unlet a:dict[a:filetype.'.snippets.descriptions.txt']
+	endif
+	if a:filetype != 'all'
+		if has_key(a:dict, 'all.snippets.descriptions.txt')
+			unlet a:dict['all.snippets.descriptions.txt']
+		endif
 	endif
 	return a:dict
 endfunction
