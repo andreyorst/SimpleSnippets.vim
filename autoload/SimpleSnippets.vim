@@ -546,7 +546,7 @@ function! SimpleSnippets#availableSnippets()
 	endif
 	if s:flash_snippets != []
 		for snippet in s:flash_snippets
-			let l:snippets[snippet[0]] = snippet[1]
+			let l:snippets[snippet[0]] = substitute(snippet[1], '\v\$\{[0-9]+(:|!|\|)(.{-})\}', '\2', 'g')
 		endfor
 	endif
 	return l:snippets
@@ -560,7 +560,7 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 		for i in l:dir
 			let l:descr = ''
 			for line in readfile(a:path.a:filetype.'/'.i)
-				let l:descr .= line
+				let l:descr .= substitute(line, '\v\$\{[0-9]+(:|!|\|)(.{-})\}', '\2', 'g')
 			endfor
 			let a:dict[i] = l:descr
 		endfor
