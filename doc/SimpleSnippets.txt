@@ -30,7 +30,8 @@ SimpleSnippets                                   *snippet* *snippets* *SimpleSni
      3.4.8 SimpleSnippets#availableSnippets ...... |SimpleSnippets#availableSnippets|
 4. Syntax ........................................ |SimpleSnippets-syntax|
    4.1 Adding Snippets ........................... |SimpleSnippets-adding-snippets|
-     4.1.1 Flash Snippets ........................ |SimpleSnippets-flash-snippets|
+     4.1.1 Snippets descriptions ................. |SimpleSnippets-snippets-descriptions|
+     4.1.2 Flash Snippets ........................ |SimpleSnippets-flash-snippets|
    4.2 Placeholder Syntax ........................ |SimpleSnippets-placeholder-syntax|
      4.2.1 Normal Placeholders ................... |SimpleSnippets-normal-placeholder|
      4.2.2 Mirror Placeholders ................... |SimpleSnippets-mirror-placeholder|
@@ -230,19 +231,18 @@ filetypes mean same thing to SimpleSnippets.
   back to system `ls` output of current filetype. Sample output:
 
     `User snippets:`
-    `     1. ttt`
-    `     2. tstr`
+    `     1. ttt: tos("text"); ton(10); tos("\n\r");`
 
     `Plugin snippets:`
-    `     1. for     for(;;) {...}`
-    `     2. main    main function definition`
-    `     3. if      if(...) {..}`
+    `     1. for: for(;;) {...}`
+    `     2. main: main function definition`
+    `     3. if: if(...) {..}`
 
     `User "all" snippets:`
-    `     1. date`
+    `     1. date: date`
 
     `Plugin "all" snippets:`
-    `     1. lorem   test snippet`
+    `     1. lorem: test snippet`
 
   That is, this list represents available triggers, and it is separated in
   four sections:
@@ -256,18 +256,9 @@ filetypes mean same thing to SimpleSnippets.
    IV. Plugin "all" snippets.
        SimpleSnippets-snippets snippet files defined to use with any filetype.
 
-  In our example the list also have different output in different sections. For
-  example `User snippets` doesn't contain descriptions, like `Plugin Snippets`
-  do. The same situation for `all` snippets. It is because we don't have
-  `c.snippets.descriptions.txt` and `all.snippets.descriptions.txt` in our user
-  snippets directories, so function uses `ls`, to simply get list of triggers.
-
-  Note, that if you add empty `ft.snippets.descriptions.txt` file in your
-  snippet filetype dir `:SimpleSnippetsList` will print empty list for this
-  category. It can't deduce if you have complete list in this file, or just
-  part of triggers, or nothing at all. If you don't want to define
-  descriptions for your snippets, consider not adding description file and use
-  this function in `ls` mode. This also applied to completion sources.
+  This list also represents order in which SimpleSnippets looks for snippets: It
+  first checks user's snippets, then plugin snippets, then user's "all"
+  snippets, and lastly plugin's "all snippets"
 
                                                          *SimpleSnippets-mappings*
 3.2 Mappings
@@ -435,17 +426,9 @@ closely rely on each other and may not work separately.
                                                 *SimpleSnippets#availableSnippets*
   3.4.8 SimpleSnippets#availableSnippets
 
-  Function to use for integration with other plugins. Returns list of all
-  available snippets as list of triggers and descriptions bundled in lists.
-
-  Example input:
-    `let snippets = SimpleSnippets#availableSnippets()`
-    `echo snippets`
-
-  Example output:
-    `[['for', 'for (;;) {...}'], ['main', 'main function'], ...]`
-
-  This function is meant to be used for completion sources.
+  Function to use for integration with other plugins. Returns dictonary wiht
+  all available snippets. This function is meant to be used for completion
+  sources.
 
 ================================================================================
 4. Syntax                                                  *SimpleSnippets-syntax*
@@ -477,7 +460,7 @@ current filetype folder. If trigger can't be found, SimpleSnippets looks at
 mappings. For example, if you're using <Tab> key for expanding, `tab`
 character will be inserted.
 
-                                                  *SimpleSnippets-flash-snippets*
+                                            *SimpleSnippets-snippets-descriptions*
   4.1.1 Snippets Descriptions
 
   Snippets can have descriptions, for each trigger. This descriptions are used
