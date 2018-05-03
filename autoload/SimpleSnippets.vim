@@ -374,8 +374,6 @@ function! SimpleSnippets#jump()
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, '2') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
-		elseif match(l:current_type, '3') == 0
-			call SimpleSnippets#jumpShell(l:current_ph)
 		endif
 	else
 		echo "[WARN]: Can't jump outside of snippet's body"
@@ -391,8 +389,6 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, '2') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
-		elseif match(l:current_type, '3') == 0
-			call SimpleSnippets#jumpShell(l:current_ph)
 		endif
 		let s:jump_stack = []
 		let s:type_stack = []
