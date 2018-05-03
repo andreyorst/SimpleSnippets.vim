@@ -359,8 +359,8 @@ function! SimpleSnippets#initShell(current)
 	if l:result_line_count > 1
 		let s:snip_end += l:result_line_count - 1
 	endif
-	exe "normal! df}"
-	normal! "sP
+	exe "normal! vf}c"
+	normal! "sp
 endfunction
 
 function! SimpleSnippets#jump()
