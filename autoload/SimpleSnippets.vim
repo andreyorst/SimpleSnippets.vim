@@ -1,9 +1,6 @@
 " Globals
 let s:flash_snippets = []
-let s:ph_contents = []
-let s:ph_types = []
 let s:ph_amount = 0
-let s:jumped_ph = 0
 let s:active = 0
 let s:snip_start = 0
 let s:snip_end = 0
@@ -12,6 +9,9 @@ let s:current_file = ''
 let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
 let s:trigger = ''
+
+let s:jump_stack = []
+let s:type_stack = []
 
 "Functions
 function! SimpleSnippets#getTrigger()
@@ -234,10 +234,9 @@ endfunction
 
 function! SimpleSnippets#parseAndInit()
 	let a:cursor_pos = getpos(".")
-	let s:ph_contents = []
-	let s:ph_types = []
+	let s:jump_stack = []
+	let s:type_stack = []
 	let s:active = 1
-	let s:jumped_ph = 0
 	let s:current_file = @%
 	let s:ph_amount = SimpleSnippets#countPlaceholders('\v\$(\{)?[0-9]+(:|!|\|)?')
 	if s:ph_amount != 0
@@ -251,7 +250,9 @@ function! SimpleSnippets#parseAndInit()
 			normal! ==
 		endif
 		call cursor(s:snip_start, 1)
-		call SimpleSnippets#jump()
+		if s:jump_stack != []
+			call SimpleSnippets#jump()
+		endif
 	else
 		let s:active = 0
 		call cursor(a:cursor_pos[1], a:cursor_pos[2])
@@ -315,7 +316,9 @@ function! SimpleSnippets#getPlaceholderType()
 endfunction
 
 function! SimpleSnippets#initPlaceholder(current, type)
-	call add(s:ph_types, a:type)
+	if a:type != 3
+		call add(s:type_stack, a:type)
+	endif
 	if a:type == 1
 		call SimpleSnippets#initNormal(a:current)
 	elseif a:type == 2
@@ -327,13 +330,13 @@ endfunction
 
 function! SimpleSnippets#initNormal(current)
 	let l:placeholder = '\v(\$\{'. a:current . ':)@<=.{-}(\})@='
-	call add(s:ph_contents, matchstr(getline('.'), l:placeholder))
+	call add(s:jump_stack, matchstr(getline('.'), l:placeholder))
 	exe "normal! df:f}i\<Del>\<Esc>"
 endfunction
 
 function! SimpleSnippets#initMirror(current)
 	let l:placeholder = '\v(\$\{'. a:current . '\|)@<=.{-}(\})@='
-	call add(s:ph_contents, matchstr(getline('.'), l:placeholder))
+	call add(s:jump_stack, matchstr(getline('.'), l:placeholder))
 	exe "normal! df|f}i\<Del>\<Esc>"
 endfunction
 
@@ -356,26 +359,21 @@ function! SimpleSnippets#initShell(current)
 	if l:result_line_count > 1
 		let s:snip_end += l:result_line_count - 1
 	endif
-	exe "normal! df}"
+	exe "normal! vf}c"
 	normal! "sp
-	call add(s:ph_contents, l:result)
 endfunction
 
 function! SimpleSnippets#jump()
 	if SimpleSnippets#isInside()
-		let l:current_ph = escape(s:ph_contents[s:jumped_ph], '/\*~')
-		let l:current_jump = s:jumped_ph
-		let s:jumped_ph += 1
-		if s:jumped_ph == s:ph_amount
+		let l:current_ph = escape(remove(s:jump_stack, 0), '/\*~')
+		let l:current_type = remove(s:type_stack, 0)
+		if s:jump_stack == []
 			let s:active = 0
-			let s:jumped_ph = 0
 		endif
-		if match(s:ph_types[l:current_jump], '1') == 0
+		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
-		elseif match(s:ph_types[l:current_jump], '2') == 0
+		elseif match(l:current_type, '2') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
-		elseif match(s:ph_types[l:current_jump], '3') == 0
-			call SimpleSnippets#jumpShell(l:current_ph)
 		endif
 	else
 		echo "[WARN]: Can't jump outside of snippet's body"
@@ -385,15 +383,15 @@ endfunction
 function! SimpleSnippets#jumpToLastPlaceholder()
 	if SimpleSnippets#isInside()
 		let s:active = 0
-		let l:current_ph = escape(s:ph_contents[-1], '/\*~')
-		if match(s:ph_types[-1], '1') == 0
+		let l:current_ph = escape(s:jump_stack[-1], '/\*~')
+		let l:current_type = s:type_stack[-1]
+		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
-		elseif match(s:ph_types[-1], '2') == 0
+		elseif match(l:current_type, '2') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
-		elseif match(s:ph_types[-1], '3') == 0
-			call SimpleSnippets#jumpShell(l:current_ph)
 		endif
-		let s:jumped_ph = 0
+		let s:jump_stack = []
+		let s:type_stack = []
 		let s:active = 0
 	else
 		echo "[WARN]: Can't jump outside of snippet's body"
