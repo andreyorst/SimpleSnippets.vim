@@ -151,21 +151,24 @@ function! SimpleSnippets#getSnipFileType(snip)
 	let l:filetype = SimpleSnippets#filetypeWrapper()
 	if filereadable(g:SimpleSnippets_search_path . l:filetype . '/' . a:snip)
 		return l:filetype
-	elseif SimpleSnippets#checkFlashSnippets(a:snip)
+	endif
+	if SimpleSnippets#checkFlashSnippets(a:snip)
 		return 'flash snippet'
-	elseif s:SimpleSnippets_snippets_plugin_installed == 1
+	endif
+	if s:SimpleSnippets_snippets_plugin_installed == 1
 		if filereadable(g:SimpleSnippets_snippets_plugin_path . l:filetype . '/' . a:snip)
 			return l:filetype
-		elseif filereadable(g:SimpleSnippets_snippets_plugin_path . 'all/' . a:snip)
-			return 'all'
-		else
-			return -1
 		endif
-	elseif filereadable(g:SimpleSnippets_search_path . 'all/' . a:snip)
-		return 'all'
-	else
-		return -1
 	endif
+	if filereadable(g:SimpleSnippets_search_path . 'all/' . a:snip)
+		return 'all'
+	endif
+	if s:SimpleSnippets_snippets_plugin_installed == 1
+		if filereadable(g:SimpleSnippets_snippets_plugin_path . 'all/' . a:snip)
+			return 'all'
+		endif
+	endif
+	return -1
 endfunction
 
 function! SimpleSnippets#getSnipPath(snip, filetype)
@@ -493,10 +496,6 @@ function! SimpleSnippets#listSnippets()
 	call SimpleSnippets#checkSnippetsPlugin()
 	let l:user_snips = g:SimpleSnippets_search_path
 	call SimpleSnippets#printSnippets("User snippets:", l:user_snips, l:filetype)
-	if s:SimpleSnippets_snippets_plugin_installed == 1
-		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
-		call SimpleSnippets#printSnippets("Plugin snippets:", l:plug_snips, l:filetype)
-	endif
 	if s:flash_snippets != []
 		let l:string = ''
 		echo 'Flash snippets:'
@@ -505,6 +504,10 @@ function! SimpleSnippets#listSnippets()
 			let l:string .= l:item .'\n'
 		endfor
 		echo system('echo ' . shellescape(l:string) . '| nl')
+	endif
+	if s:SimpleSnippets_snippets_plugin_installed == 1
+		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
+		call SimpleSnippets#printSnippets("Plugin snippets:", l:plug_snips, l:filetype)
 	endif
 	if l:filetype != 'all'
 		call SimpleSnippets#printSnippets('User \"all\" snippets:', l:user_snips, 'all')
