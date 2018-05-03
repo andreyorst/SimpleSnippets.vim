@@ -535,7 +535,7 @@ function! SimpleSnippets#printSnippets(message, path, filetype)
 		let i = 0
 		for l:str in l:list
 			let l:trigger_len = len(matchstr(l:list[i], ".*':"))
-			let l:amount_of_spaces = l:max - l:trigger_len + 1
+			let l:amount_of_spaces = l:max - l:trigger_len + 3
 			let j = 0
 			let l:delimeter = ':'
 			while j <= l:amount_of_spaces
