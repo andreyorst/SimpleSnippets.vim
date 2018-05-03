@@ -341,7 +341,16 @@ function! SimpleSnippets#initShell(current)
 	let l:placeholder = '\v(\$\{'. a:current . '!)@<=.{-}(\})@='
 	let l:command = matchstr(getline('.'), l:placeholder)
 	let l:result = system(l:command)
+	if match(l:result, '\v(zsh:1|command not found)') >= 0
+		let l:result = execute("echo " . l:command)
+		if match(l:result, '\v(Undefined variable|Invalid expression)') >= 0
+			let l:result = "wrong command"
+		endif
+	endif
 	let l:result = substitute(l:result, '\n\+$', '', '')
+	let l:result = substitute(l:result, '\s\+$', '', '')
+	let l:result = substitute(l:result, '^\s\+', '', '')
+	let l:result = substitute(l:result, '^\n\+', '', '')
 	let @s = l:result
 	let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g')) + 1
 	if l:result_line_count > 1
