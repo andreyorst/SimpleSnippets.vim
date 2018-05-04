@@ -336,8 +336,10 @@ endfunction
 
 function! SimpleSnippets#initMirror(current)
 	let l:placeholder = '\v(\$\{'. a:current . '\|)@<=.{-}(\})@='
-	call add(s:jump_stack, matchstr(getline('.'), l:placeholder))
+	let l:result = matchstr(getline('.'), l:placeholder)
+	call add(s:jump_stack, l:result)
 	exe "normal! df|f}i\<Del>\<Esc>"
+	call SimpleSnippets#initRepeater(a:current, l:result)
 endfunction
 
 function! SimpleSnippets#initShell(current)
@@ -361,6 +363,21 @@ function! SimpleSnippets#initShell(current)
 	endif
 	exe "normal! vf}c"
 	normal! "sp
+	call SimpleSnippets#initRepeater(a:current, l:result)
+endfunction
+
+function! SimpleSnippets#initRepeater(current, content)
+	let @s = a:content
+	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
+	let l:i = 0
+	while l:i < l:repeater_count
+		call cursor(s:snip_start, 1)
+		call search('\v\$'.a:current, '', s:snip_end)
+		exe "normal! vec"
+		normal! "sp
+		let l:i += 1
+	endwhile
+	call cursor(s:snip_start, 1)
 endfunction
 
 function! SimpleSnippets#jump()
