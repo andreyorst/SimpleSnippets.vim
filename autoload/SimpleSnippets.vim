@@ -238,7 +238,7 @@ function! SimpleSnippets#parseAndInit()
 	let s:type_stack = []
 	let s:active = 1
 	let s:current_file = @%
-	let s:ph_amount = SimpleSnippets#countPlaceholders('\v\$(\{)?[0-9]+(:|!|\|)?')
+	let s:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!|\|)')
 	if s:ph_amount != 0
 		call SimpleSnippets#parseSnippet(s:ph_amount)
 		if s:snip_line_count != 1
@@ -279,7 +279,7 @@ function! SimpleSnippets#parseSnippet(amount)
 		if l:i == a:amount
 			let l:current = 0
 		endif
-		call search('\v\$(\{)?' . l:current, 'c')
+		call search('\v\$\{' . l:current, 'c')
 		let l:type = SimpleSnippets#getPlaceholderType()
 		call SimpleSnippets#initPlaceholder(l:current, l:type)
 		let l:i += 1
@@ -372,8 +372,11 @@ function! SimpleSnippets#initRepeater(current, content)
 	let l:i = 0
 	while l:i < l:repeater_count
 		call cursor(s:snip_start, 1)
-		call search('\v\$'.a:current, '', s:snip_end)
-		exe "normal! vec"
+		call search('\v\$'.a:current, 'c', s:snip_end)
+		normal! mq
+		call search('\v\$'.a:current, 'ce', s:snip_end)
+		normal! mp
+		exe "normal! `qv`pc"
 		normal! "sp
 		let l:i += 1
 	endwhile
