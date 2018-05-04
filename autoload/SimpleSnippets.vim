@@ -119,6 +119,7 @@ function! SimpleSnippets#expandFlashSnippet(snip)
 	let l:i = 0
 	while l:i < l:len
 		if match(a:snip, s:flash_snippets[l:i][0]) == 0
+			let l:save = @s
 			let @s = s:flash_snippets[l:i][1]
 			let s:snip_line_count = len(substitute(s:flash_snippets[l:i][1], '[^\n]', '', 'g')) + 1
 			break
@@ -126,6 +127,7 @@ function! SimpleSnippets#expandFlashSnippet(snip)
 		let l:i += 1
 	endwhile
 	normal! "sp
+	let @s = l:save
 	if s:snip_line_count != 1
 		let l:indent_lines = s:snip_line_count - 1
 		silent exec 'normal! V' . l:indent_lines . 'j='
@@ -238,7 +240,7 @@ function! SimpleSnippets#parseAndInit()
 	let s:type_stack = []
 	let s:active = 1
 	let s:current_file = @%
-	let s:ph_amount = SimpleSnippets#countPlaceholders('\v\$(\{)?[0-9]+(:|!|\|)?')
+	let s:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!|\|)')
 	if s:ph_amount != 0
 		call SimpleSnippets#parseSnippet(s:ph_amount)
 		if s:snip_line_count != 1
@@ -263,6 +265,9 @@ function! SimpleSnippets#countPlaceholders(pattern)
 	redir => l:cnt
 	silent! exe '%s/' . a:pattern . '//gn'
 	redir END
+	if match(l:cnt, 'not found') >= 0
+		return 0
+	endif
 	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
 	let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
 	return l:count
@@ -279,7 +284,7 @@ function! SimpleSnippets#parseSnippet(amount)
 		if l:i == a:amount
 			let l:current = 0
 		endif
-		call search('\v\$(\{)?' . l:current, 'c')
+		call search('\v\$\{' . l:current, 'c')
 		let l:type = SimpleSnippets#getPlaceholderType()
 		call SimpleSnippets#initPlaceholder(l:current, l:type)
 		let l:i += 1
@@ -316,28 +321,27 @@ function! SimpleSnippets#getPlaceholderType()
 endfunction
 
 function! SimpleSnippets#initPlaceholder(current, type)
-	if a:type != 3
-		call add(s:type_stack, a:type)
-	endif
 	if a:type == 1
 		call SimpleSnippets#initNormal(a:current)
-	elseif a:type == 2
-		call SimpleSnippets#initMirror(a:current)
 	elseif a:type == 3
 		call SimpleSnippets#initShell(a:current)
 	endif
 endfunction
 
+
+
 function! SimpleSnippets#initNormal(current)
 	let l:placeholder = '\v(\$\{'. a:current . ':)@<=.{-}(\})@='
-	call add(s:jump_stack, matchstr(getline('.'), l:placeholder))
+	let l:result = matchstr(getline('.'), l:placeholder)
+	call add(s:jump_stack, l:result)
 	exe "normal! df:f}i\<Del>\<Esc>"
-endfunction
-
-function! SimpleSnippets#initMirror(current)
-	let l:placeholder = '\v(\$\{'. a:current . '\|)@<=.{-}(\})@='
-	call add(s:jump_stack, matchstr(getline('.'), l:placeholder))
-	exe "normal! df|f}i\<Del>\<Esc>"
+	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
+	if l:repeater_count != 0
+		call add(s:type_stack, 2)
+		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
+	else
+		call add(s:type_stack, 1)
+	endif
 endfunction
 
 function! SimpleSnippets#initShell(current)
@@ -354,13 +358,38 @@ function! SimpleSnippets#initShell(current)
 	let l:result = substitute(l:result, '\s\+$', '', '')
 	let l:result = substitute(l:result, '^\s\+', '', '')
 	let l:result = substitute(l:result, '^\n\+', '', '')
+	let l:save = @s
 	let @s = l:result
 	let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g')) + 1
 	if l:result_line_count > 1
 		let s:snip_end += l:result_line_count - 1
 	endif
-	exe "normal! vf}c"
-	normal! "sp
+	exe "normal! vf}x"
+	normal! "sP
+	let @s = l:save
+	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
+	if l:repeater_count != 0
+		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
+	endif
+endfunction
+
+function! SimpleSnippets#initRepeaters(current, content, count)
+	let l:save = @s
+	let @s = a:content
+	let l:repeater_count = a:count
+	let l:i = 0
+	while l:i < l:repeater_count
+		call cursor(s:snip_start, 1)
+		call search('\v\$'.a:current, 'c', s:snip_end)
+		normal! mq
+		call search('\v\$'.a:current, 'ce', s:snip_end)
+		normal! mp
+		exe "normal! `qv`pc"
+		normal! "sp
+		let l:i += 1
+	endwhile
+	let @s = l:save
+	call cursor(s:snip_start, 1)
 endfunction
 
 function! SimpleSnippets#jump()
@@ -426,13 +455,14 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:matchpositions = []
 		call cursor(s:snip_start, 1)
 		while l:i < l:count
-			call search('\<' .ph .'\>', '', s:snip_end)
+			call search('\<' .ph .'\>', 'c', s:snip_end)
 			let l:line = line('.')
 			let l:start = col('.')
 			call search('\<' .ph .'\>', 'ce', s:snip_end)
 			let l:length = col('.') - l:start + 1
 			call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
 			call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
+			call cursor(line('.'), col('.') + 1)
 			let l:i += 1
 		endwhile
 		call cursor(s:snip_start, 1)

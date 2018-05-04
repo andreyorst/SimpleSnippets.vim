@@ -35,7 +35,8 @@ SimpleSnippets                                   *snippet* *snippets* *SimpleSni
    4.2 Placeholder Syntax ........................ |SimpleSnippets-placeholder-syntax|
      4.2.1 Normal Placeholders ................... |SimpleSnippets-normal-placeholder|
      4.2.2 Mirror Placeholders ................... |SimpleSnippets-mirror-placeholder|
-     4.2.3 Shell Placeholders .................... |SimpleSnippets-shell-placeholder|
+     4.2.3 Command Placeholders .................. |SimpleSnippets-command-placeholder|
+     4.2.4 Repeaters ............................. |SimpleSnippets-repeater|
    4.3 Snippets Examples ......................... |SimpleSnippets-snippet-examples|
 5. Contributing .................................. |SimpleSnippets-contributing|
 
@@ -572,23 +573,25 @@ or `endsnippet` entries are necessary.
                                                *SimpleSnippets-mirror-placeholder*
   4.2.2 Mirror Placeholders
 
-  The implementation of mirrored placeholders in this plugin is very different,
-  form other snippet plugins. Mirrored placeholder's text is applied across
-  whole snippet's body. Thats is, you can define any text, and upon jump to the
-  mirrored placeholder you will be prompted to enter text which you would like to
-  use in snippet's body. For example:
+  Mirrored placeholder shares same syntax as normal and command placeholder, however
+  the implementation of mirrored placeholders in this plugin is very different,
+  form other snippet plugins. What differs `normal` and `shell` placeholder from `mirrored`
+  one is occurrence of |repeater|s. If `repeater` is defined for normal
+  placeholder this placeholder becomes mirrored one. For example:
 
-    `class ${1|Name} {`
+    `class ${1:Name} {`
     `public:`
-    `    Name();`
-    `    virtual ~Name();`
+    `    $1();`
+    `    virtual ~$1();`
 
     `private:`
     `    ${0:/* data */}`
     `};`
 
   The first action of every expand of any snippet is jump. In this case the
-  placeholder, which is being jumped is mirrored type. Which means that we will be
+  placeholder, which is being jumped is `normal` type. However, we can spot
+  `repeater`s of this placeholder, so SimpleSnippets converts `normal`
+  placeholder to `mirrored` placeholder. Upon jump on `${1:Name}` you will be
   prompted to change `Name` to some other text, which suits current situation.
   `Name` will be selected across whole snippet, and you will see such message in
   the command line:
@@ -602,40 +605,22 @@ or `endsnippet` entries are necessary.
   the same way if you would hit <Esc>. Mirrored placeholders are automatically
   executing next jump for you.
 
-  Some note about mirroring in other plugins. ~
+                                              *SimpleSnippets-command-placeholder*
+  4.2.3 Command Placeholders
 
-  I kinda like and in the same way dislike how mirrored snippet are done in
-  various plugins. The main difference here, that for example in UltiSnips the
-  syntax for mirroring is done by definition several placeholders with same jump
-  index. For example look at the syntax of `typedef struct` snippet which I use in
-  UltiSnips when writing in C at work:
-
-    `snippet tstr "typedef struct"`
-    `typedef struct ${1:Name} {`
-    `    $2`
-    `} $1; $0`
-    `endsnippet`
-
-  * This syntax is illegal in SimpleSnippets.~
-
-  At some point it is good, because you're editing it in real-time, and `$1`
-  placeholder is mirrored as you type, so you can see how it will affect
-  snippet's body. In most cases it is better approach, and I highly recommend it
-  as a default one. But in my case it was slowdown of my workflow because of weak
-  hardware, so I've decided to change it to substitution-like method.
-
-                                                *SimpleSnippets-shell-placeholder*
-  4.2.3 Shell Placeholders
-
-  The implementation of shell placeholders relies on Vim's `system()` function.
-  Shell placeholders executes their contents as a command *which can be jumped
-  later, and yank it to your file via `@s` register.
-
-  * Commands that resulting to more then single line of text are currently broke
-  jumping. You can jump tho the next placeholder still, but don't rely on
-  jumping to, for example, `cat /usr/share/licenses/clang/LICENSE` output. It is
-  will still be expanded, but one jump will be missed. For example here is the
-  `uname` snippet:
+  The implementation of command placeholders relies on Vim's `system()` function.
+  Shell placeholders executes their contents as a command *which can't be jumped
+  later, and yank it to your file via `@s` register. If you wan't to jump to
+  such placeholder, consider wrapping it inside normal placeholder like so:
+  `${2:${1!uname}`. This also makes mirroring easy, because nor you can mirror
+  `$1` if you don't want to jump to the results, or `$2` if you want to make
+  this placeholder jumpable and mirrored. However, COmmands that result more
+  then single line of text are currently broke jumping. So if you wan't to yank
+  a file inside snippet's body, don't wrap command placeholder with normal one,
+  because it will break snippet expanding.
+  Example of multiline shell output may be: `${0!cat /usr/share/licenses/clang/LICENSE}`
+  placeholder. It can be expanded, but can't be wrapped in `normal` placeholder.
+  For example here is the `uname` snippet:
 
   `My current Linux Kernel is:`
   `${0!uname --operating-system --kernel-release}`
@@ -645,7 +630,48 @@ or `endsnippet` entries are necessary.
   `My current Linux Kernel is:`
   `4.15.15-1-ARCH GNU/Linux`
 
-                                                 *SimpleSnippets-snippet-examples*
+  Command placeholders also support viml commands. You can use any vim command,
+  that can be echoed. It can be registers, vimscript functions, etc.
+  For example:
+
+  Sippet `file`
+
+    `${0!@%}`
+
+  Which will be expanded to:
+
+    `"currently/edited/filename"`
+  Snippet `FILE`:
+
+    `${0!substitute(@%, '.*', '\U&', 'g')}`
+
+  Which will be expanded to:
+
+    `"CURRENTLY/EDITED/FILENAME"`
+
+  Viml support is currently experimental.
+
+                                                *repeater* *SimpleSnippets-repeater*
+  4.2.4 Repeaters
+
+  Repeaters are used to pepeat placeholder's body across snippet's body. So for
+  example, placeholder `${1:Class_Name}` will be considered as `normal`
+  placeholder. However if we add `$1` placeholder, which is called `repeater`,
+  on snippet expanding that paceholder's body will be substituted to every
+  occurrence of `$1` inside snippet's body. This also will make that placeholder
+  `mirrored` type instead of `normal` type. Repeaters can be used to any kind of
+  placeholder: `normal` and `command`. However these two will behave slightly
+  different, as `command` placeholder will be just substituted but not jumped,
+  therefore command `repeater`s will not be jumped either. You can wrap command
+  placeholder with `normal` placeholder, and use a `repeater`s of `normal`
+  placeholder, to jump and mirror `command` one
+
+  Repeaters was added to change core mechanics for mirroring, to make it more
+  easy and maintainable. This also should add some layer of compability with
+  other snippet managers. Previously mirroring was done with separate
+  placeholder type `${1|text}`, and it's body must have been repeated in
+  snippet's body. Now this is deprecated.
+                                                *SimpleSnippets-snippet-examples*
 4.3 Snippet Examples
 
 Here are some snippets to start with:
