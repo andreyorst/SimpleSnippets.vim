@@ -263,6 +263,9 @@ function! SimpleSnippets#countPlaceholders(pattern)
 	redir => l:cnt
 	silent! exe '%s/' . a:pattern . '//gn'
 	redir END
+	if match(l:cnt, 'not found') >= 0
+		return 0
+	endif
 	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
 	let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
 	return l:count
@@ -316,30 +319,27 @@ function! SimpleSnippets#getPlaceholderType()
 endfunction
 
 function! SimpleSnippets#initPlaceholder(current, type)
-	if a:type != 3
-		call add(s:type_stack, a:type)
-	endif
 	if a:type == 1
 		call SimpleSnippets#initNormal(a:current)
-	elseif a:type == 2
-		call SimpleSnippets#initMirror(a:current)
 	elseif a:type == 3
 		call SimpleSnippets#initShell(a:current)
 	endif
 endfunction
 
+
+
 function! SimpleSnippets#initNormal(current)
 	let l:placeholder = '\v(\$\{'. a:current . ':)@<=.{-}(\})@='
-	call add(s:jump_stack, matchstr(getline('.'), l:placeholder))
-	exe "normal! df:f}i\<Del>\<Esc>"
-endfunction
-
-function! SimpleSnippets#initMirror(current)
-	let l:placeholder = '\v(\$\{'. a:current . '\|)@<=.{-}(\})@='
 	let l:result = matchstr(getline('.'), l:placeholder)
 	call add(s:jump_stack, l:result)
-	exe "normal! df|f}i\<Del>\<Esc>"
-	call SimpleSnippets#initRepeater(a:current, l:result)
+	exe "normal! df:f}i\<Del>\<Esc>"
+	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
+	if l:repeater_count != 0
+		call add(s:type_stack, 2)
+		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
+	else
+		call add(s:type_stack, 1)
+	endif
 endfunction
 
 function! SimpleSnippets#initShell(current)
@@ -363,12 +363,15 @@ function! SimpleSnippets#initShell(current)
 	endif
 	exe "normal! vf}c"
 	normal! "sp
-	call SimpleSnippets#initRepeater(a:current, l:result)
+	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
+	if l:repeater_count != 0
+		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
+	endif
 endfunction
 
-function! SimpleSnippets#initRepeater(current, content)
+function! SimpleSnippets#initRepeaters(current, content, count)
 	let @s = a:content
-	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
+	let l:repeater_count = a:count
 	let l:i = 0
 	while l:i < l:repeater_count
 		call cursor(s:snip_start, 1)
@@ -446,7 +449,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:matchpositions = []
 		call cursor(s:snip_start, 1)
 		while l:i < l:count
-			call search('\<' .ph .'\>', '', s:snip_end)
+			call search('\<' .ph .'\>', 'c', s:snip_end)
 			let l:line = line('.')
 			let l:start = col('.')
 			call search('\<' .ph .'\>', 'ce', s:snip_end)
