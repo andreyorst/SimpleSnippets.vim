@@ -442,59 +442,58 @@ function! SimpleSnippets#jumpNormal(placeholder)
 endfunction
 
 function! SimpleSnippets#jumpMirror(placeholder)
-	let ph = a:placeholder
-	if ph =~ "\\W"
-		echo '[ERROR] Placeholder "'.ph.'"'."can't be mirrored"
-	else
-		redir => l:cnt
-		silent! exe s:snip_start.','.s:snip_end.'s/\<' . a:placeholder . '\>//gn'
-		redir END
-		noh
-		let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
-		let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
-		let l:i = 0
-		let l:matchpositions = []
-		call cursor(s:snip_start, 1)
-		while l:i < l:count
-			call search('\<' .ph .'\>', 'c', s:snip_end)
-			let l:line = line('.')
-			let l:start = col('.')
-			call search('\<' .ph .'\>', 'ce', s:snip_end)
-			let l:length = col('.') - l:start + 1
-			call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
-			call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
-			call cursor(line('.'), col('.') + 1)
-			let l:i += 1
-		endwhile
-		call cursor(s:snip_start, 1)
-		call search('\<' .ph .'\>', 'c', s:snip_end)
-		let a:cursor_pos = getpos(".")
-		let l:reenable_cursorline = 0
-		if &cursorline == 1
-			set nocursorline
-			let l:reenable_cursorline = 1
-		endif
-		cnoremap <Tab> <Cr>
-		cnoremap <S-Tab> <Esc><Esc>:execute("cunmap <S-Tab>")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
-		redraw
-		let l:rename = input('Replace placeholder "'.ph.'" with: ')
-		cunmap <Tab>
-		if l:rename != ''
-			execute s:snip_start . "," . s:snip_end . "s/\\<" . ph ."\\>/" . l:rename . "/g"
-			noh
-		endif
-		let l:i = 0
-		while l:i < l:count * 2
-			call matchdelete(l:matchpositions[l:i])
-			let l:i += 1
-		endwhile
-		redraw
-		call cursor(a:cursor_pos[1], a:cursor_pos[2])
-		if l:reenable_cursorline == 1
-			set cursorline
-		endif
-		call SimpleSnippets#jump()
+	let l:ph = a:placeholder
+	if l:ph !~ "\\W"
+		let l:ph = '\<' . l:ph . '\>'
 	endif
+	redir => l:cnt
+	silent! exe s:snip_start.','.s:snip_end.'s/' . l:ph . '//gn'
+	redir END
+	noh
+	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
+	let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
+	let l:i = 0
+	let l:matchpositions = []
+	call cursor(s:snip_start, 1)
+	while l:i < l:count
+		call search(l:ph, 'c', s:snip_end)
+		let l:line = line('.')
+		let l:start = col('.')
+		call search(l:ph, 'ce', s:snip_end)
+		let l:length = col('.') - l:start + 1
+		call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
+		call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
+		call cursor(line('.'), col('.') + 1)
+		let l:i += 1
+	endwhile
+	call cursor(s:snip_start, 1)
+	call search(l:ph, 'c', s:snip_end)
+	let a:cursor_pos = getpos(".")
+	let l:reenable_cursorline = 0
+	if &cursorline == 1
+		set nocursorline
+		let l:reenable_cursorline = 1
+	endif
+	cnoremap <Tab> <Cr>
+	cnoremap <S-Tab> <Esc><Esc>:execute("cunmap <S-Tab>")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
+	redraw
+	let l:rename = input('Replace placeholder "'.a:placeholder.'" with: ')
+	cunmap <Tab>
+	if l:rename != ''
+		execute s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g'
+		noh
+	endif
+	let l:i = 0
+	while l:i < l:count * 2
+		call matchdelete(l:matchpositions[l:i])
+		let l:i += 1
+	endwhile
+	redraw
+	call cursor(a:cursor_pos[1], a:cursor_pos[2])
+	if l:reenable_cursorline == 1
+		set cursorline
+	endif
+	call SimpleSnippets#jump()
 endfunction
 
 function! SimpleSnippets#jumpShell(placeholder)
