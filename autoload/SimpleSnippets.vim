@@ -347,11 +347,12 @@ endfunction
 function! SimpleSnippets#initShell(current)
 	let l:placeholder = '\v(\$\{'. a:current . '!)@<=.{-}(\})@='
 	let l:command = matchstr(getline('.'), l:placeholder)
-	let l:result = system(l:command)
-	if match(l:result, '\v(zsh:1|command not found)') >= 0
-		let l:result = execute("echo " . l:command)
-		if match(l:result, '\v(Undefined variable|Invalid expression)') >= 0
-			let l:result = "wrong command"
+	if executable(substitute(l:command, '\v(^\w+).*', '\1', 'g')) == 1
+		let l:result = system(l:command)
+	else
+		let l:result = execute("echo " . l:command, "silent!")
+		if l:result == ''
+			let l:result = l:command
 		endif
 	endif
 	let l:result = substitute(l:result, '\n\+$', '', '')
