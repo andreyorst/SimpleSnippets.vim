@@ -384,8 +384,8 @@ function! SimpleSnippets#initRepeaters(current, content, count)
 		normal! mq
 		call search('\v\$'.a:current, 'ce', s:snip_end)
 		normal! mp
-		exe "normal! `qv`px"
-		normal! "sP
+		exe "normal! `qv`pc"
+		normal! "sp
 		let l:i += 1
 	endwhile
 	let @s = l:save
