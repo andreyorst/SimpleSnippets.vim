@@ -363,8 +363,6 @@ function! SimpleSnippets#initShell(current)
 	endif
 	exe "normal! vf}x"
 	normal! "sP
-	redraw
-	sleep 2
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
 		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
@@ -383,8 +381,6 @@ function! SimpleSnippets#initRepeaters(current, content, count)
 		normal! mp
 		exe "normal! `qv`px"
 		normal! "sP
-	redraw
-	sleep 2
 		let l:i += 1
 	endwhile
 	call cursor(s:snip_start, 1)
