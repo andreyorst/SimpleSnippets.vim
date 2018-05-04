@@ -456,6 +456,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 			let l:length = col('.') - l:start + 1
 			call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
 			call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
+			call cursor(line('.'), col('.') + 1)
 			let l:i += 1
 		endwhile
 		call cursor(s:snip_start, 1)
