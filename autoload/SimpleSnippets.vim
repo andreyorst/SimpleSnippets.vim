@@ -119,6 +119,7 @@ function! SimpleSnippets#expandFlashSnippet(snip)
 	let l:i = 0
 	while l:i < l:len
 		if match(a:snip, s:flash_snippets[l:i][0]) == 0
+			let l:save = @s
 			let @s = s:flash_snippets[l:i][1]
 			let s:snip_line_count = len(substitute(s:flash_snippets[l:i][1], '[^\n]', '', 'g')) + 1
 			break
@@ -126,6 +127,7 @@ function! SimpleSnippets#expandFlashSnippet(snip)
 		let l:i += 1
 	endwhile
 	normal! "sp
+	let @s = l:save
 	if s:snip_line_count != 1
 		let l:indent_lines = s:snip_line_count - 1
 		silent exec 'normal! V' . l:indent_lines . 'j='
@@ -356,6 +358,7 @@ function! SimpleSnippets#initShell(current)
 	let l:result = substitute(l:result, '\s\+$', '', '')
 	let l:result = substitute(l:result, '^\s\+', '', '')
 	let l:result = substitute(l:result, '^\n\+', '', '')
+	let l:save = @s
 	let @s = l:result
 	let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g')) + 1
 	if l:result_line_count > 1
@@ -363,6 +366,7 @@ function! SimpleSnippets#initShell(current)
 	endif
 	exe "normal! vf}x"
 	normal! "sP
+	let @s = l:save
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
 		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
@@ -370,6 +374,7 @@ function! SimpleSnippets#initShell(current)
 endfunction
 
 function! SimpleSnippets#initRepeaters(current, content, count)
+	let l:save = @s
 	let @s = a:content
 	let l:repeater_count = a:count
 	let l:i = 0
@@ -383,6 +388,7 @@ function! SimpleSnippets#initRepeaters(current, content, count)
 		normal! "sP
 		let l:i += 1
 	endwhile
+	let @s = l:save
 	call cursor(s:snip_start, 1)
 endfunction
 
