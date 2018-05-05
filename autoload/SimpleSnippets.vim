@@ -13,8 +13,9 @@ let s:trigger = ''
 let s:jump_stack = []
 let s:type_stack = []
 
+
 "Functions
-function! SimpleSnippets#getTrigger()
+function! SimpleSnippets#obtainTrigger()
 	if s:trigger == ''
 		let l:mode = mode()
 		if l:mode == 'i'
@@ -27,7 +28,7 @@ function! SimpleSnippets#getTrigger()
 endfunction
 
 function! SimpleSnippets#isExpandable()
-	call SimpleSnippets#getTrigger()
+	call SimpleSnippets#obtainTrigger()
 	if SimpleSnippets#getSnipFileType(s:trigger) != -1
 		return 1
 	else
@@ -37,7 +38,7 @@ function! SimpleSnippets#isExpandable()
 endfunction
 
 function! SimpleSnippets#isExpandableOrJumpable()
-	call SimpleSnippets#getTrigger()
+	call SimpleSnippets#obtainTrigger()
 	if SimpleSnippets#isExpandable()
 		return 1
 	elseif SimpleSnippets#isJumpable()
@@ -114,7 +115,11 @@ function! SimpleSnippets#expand()
 endfunction
 
 function! SimpleSnippets#expandFlashSnippet(snip)
-	normal! diw
+	if a:snip =~ "\\W"
+		normal! diW
+	else
+		normal! diw
+	endif
 	let l:len = len(s:flash_snippets)
 	let l:i = 0
 	while l:i < l:len
@@ -137,7 +142,7 @@ function! SimpleSnippets#expandFlashSnippet(snip)
 	silent call SimpleSnippets#parseAndInit()
 endfunction
 
-function! SimpleSnippets#checkSnippetsPlugin()
+function! SimpleSnippets#checkExternalSnippets()
 	if !exists('s:plugin_checked')
 		let s:plugin_checked = 1
 		if exists('g:SimpleSnippets_snippets_plugin_path')
@@ -149,7 +154,7 @@ function! SimpleSnippets#checkSnippetsPlugin()
 endfunction
 
 function! SimpleSnippets#getSnipFileType(snip)
-	call SimpleSnippets#checkSnippetsPlugin()
+	call SimpleSnippets#checkExternalSnippets()
 	let l:filetype = SimpleSnippets#filetypeWrapper()
 	if filereadable(g:SimpleSnippets_search_path . l:filetype . '/' . a:snip)
 		return l:filetype
@@ -279,9 +284,9 @@ function! SimpleSnippets#parseSnippet(amount)
 	let s:snip_start = line(".")
 	let s:snip_end = s:snip_start + s:snip_line_count - 1
 	let l:type = 0
-	while l:i <= a:amount
+	while l:i <= a:amount + 1
 		call cursor(s:snip_start, 1)
-		if l:i == a:amount
+		if l:i == a:amount + 1
 			let l:current = 0
 		endif
 		call search('\v\$\{' . l:current, 'c')
@@ -324,7 +329,7 @@ function! SimpleSnippets#initPlaceholder(current, type)
 	if a:type == 1
 		call SimpleSnippets#initNormal(a:current)
 	elseif a:type == 3
-		call SimpleSnippets#initShell(a:current)
+		call SimpleSnippets#initCommand(a:current)
 	endif
 endfunction
 
@@ -344,7 +349,7 @@ function! SimpleSnippets#initNormal(current)
 	endif
 endfunction
 
-function! SimpleSnippets#initShell(current)
+function! SimpleSnippets#initCommand(current)
 	let l:placeholder = '\v(\$\{'. a:current . '!)@<=.{-}(\})@='
 	let l:command = matchstr(getline('.'), l:placeholder)
 	if executable(substitute(l:command, '\v(^\w+).*', '\1', 'g')) == 1
@@ -499,10 +504,6 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	call SimpleSnippets#jump()
 endfunction
 
-function! SimpleSnippets#jumpShell(placeholder)
-	call SimpleSnippets#jumpNormal(a:placeholder)
-endfunction
-
 function! SimpleSnippets#edit()
 	let l:filetype = SimpleSnippets#filetypeWrapper()
 	let l:path = g:SimpleSnippets_search_path . l:filetype
@@ -533,7 +534,7 @@ endfunction
 
 function! SimpleSnippets#listSnippets()
 	let l:filetype = SimpleSnippets#filetypeWrapper()
-	call SimpleSnippets#checkSnippetsPlugin()
+	call SimpleSnippets#checkExternalSnippets()
 	let l:user_snips = g:SimpleSnippets_search_path
 	call SimpleSnippets#printSnippets("User snippets:", l:user_snips, l:filetype)
 	if s:flash_snippets != []
@@ -599,7 +600,7 @@ function! SimpleSnippets#printSnippets(message, path, filetype)
 endfunction
 
 function! SimpleSnippets#availableSnippets()
-	call SimpleSnippets#checkSnippetsPlugin()
+	call SimpleSnippets#checkExternalSnippets()
 	let l:filetype = SimpleSnippets#filetypeWrapper()
 	let l:snippets = {}
 	let l:user_snips = g:SimpleSnippets_search_path
