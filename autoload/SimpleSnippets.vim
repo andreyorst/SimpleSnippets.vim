@@ -365,8 +365,11 @@ function! SimpleSnippets#initShell(current)
 	if l:result_line_count > 1
 		let s:snip_end += l:result_line_count - 1
 	endif
-	exe "normal! vf}x"
-	normal! "sP
+	normal! mq
+	call search('\v\$\{'.a:current.'!.{-}\}', 'ce', s:snip_end)
+	normal! mp
+	exe "normal! g`qvg`pc"
+	normal! "sp
 	let @s = l:save
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
@@ -385,7 +388,7 @@ function! SimpleSnippets#initRepeaters(current, content, count)
 		normal! mq
 		call search('\v\$'.a:current, 'ce', s:snip_end)
 		normal! mp
-		exe "normal! `qv`pc"
+		exe "keepj normal! g`qvg`pc"
 		normal! "sp
 		let l:i += 1
 	endwhile
@@ -438,7 +441,7 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	normal! mq
 	call search(ph, 'ce', s:snip_end)
 	normal! mp
-	exec "normal! `qv`p\<c-g>"
+	exec "normal! g`qvg`p\<c-g>"
 endfunction
 
 function! SimpleSnippets#jumpMirror(placeholder)
