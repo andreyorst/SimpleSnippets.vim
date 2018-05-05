@@ -119,7 +119,6 @@ SimpleSnippets supports normal: `${1:text}`, command: `${2!command}`, and repeat
 So you can't use `${2:text_a} ${0:text_b} ${1:text_a}` constructions. SimpleSnippets will jump to first match of `text_a` in snippet body. This is major limitation.
 - Command placeholders, that output is more then single line can't be jumped.  
 Command placeholders can be nested in normal placeholders `${2:${1!cmd}`, so you can jump on them, however this won't work for commands that result in multiline output.
-- Every snippet **must** contain zero indexed placeholder, aka `${0:text}`  
 - Jumping is based on searching for a string.  
 As was already said before. So if you replace some part of snippets in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
 - No back jumping.  
