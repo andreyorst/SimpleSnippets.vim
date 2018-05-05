@@ -373,7 +373,7 @@ function! SimpleSnippets#initCommand(current)
 	normal! mq
 	call search('\v\$\{'.a:current.'!.{-}\}', 'ce', s:snip_end)
 	normal! mp
-	exe "normal! g`qvg`pc"
+	exe "normal! g`qvg`pr"
 	normal! "sp
 	let @s = l:save
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
@@ -393,7 +393,7 @@ function! SimpleSnippets#initRepeaters(current, content, count)
 		normal! mq
 		call search('\v\$'.a:current, 'ce', s:snip_end)
 		normal! mp
-		exe "keepj normal! g`qvg`pc"
+		exe "normal! g`qvg`pr"
 		normal! "sp
 		let l:i += 1
 	endwhile
