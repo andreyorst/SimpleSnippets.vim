@@ -9,7 +9,7 @@ let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
 let s:trigger = ''
 
-let s:juipistack = []
+let s:jump_stack = []
 let s:type_stack = []
 
 "Functions
