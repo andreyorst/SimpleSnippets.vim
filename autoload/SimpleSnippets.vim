@@ -1,5 +1,5 @@
 " Globals
-let s:flash_snippets = []
+let s:flash_snippets = {}
 let s:ph_amount = 0
 let s:active = 0
 let s:snip_start = 0
@@ -120,17 +120,9 @@ function! SimpleSnippets#expandFlashSnippet(snip)
 	else
 		normal! diw
 	endif
-	let l:len = len(s:flash_snippets)
-	let l:i = 0
-	while l:i < l:len
-		if match(a:snip, s:flash_snippets[l:i][0]) == 0
-			let l:save = @s
-			let @s = s:flash_snippets[l:i][1]
-			let s:snip_line_count = len(substitute(s:flash_snippets[l:i][1], '[^\n]', '', 'g')) + 1
-			break
-		endif
-		let l:i += 1
-	endwhile
+	let l:save = @s
+	let @s = s:flash_snippets[a:snip]
+	let s:snip_line_count = len(substitute(s:flash_snippets[a:snip], '[^\n]', '', 'g')) + 1
 	normal! "sp
 	let @s = l:save
 	if s:snip_line_count != 1
@@ -207,14 +199,9 @@ function! SimpleSnippets#getSnipPath(snip, filetype)
 endfunction
 
 function! SimpleSnippets#checkFlashSnippets(snip)
-	let l:len = len(s:flash_snippets)
-	let l:i = 0
-	while l:i < l:len
-		if match(s:flash_snippets[l:i][0], a:snip) == 0
-			return 1
-		endif
-		let l:i += 1
-	endwhile
+	if has_key(s:flash_snippets, a:snip)
+		return 1
+	endif
 	return 0
 endfunction
 
@@ -298,19 +285,14 @@ function! SimpleSnippets#parseSnippet(amount)
 endfunction
 
 function! SimpleSnippets#addFlashSnippet(trigger, snippet_defenition)
-	call add(s:flash_snippets, [a:trigger, a:snippet_defenition])
+	let s:flash_snippets[a:trigger] = a:snippet_defenition
 endfunction
 
 function! SimpleSnippets#removeFlashSnippet(trigger)
 	let l:i = 0
-	let l:len = len(s:flash_snippets)
-	while l:i < l:len
-		if match(a:trigger, s:flash_snippets[l:i][0]) == 0
-			call remove(s:flash_snippets, l:i)
-			break
-		endif
-		let l:i += 1
-	endwhile
+	if has_key(s:flash_snippets, a:trigger)
+		unlet[a:trigger]
+	endif
 endfunction
 
 function! SimpleSnippets#getPlaceholderType()
@@ -615,9 +597,9 @@ function! SimpleSnippets#availableSnippets()
 			let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:plug_snips, 'all')
 		endif
 	endif
-	if s:flash_snippets != []
-		for snippet in s:flash_snippets
-			let l:snippets[snippet[0]] = substitute(snippet[1], '\v\$\{[0-9]+(:|!|\|)(.{-})\}', '\2', 'g')
+	if s:flash_snippets != {}
+		for trigger in keys(s:flash_snippets)
+			let l:snippets[trigger] = substitute(s:flash_snippets[trigger], '\v\$\{[0-9]+(:|!|\|)(.{-})\}', '\2', 'g')
 		endfor
 	endif
 	return l:snippets
