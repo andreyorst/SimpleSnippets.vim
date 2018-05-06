@@ -13,7 +13,6 @@ let s:trigger = ''
 let s:jump_stack = []
 let s:type_stack = []
 
-
 "Functions
 function! SimpleSnippets#obtainTrigger()
 	if s:trigger == ''
@@ -147,7 +146,7 @@ endfunction
 
 function! SimpleSnippets#getSnipFileType(snip)
 	call SimpleSnippets#checkExternalSnippets()
-	let l:filetype = SimpleSnippets#filetypeWrapper()
+	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
 	if filereadable(g:SimpleSnippets_search_path . l:filetype . '/' . a:snip)
 		return l:filetype
 	endif
@@ -155,8 +154,9 @@ function! SimpleSnippets#getSnipFileType(snip)
 		return 'flash snippet'
 	endif
 	if s:SimpleSnippets_snippets_plugin_installed == 1
-		if filereadable(g:SimpleSnippets_snippets_plugin_path . l:filetype . '/' . a:snip)
-			return l:filetype
+	let l:plugin_filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_snippets_similar_filetypes)
+		if filereadable(g:SimpleSnippets_snippets_plugin_path . l:plugin_filetype . '/' . a:snip)
+			return l:plugin_filetype
 		endif
 	endif
 	if filereadable(g:SimpleSnippets_search_path . 'all/' . a:snip)
@@ -205,24 +205,25 @@ function! SimpleSnippets#checkFlashSnippets(snip)
 	return 0
 endfunction
 
-function! SimpleSnippets#filetypeWrapper()
+function! SimpleSnippets#filetypeWrapper(similar_filetypes)
 	let l:ft = &ft
 	if l:ft == ''
 		return 'all'
 	endif
-	let l:i = 0
-	let l:len = len(g:SimpleSnippets_similar_filetypes)
-	while l:i < l:len
-		let l:sublen = len(g:SimpleSnippets_similar_filetypes[l:i])
-		let l:j = 0
-		while l:j < l:sublen
-			if l:ft == g:SimpleSnippets_similar_filetypes[l:i][l:j]
-				return g:SimpleSnippets_similar_filetypes[l:i][0]
-			endif
-			let l:j += 1
-		endwhile
-		let l:i +=1
-	endwhile
+	for filetypes in a:similar_filetypes
+		if index(filetypes, l:ft) != -1
+			return filetypes[0]
+		endif
+	endfor
+	"let l:i = 0
+	"let l:len = len(a:similar_filetypes)
+	"while l:i < l:len
+	"	let l:index = index(a:similar_filetypes[l:i], l:ft)
+	"	if l:index != -1
+	"		return a:similar_filetypes[l:i][0]
+	"	endif
+	"	let l:i +=1
+	"endwhile
 	return l:ft
 endfunction
 
@@ -487,7 +488,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 endfunction
 
 function! SimpleSnippets#edit()
-	let l:filetype = SimpleSnippets#filetypeWrapper()
+	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
 	let l:path = g:SimpleSnippets_search_path . l:filetype
 	if !isdirectory(l:path)
 		call mkdir(l:path, "p")
@@ -515,11 +516,11 @@ function! SimpleSnippets#edit()
 endfunction
 
 function! SimpleSnippets#listSnippets()
-	let l:filetype = SimpleSnippets#filetypeWrapper()
+	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
 	call SimpleSnippets#checkExternalSnippets()
 	let l:user_snips = g:SimpleSnippets_search_path
 	call SimpleSnippets#printSnippets("User snippets:", l:user_snips, l:filetype)
-	if s:flash_snippets != []
+	if s:flash_snippets != {}
 		let l:string = ''
 		echo 'Flash snippets:'
 		for snippet in s:flash_snippets
@@ -530,7 +531,8 @@ function! SimpleSnippets#listSnippets()
 	endif
 	if s:SimpleSnippets_snippets_plugin_installed == 1
 		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
-		call SimpleSnippets#printSnippets("Plugin snippets:", l:plug_snips, l:filetype)
+		let l:plugin_filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_snippets_similar_filetypes)
+		call SimpleSnippets#printSnippets("Plugin snippets:", l:plug_snips, l:plugin_filetype)
 	endif
 	if l:filetype != 'all'
 		call SimpleSnippets#printSnippets('User \"all\" snippets:', l:user_snips, 'all')
@@ -583,13 +585,14 @@ endfunction
 
 function! SimpleSnippets#availableSnippets()
 	call SimpleSnippets#checkExternalSnippets()
-	let l:filetype = SimpleSnippets#filetypeWrapper()
+	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
 	let l:snippets = {}
 	let l:user_snips = g:SimpleSnippets_search_path
 	let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:user_snips, l:filetype)
 	if s:SimpleSnippets_snippets_plugin_installed == 1
+		let l:plugin_filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_snippets_similar_filetypes)
 		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
-		let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:plug_snips, l:filetype)
+		let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:plug_snips, l:plugin_filetype)
 	endif
 	if l:filetype != 'all'
 		let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:user_snips, 'all')
