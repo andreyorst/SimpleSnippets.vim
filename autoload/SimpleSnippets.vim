@@ -1,6 +1,5 @@
 " Globals
 let s:flash_snippets = {}
-let s:ph_amount = 0
 let s:active = 0
 let s:snip_start = 0
 let s:snip_end = 0
@@ -49,15 +48,12 @@ function! SimpleSnippets#isExpandableOrJumpable()
 endfunction
 
 function! SimpleSnippets#isInside()
-	if SimpleSnippets#isActive()
-		if s:current_file == @%
-			if line(".") >= s:snip_start && line(".") <= s:snip_end
-				return 1
-			else
-				return 0
-			endif
+	if s:current_file == @%
+		let l:current_line = line(".")
+		if l:current_line >= s:snip_start && l:current_line <= s:snip_end
+			return 1
 		else
-			let s:active = 0
+			return 0
 		endif
 	endif
 	let s:active = 0
@@ -94,18 +90,23 @@ function! SimpleSnippets#expand()
 	let l:snip = s:trigger
 	let s:trigger = ''
 	let l:filetype = SimpleSnippets#getSnipFileType(l:snip)
-	if l:filetype == 'flash snippet'
+	if l:filetype == 'flash'
 		call SimpleSnippets#expandFlashSnippet(l:snip)
 	else
 		let a:path = SimpleSnippets#getSnipPath(l:snip, l:filetype)
+		let l:snippet = readfile(a:path)
+		let s:snip_line_count = len(l:snippet)
 		if s:snip_line_count != 0
+			let l:snippet = join(l:snippet, "\n")
+			let l:save = @s
+			let @s = l:snippet
 			if l:snip =~ "\\W"
-				normal! diW
+				normal! ciW
 			else
-				normal! diw
+				normal! ciw
 			endif
-			silent exec ':read' . a:path
-			silent exec "normal! i\<Bs>"
+			normal! "sp
+			let @s = l:save
 			silent call SimpleSnippets#parseAndInit()
 		else
 			echo '[ERROR] Snippet body is empty'
@@ -115,9 +116,9 @@ endfunction
 
 function! SimpleSnippets#expandFlashSnippet(snip)
 	if a:snip =~ "\\W"
-		normal! diW
+		normal! ciW
 	else
-		normal! diw
+		normal! ciw
 	endif
 	let l:save = @s
 	let @s = s:flash_snippets[a:snip]
@@ -151,10 +152,10 @@ function! SimpleSnippets#getSnipFileType(snip)
 		return l:filetype
 	endif
 	if SimpleSnippets#checkFlashSnippets(a:snip)
-		return 'flash snippet'
+		return 'flash'
 	endif
 	if s:SimpleSnippets_snippets_plugin_installed == 1
-	let l:plugin_filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_snippets_similar_filetypes)
+		let l:plugin_filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_snippets_similar_filetypes)
 		if filereadable(g:SimpleSnippets_snippets_plugin_path . l:plugin_filetype . '/' . a:snip)
 			return l:plugin_filetype
 		endif
@@ -172,29 +173,21 @@ endfunction
 
 function! SimpleSnippets#getSnipPath(snip, filetype)
 	if filereadable(g:SimpleSnippets_search_path . a:filetype . '/' . a:snip)
-		let s:snip_line_count = 0
-		for i in readfile(g:SimpleSnippets_search_path . a:filetype . '/' . a:snip)
-			let s:snip_line_count +=1
-		endfor
-		if a:snip =~ "\\W"
-			let l:snip = escape(a:snip, '/\*#|{}()"'."'")
-		else
-			let l:snip = a:snip
-		endif
+		let l:snip = SimpleSnippets#triggerEscape(a:snip)
 		return g:SimpleSnippets_search_path . a:filetype . '/' . l:snip
 	elseif s:SimpleSnippets_snippets_plugin_installed == 1
 		if filereadable(g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip)
-			let s:snip_line_count = 0
-			for i in readfile(g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip)
-				let s:snip_line_count +=1
-			endfor
-			if a:snip =~ "\\W"
-				let l:snip = escape(a:snip, '/\*#|{}()"'."'")
-			else
-				let l:snip = a:snip
-			endif
+			let l:snip = SimpleSnippets#triggerEscape(a:snip)
 			return g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . l:snip
 		endif
+	endif
+endfunction
+
+function! SimpleSnippets#triggerEscape(trigger)
+	if a:trigger =~ "\\W"
+		return = escape(a:trigger, '/\*#|{}()"'."'")
+	else
+		return a:trigger
 	endif
 endfunction
 
@@ -210,32 +203,24 @@ function! SimpleSnippets#filetypeWrapper(similar_filetypes)
 	if l:ft == ''
 		return 'all'
 	endif
-	for filetypes in a:similar_filetypes
-		if index(filetypes, l:ft) != -1
-			return filetypes[0]
+	for l:filetypes in a:similar_filetypes
+		if index(l:filetypes, l:ft) != -1
+			return l:filetypes[0]
 		endif
 	endfor
-	"let l:i = 0
-	"let l:len = len(a:similar_filetypes)
-	"while l:i < l:len
-	"	let l:index = index(a:similar_filetypes[l:i], l:ft)
-	"	if l:index != -1
-	"		return a:similar_filetypes[l:i][0]
-	"	endif
-	"	let l:i +=1
-	"endwhile
 	return l:ft
 endfunction
 
 function! SimpleSnippets#parseAndInit()
-	let a:cursor_pos = getpos(".")
 	let s:jump_stack = []
 	let s:type_stack = []
 	let s:active = 1
 	let s:current_file = @%
-	let s:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!|\|)')
-	if s:ph_amount != 0
-		call SimpleSnippets#parseSnippet(s:ph_amount)
+
+	let a:cursor_pos = getpos(".")
+	let l:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!|\|)')
+	if l:ph_amount != 0
+		call SimpleSnippets#parseSnippet(l:ph_amount)
 		if s:snip_line_count != 1
 			let l:indent_lines = s:snip_line_count - 1
 			call cursor(s:snip_start, 1)
@@ -267,14 +252,15 @@ function! SimpleSnippets#countPlaceholders(pattern)
 endfunction
 
 function! SimpleSnippets#parseSnippet(amount)
+	let l:type = 0
 	let l:i = 1
+	let l:max = a:amount + 1
 	let l:current = l:i
 	let s:snip_start = line(".")
 	let s:snip_end = s:snip_start + s:snip_line_count - 1
-	let l:type = 0
-	while l:i <= a:amount + 1
+	while l:i <= l:max
 		call cursor(s:snip_start, 1)
-		if l:i == a:amount + 1
+		if l:i == l:max
 			let l:current = 0
 		endif
 		call search('\v\$\{' . l:current, 'c')
@@ -292,7 +278,7 @@ endfunction
 function! SimpleSnippets#removeFlashSnippet(trigger)
 	let l:i = 0
 	if has_key(s:flash_snippets, a:trigger)
-		unlet[a:trigger]
+		unlet![a:trigger]
 	endif
 endfunction
 
@@ -315,8 +301,6 @@ function! SimpleSnippets#initPlaceholder(current, type)
 		call SimpleSnippets#initCommand(a:current)
 	endif
 endfunction
-
-
 
 function! SimpleSnippets#initNormal(current)
 	let l:placeholder = '\v(\$\{'. a:current . ':)@<=.{-}(\})@='
@@ -343,10 +327,7 @@ function! SimpleSnippets#initCommand(current)
 			let l:result = l:command
 		endif
 	endif
-	let l:result = substitute(l:result, '\n\+$', '', '')
-	let l:result = substitute(l:result, '\s\+$', '', '')
-	let l:result = substitute(l:result, '^\s\+', '', '')
-	let l:result = substitute(l:result, '^\n\+', '', '')
+	let l:result = SimpleSnippets#removeTrailings(l:result)
 	let l:save = @s
 	let @s = l:result
 	let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g')) + 1
@@ -363,6 +344,14 @@ function! SimpleSnippets#initCommand(current)
 	if l:repeater_count != 0
 		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
 	endif
+endfunction
+
+function! SimpleSnippets#removeTrailings(text)
+	let l:result = substitute(a:text, '\n\+$', '', '')
+	let l:result = substitute(l:result, '\s\+$', '', '')
+	let l:result = substitute(l:result, '^\s\+', '', '')
+	let l:result = substitute(l:result, '^\n\+', '', '')
+	return l:result
 endfunction
 
 function! SimpleSnippets#initRepeaters(current, content, count)
@@ -503,12 +492,10 @@ function! SimpleSnippets#edit()
 			try
 				exec "buffer " . s:snip_edit_buf
 			catch
-				if l:trigger =~ "\\W"
-					let l:trigger = escape(l:trigger, '/\*#|{}()"'."'")
-				endif
+				let l:trigger = SimpleSnippets#triggerEscape(l:trigger)
 				execute "edit " . l:path . '/' . l:trigger
 				execute "setf " . l:filetype
-				let g:term_buf = bufnr("")
+				let s:snip_edit_buf = bufnr("")
 			endtry
 			let s:snip_edit_win = win_getid()
 		endif
@@ -545,7 +532,7 @@ endfunction
 function! SimpleSnippets#printSnippets(message, path, filetype)
 	let l:snippets = {}
 	let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, a:path, a:filetype)
-	if l:snippets != {}
+	if !empty(l:snippets)
 		let l:max = 0
 		for key in keys(l:snippets)
 			let l:len = len(key) + 2
@@ -632,11 +619,11 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 		endfor
 	endif
 	if has_key(a:dict, a:filetype.'.snippets.descriptions.txt')
-		unlet a:dict[a:filetype.'.snippets.descriptions.txt']
+		unlet! a:dict[a:filetype.'.snippets.descriptions.txt']
 	endif
 	if a:filetype != 'all'
 		if has_key(a:dict, 'all.snippets.descriptions.txt')
-			unlet a:dict['all.snippets.descriptions.txt']
+			unlet! a:dict['all.snippets.descriptions.txt']
 		endif
 	endif
 	return a:dict
