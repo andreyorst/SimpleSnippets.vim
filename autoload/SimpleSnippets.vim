@@ -212,8 +212,8 @@ function! SimpleSnippets#filetypeWrapper(similar_filetypes)
 endfunction
 
 function! SimpleSnippets#parseAndInit()
-	unlet s:jump_stack
-	unlet s:type_stack
+	let s:jump_stack = []
+	let s:type_stack = []
 	let s:active = 1
 	let s:current_file = @%
 
@@ -278,7 +278,7 @@ endfunction
 function! SimpleSnippets#removeFlashSnippet(trigger)
 	let l:i = 0
 	if has_key(s:flash_snippets, a:trigger)
-		unlet[a:trigger]
+		unlet![a:trigger]
 	endif
 endfunction
 
@@ -400,8 +400,8 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 		elseif match(l:current_type, '2') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
-		unlet s:jump_stack
-		unlet s:type_stack
+		let s:jump_stack = []
+		let s:type_stack = []
 		let s:active = 0
 	else
 		echo "[WARN]: Can't jump outside of snippet's body"
@@ -433,7 +433,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
 	let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
 	let l:i = 0
-	unlet l:matchpositions
+	let l:matchpositions = []
 	call cursor(s:snip_start, 1)
 	while l:i < l:count
 		call search(l:ph, 'c', s:snip_end)
@@ -530,7 +530,7 @@ function! SimpleSnippets#listSnippets()
 endfunction
 
 function! SimpleSnippets#printSnippets(message, path, filetype)
-	unlet l:snippets
+	let l:snippets = {}
 	let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, a:path, a:filetype)
 	if !empty(l:snippets)
 		let l:max = 0
@@ -573,7 +573,7 @@ endfunction
 function! SimpleSnippets#availableSnippets()
 	call SimpleSnippets#checkExternalSnippets()
 	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
-	unlet l:snippets
+	let l:snippets = {}
 	let l:user_snips = g:SimpleSnippets_search_path
 	let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:user_snips, l:filetype)
 	if s:SimpleSnippets_snippets_plugin_installed == 1
@@ -619,11 +619,11 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 		endfor
 	endif
 	if has_key(a:dict, a:filetype.'.snippets.descriptions.txt')
-		unlet a:dict[a:filetype.'.snippets.descriptions.txt']
+		unlet! a:dict[a:filetype.'.snippets.descriptions.txt']
 	endif
 	if a:filetype != 'all'
 		if has_key(a:dict, 'all.snippets.descriptions.txt')
-			unlet a:dict['all.snippets.descriptions.txt']
+			unlet! a:dict['all.snippets.descriptions.txt']
 		endif
 	endif
 	return a:dict
