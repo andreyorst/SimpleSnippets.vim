@@ -98,14 +98,19 @@ function! SimpleSnippets#expand()
 		call SimpleSnippets#expandFlashSnippet(l:snip)
 	else
 		let a:path = SimpleSnippets#getSnipPath(l:snip, l:filetype)
+		let l:snippet = readfile(a:path)
+		let s:snip_line_count = len(l:snippet)
 		if s:snip_line_count != 0
+			let l:snippet = join(l:snippet, "\n")
+			let l:save = @s
+			let @s = l:snippet
 			if l:snip =~ "\\W"
 				normal! diW
 			else
 				normal! diw
 			endif
-			silent exec ':read' . a:path
-			silent exec "normal! i\<Bs>"
+			normal! "sP
+			let @s = l:save
 			silent call SimpleSnippets#parseAndInit()
 		else
 			echo '[ERROR] Snippet body is empty'
@@ -172,10 +177,6 @@ endfunction
 
 function! SimpleSnippets#getSnipPath(snip, filetype)
 	if filereadable(g:SimpleSnippets_search_path . a:filetype . '/' . a:snip)
-		let s:snip_line_count = 0
-		for i in readfile(g:SimpleSnippets_search_path . a:filetype . '/' . a:snip)
-			let s:snip_line_count +=1
-		endfor
 		if a:snip =~ "\\W"
 			let l:snip = escape(a:snip, '/\*#|{}()"'."'")
 		else
@@ -184,10 +185,6 @@ function! SimpleSnippets#getSnipPath(snip, filetype)
 		return g:SimpleSnippets_search_path . a:filetype . '/' . l:snip
 	elseif s:SimpleSnippets_snippets_plugin_installed == 1
 		if filereadable(g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip)
-			let s:snip_line_count = 0
-			for i in readfile(g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip)
-				let s:snip_line_count +=1
-			endfor
 			if a:snip =~ "\\W"
 				let l:snip = escape(a:snip, '/\*#|{}()"'."'")
 			else
