@@ -10,7 +10,7 @@ let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
 let s:trigger = ''
 
-let s:jump_stack = []
+let s:juipistack = []
 let s:type_stack = []
 
 "Functions
@@ -49,15 +49,12 @@ function! SimpleSnippets#isExpandableOrJumpable()
 endfunction
 
 function! SimpleSnippets#isInside()
-	if SimpleSnippets#isActive()
-		if s:current_file == @%
-			if line(".") >= s:snip_start && line(".") <= s:snip_end
-				return 1
-			else
-				return 0
-			endif
+	if s:current_file == @%
+		let l:current_line = line(".")
+		if l:current_line >= s:snip_start && l:current_line <= s:snip_end
+			return 1
 		else
-			let s:active = 0
+			return 0
 		endif
 	endif
 	let s:active = 0
@@ -94,7 +91,7 @@ function! SimpleSnippets#expand()
 	let l:snip = s:trigger
 	let s:trigger = ''
 	let l:filetype = SimpleSnippets#getSnipFileType(l:snip)
-	if l:filetype == 'flash snippet'
+	if l:filetype == 'flash'
 		call SimpleSnippets#expandFlashSnippet(l:snip)
 	else
 		let a:path = SimpleSnippets#getSnipPath(l:snip, l:filetype)
@@ -105,11 +102,11 @@ function! SimpleSnippets#expand()
 			let l:save = @s
 			let @s = l:snippet
 			if l:snip =~ "\\W"
-				normal! diW
+				normal! ciW
 			else
-				normal! diw
+				normal! ciw
 			endif
-			normal! "sP
+			normal! "sp
 			let @s = l:save
 			silent call SimpleSnippets#parseAndInit()
 		else
@@ -120,9 +117,9 @@ endfunction
 
 function! SimpleSnippets#expandFlashSnippet(snip)
 	if a:snip =~ "\\W"
-		normal! diW
+		normal! ciW
 	else
-		normal! diw
+		normal! ciw
 	endif
 	let l:save = @s
 	let @s = s:flash_snippets[a:snip]
@@ -156,10 +153,10 @@ function! SimpleSnippets#getSnipFileType(snip)
 		return l:filetype
 	endif
 	if SimpleSnippets#checkFlashSnippets(a:snip)
-		return 'flash snippet'
+		return 'flash'
 	endif
 	if s:SimpleSnippets_snippets_plugin_installed == 1
-	let l:plugin_filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_snippets_similar_filetypes)
+		let l:plugin_filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_snippets_similar_filetypes)
 		if filereadable(g:SimpleSnippets_snippets_plugin_path . l:plugin_filetype . '/' . a:snip)
 			return l:plugin_filetype
 		endif
@@ -177,21 +174,21 @@ endfunction
 
 function! SimpleSnippets#getSnipPath(snip, filetype)
 	if filereadable(g:SimpleSnippets_search_path . a:filetype . '/' . a:snip)
-		if a:snip =~ "\\W"
-			let l:snip = escape(a:snip, '/\*#|{}()"'."'")
-		else
-			let l:snip = a:snip
-		endif
+		let l:snip = SimpleSnippets#triggerEscape(a:snip)
 		return g:SimpleSnippets_search_path . a:filetype . '/' . l:snip
 	elseif s:SimpleSnippets_snippets_plugin_installed == 1
 		if filereadable(g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip)
-			if a:snip =~ "\\W"
-				let l:snip = escape(a:snip, '/\*#|{}()"'."'")
-			else
-				let l:snip = a:snip
-			endif
+			let l:snip = SimpleSnippets#triggerEscape(a:snip)
 			return g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . l:snip
 		endif
+	endif
+endfunction
+
+function! SimpleSnippets#triggerEscape(trigger)
+	if a:trigger =~ "\\W"
+		return = escape(a:trigger, '/\*#|{}()"'."'")
+	else
+		return a:trigger
 	endif
 endfunction
 
@@ -212,15 +209,6 @@ function! SimpleSnippets#filetypeWrapper(similar_filetypes)
 			return filetypes[0]
 		endif
 	endfor
-	"let l:i = 0
-	"let l:len = len(a:similar_filetypes)
-	"while l:i < l:len
-	"	let l:index = index(a:similar_filetypes[l:i], l:ft)
-	"	if l:index != -1
-	"		return a:similar_filetypes[l:i][0]
-	"	endif
-	"	let l:i +=1
-	"endwhile
 	return l:ft
 endfunction
 
@@ -312,8 +300,6 @@ function! SimpleSnippets#initPlaceholder(current, type)
 		call SimpleSnippets#initCommand(a:current)
 	endif
 endfunction
-
-
 
 function! SimpleSnippets#initNormal(current)
 	let l:placeholder = '\v(\$\{'. a:current . ':)@<=.{-}(\})@='
@@ -500,9 +486,7 @@ function! SimpleSnippets#edit()
 			try
 				exec "buffer " . s:snip_edit_buf
 			catch
-				if l:trigger =~ "\\W"
-					let l:trigger = escape(l:trigger, '/\*#|{}()"'."'")
-				endif
+				let l:trigger = SimpleSnippets#triggerEscape(l:trigger)
 				execute "edit " . l:path . '/' . l:trigger
 				execute "setf " . l:filetype
 				let g:term_buf = bufnr("")
