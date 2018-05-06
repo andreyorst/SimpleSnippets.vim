@@ -126,6 +126,8 @@ Because of previous point. Actually I don't know how to get last user input to s
 - Single snippet editing at time.
 If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet. (I'm working on jump stack implementation wich may make availible multiple snippet editing, however I'm not sure about it, because of substitution range limitation).
 - Only command placeholder can be nested.  
+- Trigger must be separated from everything  
+I couldn't come up with a way of getting user input trigger better way, so it would be possible to use both `#if` and `if` triggers, therefore `(if`<kbd>Tab</kbd>`)` will be considered as `(if` trigger. I'm trying to do something with this rightnow.
 - There may be more, which I've not thought about.
 
 After reading this list you may want to ask me this question:
