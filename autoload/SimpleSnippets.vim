@@ -1,6 +1,5 @@
 " Globals
 let s:flash_snippets = {}
-let s:ph_amount = 0
 let s:active = 0
 let s:snip_start = 0
 let s:snip_end = 0
@@ -204,23 +203,24 @@ function! SimpleSnippets#filetypeWrapper(similar_filetypes)
 	if l:ft == ''
 		return 'all'
 	endif
-	for filetypes in a:similar_filetypes
-		if index(filetypes, l:ft) != -1
-			return filetypes[0]
+	for l:filetypes in a:similar_filetypes
+		if index(l:filetypes, l:ft) != -1
+			return l:filetypes[0]
 		endif
 	endfor
 	return l:ft
 endfunction
 
 function! SimpleSnippets#parseAndInit()
-	let a:cursor_pos = getpos(".")
-	let s:jump_stack = []
-	let s:type_stack = []
+	unlet s:jump_stack
+	unlet s:type_stack
 	let s:active = 1
 	let s:current_file = @%
-	let s:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!|\|)')
-	if s:ph_amount != 0
-		call SimpleSnippets#parseSnippet(s:ph_amount)
+
+	let a:cursor_pos = getpos(".")
+	let l:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!|\|)')
+	if l:ph_amount != 0
+		call SimpleSnippets#parseSnippet(l:ph_amount)
 		if s:snip_line_count != 1
 			let l:indent_lines = s:snip_line_count - 1
 			call cursor(s:snip_start, 1)
@@ -252,14 +252,15 @@ function! SimpleSnippets#countPlaceholders(pattern)
 endfunction
 
 function! SimpleSnippets#parseSnippet(amount)
+	let l:type = 0
 	let l:i = 1
+	let l:max = a:amount + 1
 	let l:current = l:i
 	let s:snip_start = line(".")
 	let s:snip_end = s:snip_start + s:snip_line_count - 1
-	let l:type = 0
-	while l:i <= a:amount + 1
+	while l:i <= l:max
 		call cursor(s:snip_start, 1)
-		if l:i == a:amount + 1
+		if l:i == l:max
 			let l:current = 0
 		endif
 		call search('\v\$\{' . l:current, 'c')
@@ -326,10 +327,7 @@ function! SimpleSnippets#initCommand(current)
 			let l:result = l:command
 		endif
 	endif
-	let l:result = substitute(l:result, '\n\+$', '', '')
-	let l:result = substitute(l:result, '\s\+$', '', '')
-	let l:result = substitute(l:result, '^\s\+', '', '')
-	let l:result = substitute(l:result, '^\n\+', '', '')
+	let l:result = SimpleSnippets#removeTrailings(l:result)
 	let l:save = @s
 	let @s = l:result
 	let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g')) + 1
@@ -346,6 +344,14 @@ function! SimpleSnippets#initCommand(current)
 	if l:repeater_count != 0
 		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
 	endif
+endfunction
+
+function! SimpleSnippets#removeTrailings(text)
+	let l:result = substitute(a:text, '\n\+$', '', '')
+	let l:result = substitute(l:result, '\s\+$', '', '')
+	let l:result = substitute(l:result, '^\s\+', '', '')
+	let l:result = substitute(l:result, '^\n\+', '', '')
+	return l:result
 endfunction
 
 function! SimpleSnippets#initRepeaters(current, content, count)
@@ -394,8 +400,8 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 		elseif match(l:current_type, '2') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
-		let s:jump_stack = []
-		let s:type_stack = []
+		unlet s:jump_stack
+		unlet s:type_stack
 		let s:active = 0
 	else
 		echo "[WARN]: Can't jump outside of snippet's body"
@@ -427,7 +433,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
 	let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
 	let l:i = 0
-	let l:matchpositions = []
+	unlet l:matchpositions
 	call cursor(s:snip_start, 1)
 	while l:i < l:count
 		call search(l:ph, 'c', s:snip_end)
@@ -489,7 +495,7 @@ function! SimpleSnippets#edit()
 				let l:trigger = SimpleSnippets#triggerEscape(l:trigger)
 				execute "edit " . l:path . '/' . l:trigger
 				execute "setf " . l:filetype
-				let g:term_buf = bufnr("")
+				let s:snip_edit_buf = bufnr("")
 			endtry
 			let s:snip_edit_win = win_getid()
 		endif
@@ -524,9 +530,9 @@ function! SimpleSnippets#listSnippets()
 endfunction
 
 function! SimpleSnippets#printSnippets(message, path, filetype)
-	let l:snippets = {}
+	unlet l:snippets
 	let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, a:path, a:filetype)
-	if l:snippets != {}
+	if !empty(l:snippets)
 		let l:max = 0
 		for key in keys(l:snippets)
 			let l:len = len(key) + 2
@@ -567,7 +573,7 @@ endfunction
 function! SimpleSnippets#availableSnippets()
 	call SimpleSnippets#checkExternalSnippets()
 	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
-	let l:snippets = {}
+	unlet l:snippets
 	let l:user_snips = g:SimpleSnippets_search_path
 	let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:user_snips, l:filetype)
 	if s:SimpleSnippets_snippets_plugin_installed == 1
