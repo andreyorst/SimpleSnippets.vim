@@ -1,5 +1,5 @@
 ---
-name: ".github/FEATURE_REQUEST.md"
+name: "Feature request.md"
 about: Suggest an idea for this project
 
 ---
