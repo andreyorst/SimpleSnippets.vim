@@ -111,24 +111,28 @@ languages.
 #### List Of Limitations
 Here I'll try to list all limitations that you may encounter when using Simple Snippets:
 
-- No tabstops.  
+- [ ] No tabstops.  
 Why? Because jumping is based on text searching. Because placeholders are deleted from snippet body when it is pasted to your file there is no way to find empty ones, because text behind them for example may change. If neovim will add ability to use multicursor and position it in text like in other modern editors this may be implemented. Because of this limitation mirroring is done differently too.
-- Placeholders have slightly different syntax than other plugins use.  
+- [ ] Placeholders have slightly different syntax than other plugins use.  
 SimpleSnippets supports normal: `${1:text}`, command: `${2!command}`, and repeater `$3` placeholders.
-- Normal placeholders should contain per snippet unique bodies.  
+- [ ] Normal placeholders should contain per snippet unique bodies.  
 So you can't use `${2:text_a} ${0:text_b} ${1:text_a}` constructions. SimpleSnippets will jump to first match of `text_a` in snippet body. This is major limitation.
-- Command placeholders, that output is more then single line can't be jumped.  
+- [ ] Command placeholders, that output is more then single line can't be jumped.  
 Command placeholders can be nested in normal placeholders `${2:${1!cmd}`, so you can jump on them, however this won't work for commands that result in multiline output.
-- Jumping is based on searching for a string.  
+- [ ] Jumping is based on searching for a string.  
 As was already said before. So if you replace some part of snippets in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
-- No back jumping.  
+- [ ] No back jumping.  
 Because of previous point. Actually I don't know how to get last user input to store it in vimscript to search for it inside snippet body.
-- Single snippet editing at time.
+- [ ] Single snippet editing at time.
 If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet. (I'm working on jump stack implementation wich may make availible multiple snippet editing, however I'm not sure about it, because of substitution range limitation).
-- Only command placeholder can be nested.  
-- Trigger must be separated from everything  
+- [ ] Only command placeholder can be nested.  
+- [ ] Trigger must be separated from everything  
 I couldn't come up with a way of getting user input trigger better way, so it would be possible to use both `#if` and `if` triggers, therefore `(if`<kbd>Tab</kbd>`)` will be considered as `(if` trigger. I'm trying to do something with this rightnow.
 - There may be more, which I've not thought about.
+
+**Withdrawn limitations:**
+- [x] Every snippet **must** contain zero indexed placeholder, aka `${0:text}`
+- [x] No nested placeholders.
 
 After reading this list you may want to ask me this question:
 
