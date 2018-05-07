@@ -93,8 +93,8 @@ function! SimpleSnippets#expand()
 	if l:filetype == 'flash'
 		call SimpleSnippets#expandFlashSnippet(l:snip)
 	else
-		let a:path = SimpleSnippets#getSnipPath(l:snip, l:filetype)
-		let l:snippet = readfile(a:path)
+		let l:path = SimpleSnippets#getSnipPath(l:snip, l:filetype)
+		let l:snippet = readfile(l:path)
 		let s:snip_line_count = len(l:snippet)
 		if s:snip_line_count != 0
 			let l:snippet = join(l:snippet, "\n")
@@ -177,19 +177,17 @@ endfunction
 
 function! SimpleSnippets#getSnipPath(snip, filetype)
 	if filereadable(g:SimpleSnippets_search_path . a:filetype . '/' . a:snip)
-		let l:snip = SimpleSnippets#triggerEscape(a:snip)
-		return g:SimpleSnippets_search_path . a:filetype . '/' . l:snip
+		return g:SimpleSnippets_search_path . a:filetype . '/' . a:snip
 	elseif s:SimpleSnippets_snippets_plugin_installed == 1
 		if filereadable(g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip)
-			let l:snip = SimpleSnippets#triggerEscape(a:snip)
-			return g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . l:snip
+			return g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip
 		endif
 	endif
 endfunction
 
 function! SimpleSnippets#triggerEscape(trigger)
 	if a:trigger =~ "\\W"
-		return = escape(a:trigger, '/\*#|{}()"'."'")
+		return escape(a:trigger, '/\*#|{}()"'."'")
 	else
 		return a:trigger
 	endif
