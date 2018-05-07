@@ -98,15 +98,17 @@ function! SimpleSnippets#expand()
 		let s:snip_line_count = len(l:snippet)
 		if s:snip_line_count != 0
 			let l:snippet = join(l:snippet, "\n")
-			let l:save = @s
+			let l:save_s = @s
 			let @s = l:snippet
+			let l:save_quote = @"
 			if l:snip =~ "\\W"
 				normal! ciW
 			else
 				normal! ciw
 			endif
 			normal! "sp
-			let @s = l:save
+			let @" = l:save_quote
+			let @s = l:save_s
 			silent call SimpleSnippets#parseAndInit()
 		else
 			echo '[ERROR] Snippet body is empty'
@@ -115,16 +117,18 @@ function! SimpleSnippets#expand()
 endfunction
 
 function! SimpleSnippets#expandFlashSnippet(snip)
+	let l:save_quote = @"
 	if a:snip =~ "\\W"
 		normal! ciW
 	else
 		normal! ciw
 	endif
-	let l:save = @s
+	let l:save_quote = @"
+	let l:save_s = @s
 	let @s = s:flash_snippets[a:snip]
 	let s:snip_line_count = len(substitute(s:flash_snippets[a:snip], '[^\n]', '', 'g')) + 1
 	normal! "sp
-	let @s = l:save
+	let @s = l:save_s
 	if s:snip_line_count != 1
 		let l:indent_lines = s:snip_line_count - 1
 		silent exec 'normal! V' . l:indent_lines . 'j='
@@ -306,7 +310,9 @@ function! SimpleSnippets#initNormal(current)
 	let l:placeholder = '\v(\$\{'. a:current . ':)@<=.{-}(\})@='
 	let l:result = matchstr(getline('.'), l:placeholder)
 	call add(s:jump_stack, l:result)
+	let l:save_quote = @"
 	exe "normal! df:f}i\<Del>\<Esc>"
+	let @" = l:save_quote
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
 		call add(s:type_stack, 2)
@@ -317,6 +323,7 @@ function! SimpleSnippets#initNormal(current)
 endfunction
 
 function! SimpleSnippets#initCommand(current)
+	let l:save_quote = @"
 	let l:placeholder = '\v(\$\{'. a:current . '!)@<=.{-}(\})@='
 	let l:command = matchstr(getline('.'), l:placeholder)
 	if executable(substitute(l:command, '\v(^\w+).*', '\1', 'g')) == 1
@@ -328,7 +335,7 @@ function! SimpleSnippets#initCommand(current)
 		endif
 	endif
 	let l:result = SimpleSnippets#removeTrailings(l:result)
-	let l:save = @s
+	let l:save_s = @s
 	let @s = l:result
 	let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g')) + 1
 	if l:result_line_count > 1
@@ -339,7 +346,8 @@ function! SimpleSnippets#initCommand(current)
 	normal! mp
 	exe "normal! g`qvg`pr"
 	normal! "sp
-	let @s = l:save
+	let @s = l:save_s
+	let @" = l:save_quote
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
 		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
@@ -355,7 +363,8 @@ function! SimpleSnippets#removeTrailings(text)
 endfunction
 
 function! SimpleSnippets#initRepeaters(current, content, count)
-	let l:save = @s
+	let l:save_s = @s
+	let l:save_quote = @"
 	let @s = a:content
 	let l:repeater_count = a:count
 	let l:i = 0
@@ -369,7 +378,8 @@ function! SimpleSnippets#initRepeaters(current, content, count)
 		normal! "sp
 		let l:i += 1
 	endwhile
-	let @s = l:save
+	let @s = l:save_s
+	let @" = l:save_quote
 	call cursor(s:snip_start, 1)
 endfunction
 
