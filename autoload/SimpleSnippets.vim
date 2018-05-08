@@ -265,7 +265,7 @@ function! SimpleSnippets#parseSnippet(amount)
 		if l:i == l:max
 			let l:current = 0
 		endif
-		if search('\v\$\{' . l:current, 'c') == 1
+		if search('\v\$\{' . l:current, 'c') != 0
 			let l:type = SimpleSnippets#getPlaceholderType()
 			call SimpleSnippets#initPlaceholder(l:current, l:type)
 		endif
