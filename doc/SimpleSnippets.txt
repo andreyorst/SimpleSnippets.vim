@@ -1,50 +1,50 @@
 *SimpleSnippets.txt*    For Vim 8.0 and NeoVim 0.3.0 or later.
+*snippet* *snippets* *SimpleSnippets*
 
+==============================================================================
                _               _~
               /_`._ _  _  /_  /_`_  ._  _  _ _/_ _   ._ _~
              ._/// / //_///_'._// ///_//_//_'/ _\.|/// / /~
                      /             /  /~
 
+==============================================================================
+CONTENTS                                               *SimpleSnippets-contents*
 
-Simple Snippets Plugin for Vim and NeoVim~
-
-SimpleSnippets                                 *snippet* *snippets* *SimpleSnippets*
-
-1. Description ................................... |SimpleSnippets-description|
-   1.1 Requirements .............................. |SimpleSnippets-requirements|
-   1.2 Limitations ............................... |SimpleSnippets-limitations|
-   1.3 Acknowledgments ........................... |SimpleSnippets-acknowledgments|
-2. Installation and Updating ..................... |SimpleSnippets-installnupdate|
-   2.1 External snippet plugin ................... |SimpleSnippets-external-snippet-plugin|
-3. Settings & Commands ........................... |SimpleSnippets-settings|
-   3.1 Settings .................................. |SimpleSnippets-settings|
-     3.1.1 Snippet search path ................... |SimpleSnippets-snippet-search-path|
-     3.1.2 Default mappings ...................... |SimpleSnippets-default-mappings|
-     3.1.1 Similar filetypes ..................... |SimpleSnippets-similar-filetypes|
-   3.2 Commands .................................. |SimpleSnippets-commands|
-     3.1 SimpleSnippetsEdit ...................... |:SimpleSnippetsEdit|
-     3.2 SimpleSnippetsList ...................... |:SimpleSnippetsList|
-   3.3 Mappings .................................. |SimpleSnippets-mappings|
-   3.4 Functions ................................. |SimpleSnippets-functions|
-     3.4.1 SimpleSnippets#isExpandableOrJumpable . |SimpleSnippets#isExpandableOrJumpable|
-     3.4.2 SimpleSnippets#expandOrJump ........... |SimpleSnippets#expandOrJump|
-     3.4.3 SimpleSnippets#expand ................. |SimpleSnippets#expand|
-     3.4.4 SimpleSnippets#jump ................... |SimpleSnippets#jump|
-     3.4.5 SimpleSnippets#jumpToLastPlaceholder... |SimpleSnippets#jumpToLastPlaceholder|
-     3.4.6 SimpleSnippets#addFlashSnippet ........ |SimpleSnippets#addFlashSnippet|
-     3.4.7 SimpleSnippets#removeFlashSnippet ..... |SimpleSnippets#removeFlashSnippet|
-     3.4.8 SimpleSnippets#availableSnippets ...... |SimpleSnippets#availableSnippets|
-4. Syntax ........................................ |SimpleSnippets-syntax|
-   4.1 Adding Snippets ........................... |SimpleSnippets-adding-snippets|
-     4.1.1 Snippets descriptions ................. |SimpleSnippets-snippets-descriptions|
-     4.1.2 Flash Snippets ........................ |SimpleSnippets-flash-snippets|
-   4.2 Placeholder Syntax ........................ |SimpleSnippets-placeholder-syntax|
-     4.2.1 Normal Placeholders ................... |SimpleSnippets-normal-placeholder|
-     4.2.2 Mirror Placeholders ................... |SimpleSnippets-mirror-placeholder|
-     4.2.3 Command Placeholders .................. |SimpleSnippets-command-placeholder|
-     4.2.4 Repeaters ............................. |SimpleSnippets-repeater|
-   4.3 Snippets Examples ......................... |SimpleSnippets-snippet-examples|
-5. Contributing .................................. |SimpleSnippets-contributing|
+ 1. Description .................................. |SimpleSnippets-description|
+    1.1 Requirements ............................ |SimpleSnippets-requirements|
+    1.2 Limitations .............................. |SimpleSnippets-limitations|
+    1.3 Acknowledgments ...................... |SimpleSnippets-acknowledgments|
+ 2. Installation and Updating ................. |SimpleSnippets-installnupdate|
+    2.1 External snippet plugin ...... |SimpleSnippets-external-snippet-plugin|
+ 3. Settings & Commands ............................. |SimpleSnippets-settings|
+    3.1 Settings .................................... |SimpleSnippets-settings|
+      3.1.1 Snippet search path .......... |SimpleSnippets-snippet-search-path|
+      3.1.2 Default mappings ................ |SimpleSnippets-default-mappings|
+      3.1.1 Similar filetypes .............. |SimpleSnippets-similar-filetypes|
+    3.2 Commands .................................... |SimpleSnippets-commands|
+      3.1 SimpleSnippetsEdit ............................ |:SimpleSnippetsEdit|
+      3.2 SimpleSnippetsList ............................ |:SimpleSnippetsList|
+    3.3 Mappings .................................... |SimpleSnippets-mappings|
+    3.4 Functions .................................. |SimpleSnippets-functions|
+      3.4.1 isExpandableOrJumpable .... |SimpleSnippets#isExpandableOrJumpable|
+      3.4.2 expandOrJump ........................ |SimpleSnippets#expandOrJump|
+      3.4.3 expand .................................... |SimpleSnippets#expand|
+      3.4.4 jump ........................................ |SimpleSnippets#jump|
+      3.4.5 jumpToLastPlaceholder....... |SimpleSnippets#jumpToLastPlaceholder|
+      3.4.6 addFlashSnippet .................. |SimpleSnippets#addFlashSnippet|
+      3.4.7 removeFlashSnippet ............ |SimpleSnippets#removeFlashSnippet|
+      3.4.8 availableSnippets .............. |SimpleSnippets#availableSnippets|
+ 4. Syntax ............................................ |SimpleSnippets-syntax|
+    4.1 Adding Snippets ...................... |SimpleSnippets-adding-snippets|
+      4.1.1 Snippets descriptions ...... |SimpleSnippets-snippets-descriptions|
+      4.1.2 Flash Snippets .................... |SimpleSnippets-flash-snippets|
+    4.2 Placeholder Syntax ................ |SimpleSnippets-placeholder-syntax|
+      4.2.1 Normal Placeholders ........... |SimpleSnippets-normal-placeholder|
+      4.2.2 Mirror Placeholders ........... |SimpleSnippets-mirror-placeholder|
+      4.2.3 Command Placeholders ......... |SimpleSnippets-command-placeholder|
+      4.2.4 Repeaters ............................... |SimpleSnippets-repeater|
+    4.3 Snippets Examples ................... |SimpleSnippets-snippet-examples|
+ 5. Contributing ................................ |SimpleSnippets-contributing|
 
 
 ==============================================================================
@@ -56,16 +56,16 @@ UltiSnips, snipMate, Neosnippets, and maybe others.   The  main  reasons  I've
 wrote this, because, I needed fast and simple plugin that let me define all my
 actions  via  single  <Tab>  key,  and  won't  struggle   on   weak   devices.
 
-                                                   *SimpleSnippets-requirements*
-1.1 Requirements
+
+1.1 Requirements                                   *SimpleSnippets-requirements*
 ----------------
 
 This plugin is tested against Vim 8.0 and NeoVim 0.3.0. All other versions are
 unsupported, but might work too.  This plugin  works  only  in  'nocompatible'
 mode.
 
-                                                    *SimpleSnippets-limitations*
-1.2 Limitations
+
+1.2 Limitations                                     *SimpleSnippets-limitations*
 ---------------
 
 This plugin has some limitations, which may make you decide not  to  use  this
@@ -103,8 +103,8 @@ If You still want to use this Plugin, you're welcome to read this document, to
 the end, to find out placeholder syntax, mappings, functions and other  useful
 info.
 
-                                                *SimpleSnippets-acknowledgments*
-1.3 Acknowledgments
+
+1.3 Acknowledgments                             *SimpleSnippets-acknowledgments*
 -------------------
 
 SimpleSnippets was inspired  by  the  snippets  feature  of  UltiSnips  plugin
@@ -125,8 +125,8 @@ to your configuration file:
 
   `Plugin 'andreyorst/SimpleSnippets.vim'`
 
-                                        *SimpleSnippets-external-snippet-plugin*
-2.1 External snippet plugin
+
+2.1 External snippet plugin             *SimpleSnippets-external-snippet-plugin*
 ---------------------------
 
 SimpleSnippets comes without snippets. If you don't want to create snippets by
@@ -148,8 +148,8 @@ SimpleSnippets has some settings that can be accepted via variables.  You  can
 change snippet search path, enable or disable plugin mappings, and  make  some
 filetypes mean same thing to SimpleSnippets.
 
-                                            *SimpleSnippets-snippet-search-path*
-  3.1.1 Snippet search path
+
+  3.1.1 Snippet search path                 *SimpleSnippets-snippet-search-path*
 
   First setting of SimpleSnippets, which you probably would like to change  is
   snippet search path.
@@ -186,16 +186,16 @@ filetypes mean same thing to SimpleSnippets.
   added to standard plugin configuration, please open an issue at github  repo
   of this plugin describing which filetypes should be the same to the  plugin.
 
-                                               *SimpleSnippets-default-mappings*
-  3.1.2 Default mappings
+
+  3.1.2 Default mappings                       *SimpleSnippets-default-mappings*
 
   The other setting if to disable default mappings.  You can  disable  default
   mappings by defining `g:SimpleSnippets_dont_remap_tab` to `1`
 
   We will talk about it in |SimpleSnippets-mappings| section.
 
-                                              *SimpleSnippets-similar-filetypes*
-  3.1.3 Similar filetypes
+
+  3.1.3 Similar filetypes                     *SimpleSnippets-similar-filetypes*
 
   You can make SimpleSnippets understand that some filetypes are  similar,  so
   SimpleSnippets will store snippets for those  filetypes  in  single  folder.
@@ -219,11 +219,11 @@ filetypes mean same thing to SimpleSnippets.
   SimpleSnippets  will  store and search for all your snippets  in  `C_CPP`  dir
   under your `g:SimpleSnippets_search_path`.
 
-                                                       *SimpleSnippets-commands*
-3.2 Commands
+
+3.2 Commands                                           *SimpleSnippets-commands*
 ------------
-                                                           *:SimpleSnippetsEdit*
-  3.2.1 SimpleSnippetsEdit
+
+  3.2.1 SimpleSnippetsEdit                                 *:SimpleSnippetsEdit*
 
   The `:SimpleSnippetsEdit`  command  asks you to  input  a  trigger.   Then  it
   searches for existing snippet for this filetype and opens a  vertical  split
@@ -231,8 +231,8 @@ filetypes mean same thing to SimpleSnippets.
   and opens vertical split. You can define snippet's body there. Upon save the
   snippet   is   ready   for   use.    No   need   to   reload   the   editor.
 
-                                                           *:SimpleSnippetsList*
-  3.2.2 SimpleSnippetsList
+
+  3.2.2 SimpleSnippetsList                                 *:SimpleSnippetsList*
 
   The `:SimpleSnippetsList`  command  prints  list  of  snippets  available  for
   current filetype.  It  depends on  file `ft.snippets.descriptions.txt` located
@@ -269,8 +269,8 @@ filetypes mean same thing to SimpleSnippets.
   It first checks user's snippets, then plugin  snippets,  then  user's  "all"
   snippets, and lastly plugin's "all snippets"
 
-                                                       *SimpleSnippets-mappings*
-3.2 Mappings
+
+3.2 Mappings                                           *SimpleSnippets-mappings*
 ------------
 
 By default Simple snippets remaps  <Tab>  key  to  expand  snippets  and  jump
@@ -303,8 +303,8 @@ SimpleSnippets also remaps Tab in command mode.  It is done  to  jump  out  of
 mirrored placeholder.  You  can  read  more  about  mirrored  placeholders  at
 |SimpleSnippets-mirrored-placeholder|.
 
-                                                      *SimpleSnippets-functions*
-3.4 Functions
+
+3.4 Functions                                         *SimpleSnippets-functions*
 -------------
 
 SimpleSnippets provides some functions to use  in  mappings,  or  custom  user
@@ -312,16 +312,16 @@ VimL functions.  It is highly recommended to use these one, because others are
 closely   rely   on   each   other    and    may    not    work    separately.
 
 
-                                         *SimpleSnippets#isExpandableOrJumpable*
-  3.4.1 SimpleSnippets#isExpandableOrJumpable
+
+  3.4.1 isExpandableOrJumpable           *SimpleSnippets#isExpandableOrJumpable*
 
   The first function is SimpleSnippets#isExpandableOrJumpable.  It  looks  for
   current word under cursor, and searches for it under snippet directories. If
   snippet is found it returns 1.  You can use it at <expr> mappings with  your
   expand or jump key.
 
-                                                   *SimpleSnippets#expandOrJump*
-  3.4.2 SimpleSnippets#expandOrJump
+
+  3.4.2 expandOrJump                               *SimpleSnippets#expandOrJump*
 
   Another function to use in the mappings.  You can use  single  key  both  to
   expand or jump to next placeholder. It looks to the word under the cursor to
@@ -329,28 +329,28 @@ closely   rely   on   each   other    and    may    not    work    separately.
   not a trigger, it checks the state of the snippet editing process, and if it
   is active, it calls a jump function.
 
-                                                         *SimpleSnippets#expand*
-  3.4.3 SimpleSnippets#expand
+
+  3.4.3 expand                                           *SimpleSnippets#expand*
 
   This function acts in  the  same  way  as  previous  function  in  terms  of
   expanding a snippet.  Can be used to define a key  to  expand  only  action.
 
-                                                           *SimpleSnippets#jump*
-  3.4.4 SimpleSnippets#jump
+
+  3.4.4 jump                                               *SimpleSnippets#jump*
 
   This function also acts the same way as expandOrJump functions in  terms  of
   jumping. Can be used to define a key to jump only action.
 
-                                          *SimpleSnippets#jumpToLastPlaceholder*
-  3.4.5 SimpleSnippets#jumpToLastPlaceholder
+
+  3.4.5 jumpToLastPlaceholder             *SimpleSnippets#jumpToLastPlaceholder*
 
   Yet again, this function acts the same way as previous function, except that
   it jumps directly to last placeholder.  You can use it in mappings, to  skip
   snippet  editing  process  if  you're  happy  with  standard   placeholder's
   contents.
 
-                                                *SimpleSnippets#addFlashSnippet*
-  3.4.6 SimpleSnippets#addFlashSnippet
+
+  3.4.6 addFlashSnippet                         *SimpleSnippets#addFlashSnippet*
 
   Some plugins may provide snippets, that can be build from user's code on the
   fly.  This function is used to communicate with  SimpleSnippets  from  other
@@ -424,8 +424,8 @@ closely   rely   on   each   other    and    may    not    work    separately.
   Where `[toy]` means  visually selected placeholder, that user can replace with
   `buzz_lightyear` right away.
 
-                                             *SimpleSnippets#removeFlashSnippet*
-  3.4.7 SimpleSnippets#removeFlashSnippet
+
+  3.4.7 removeFlashSnippet                   *SimpleSnippets#removeFlashSnippet*
 
   Function to remove Flash Snippets.  You can define your plugin to store  for
   example only last 10 Flash  Snippets,  by  forcing  it  to  remove  unneeded
@@ -434,10 +434,10 @@ closely   rely   on   each   other    and    may    not    work    separately.
 
   `call SimpleSnippets#removeFlashSnippet('buzz_lightyear')`
 
-                                              *SimpleSnippets#availableSnippets*
-  3.4.8 SimpleSnippets#availableSnippets
 
-  Function to use for integration with other plugins.  Returns dictonary  wiht
+  3.4.8 availableSnippets                     *SimpleSnippets#availableSnippets*
+
+  Function to use for integration with other plugins.  Returns dictonary  with
   all available snippets.  This function is meant to be  used  for  completion
   sources.
 
@@ -471,8 +471,8 @@ current filetype folder.  If trigger can't be found, SimpleSnippets  looks  at
 mappings.  For  example,  if  you're  using  <Tab>   key  for  expanding,  `tab`
 character will be inserted.
 
-                                          *SimpleSnippets-snippets-descriptions*
-  4.1.1 Snippets Descriptions
+
+  4.1.1 Snippets Descriptions             *SimpleSnippets-snippets-descriptions*
 
   Snippets can have descriptions, for each trigger. This descriptions are used
   in |:SimpleSnippetsList|  function,  and in sources for  completion  managers.
@@ -498,8 +498,8 @@ character will be inserted.
   If you're developing snippets for SimpleSnippets-snippets  plugin,  consider
   reading it's documentation, which explains this in more detail.
 
-                                                 *SimpleSnippets-flash-snippets*
-  4.1.2 Flash Snippets
+
+  4.1.2 Flash Snippets                           *SimpleSnippets-flash-snippets*
 
   This plugin has a feature called Flash Snippets. Snippets called "flash" are
   filetype independent, and can be defined on the fly.   It  can  be  used  by
@@ -557,8 +557,8 @@ In further sections snippet examples will be provided.  The  only  thing  that
 should be contained inside snippet file is the snippet's body. No `startsnippet`
 or `endsnippet` entries are necessary.
 
-                                             *SimpleSnippets-normal-placeholder*
-  4.2.1 Normal Placeholders
+
+  4.2.1 Normal Placeholders                  *SimpleSnippets-normal-placeholder*
 
   Normal placeholder contains text entry that will be placed in your  expanded
   snippet body. You can jump onto it, and change to another. For example:
@@ -578,8 +578,8 @@ or `endsnippet` entries are necessary.
   state to idle, and your jump mappings will not work until you expand another
   snippet.
 
-                                             *SimpleSnippets-mirror-placeholder*
-  4.2.2 Mirror Placeholders
+
+  4.2.2 Mirror Placeholders                  *SimpleSnippets-mirror-placeholder*
 
   Mirrored placeholder shares same syntax as normal and  command  placeholder,
   however the implementation of mirrored placeholders in this plugin  is  very
@@ -614,24 +614,24 @@ or `endsnippet` entries are necessary.
   it acts the same way if you would  hit  <Esc>.   Mirrored  placeholders  are
   automatically executing next jump for you.
 
-                                            *SimpleSnippets-command-placeholder*
-  4.2.3 Command Placeholders
+
+  4.2.3 Command Placeholders                *SimpleSnippets-command-placeholder*
 
   The implementation of command placeholders relies on Vim  `system()` function.
   Shell placeholders executes their contents as  a  command  *which  can't  be
-  jumped later, and yank it to your file via `@s` register. If you wan't to jump
+  jumped later, and yank it to your file via `@s` register. If you want  to jump
   to such placeholder, consider wrapping it inside normal placeholder like so:
   `${2:${1!uname}`. This  also  makes mirroring easy, because nor you can mirror
   `$1` if you  don't  want  to  jump to the results, or `$2` if you want  to  make
-  this placeholder jumpable and mirrored.  However, COmmands that result  more
-  then single line of text are currently broke jumping.  So if  you  wan't  to
+  this placeholder jumpable and mirrored.  However, Commands that result  more
+  then single line of text are currently broke jumping.  So if  you  want   to
   yank a file inside snippet's  body,  don't  wrap  command  placeholder  with
   normal one, because it will break snippet expanding.
   Example of multiline shell output may be:
 
     `${0!cat /usr/share/licenses/clang/LICENSE}`
 
-  placeholder. It can be expanded, but can't be wrapped in `normal` placeholder.
+  Placeholder. It can be expanded, but can't be wrapped in `normal` placeholder.
   For example here is the `uname` snippet:
 
   `My current Linux Kernel is:`
@@ -642,11 +642,11 @@ or `endsnippet` entries are necessary.
   `My current Linux Kernel is:`
   `4.15.15-1-ARCH GNU/Linux`
 
-  Command placeholders also support viml  functions.   You  can  use  any  vim
+  Command placeholders also support viml  functions.   You  can  use  any  Vim
   command, that can be echoed.  It can be registers, vimscript functions, etc.
   For example:
 
-  Sippet `file`
+  Snippet `file`
 
     `${0!@%}`
 
@@ -663,10 +663,10 @@ or `endsnippet` entries are necessary.
 
   Viml support is currently experimental.
 
-                                              *repeater* *SimpleSnippets-repeater*
-  4.2.4 Repeaters
 
-  Repeaters are used to pepeat placeholder's body across snippet's  body.   So
+  4.2.4 Repeaters                             *repeater* *SimpleSnippets-repeater*
+
+  Repeaters are used to repeat placeholder's body across snippet's  body.   So
   for  example,  placeholder  `${1:Class_Name} ` will be  considered  as  `normal`
   placeholder.  However  if we add `$1` placeholder,  which  is called `repeater`,
   on snippet expanding that paceholder's body will  be  substituted  to  every
@@ -679,13 +679,13 @@ or `endsnippet` entries are necessary.
   placeholder, to jump and mirror `command` one
 
   Repeaters was added to change core mechanics for mirroring, to make it  more
-  easy and maintainable.  This also should add some layer of compability  with
+  easy and maintainable.  This also should add some layer of capability   with
   other  snippet  managers.   Previously  mirroring  was  done  with  separate
   placeholder   type `${1|text}`, and it's  body  must  have  been  repeated  in
   snippet's body. Now this is deprecated.
 
-                                               *SimpleSnippets-snippet-examples*
-4.3 Snippet Examples
+
+4.3 Snippet Examples                           *SimpleSnippets-snippet-examples*
 
 Here are some snippets to start with:
 
