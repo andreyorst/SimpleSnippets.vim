@@ -338,7 +338,7 @@ function! SimpleSnippets#initCommand(current)
 	let @s = l:result
 	let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g')) + 1
 	if l:result_line_count > 1
-		let s:snip_end += l:result_line_count - 1
+		let s:snip_end += l:result_line_count
 	endif
 	normal! mq
 	call search('\v\$\{'.a:current.'!.{-}\}', 'ce', s:snip_end)
@@ -349,12 +349,11 @@ function! SimpleSnippets#initCommand(current)
 	let @" = l:save_quote
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	call add(s:jump_stack, l:result)
-	if l:repeater_count != 0 && l:result_line_count == 1
+	if l:repeater_count != 0
 		call add(s:type_stack, 2)
 		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
 	else
 		call add(s:type_stack, 1)
-		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
 	endif
 endfunction
 
@@ -437,29 +436,14 @@ endfunction
 
 function! SimpleSnippets#jumpMirror(placeholder)
 	let l:ph = a:placeholder
-	if l:ph !~ "\\W"
+	if l:ph =~ "\\n"
+		let l:ph = join(split(l:ph), "\\n")
+		let l:echo = l:ph
+	elseif l:ph !~ "\\W"
+		let l:echo = a:placeholder
 		let l:ph = '\<' . l:ph . '\>'
 	endif
-	redir => l:cnt
-	silent! exe s:snip_start.','.s:snip_end.'s/' . l:ph . '//gn'
-	redir END
-	noh
-	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
-	let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
-	let l:i = 0
-	let l:matchpositions = []
-	call cursor(s:snip_start, 1)
-	while l:i < l:count
-		call search(l:ph, 'c', s:snip_end)
-		let l:line = line('.')
-		let l:start = col('.')
-		call search(l:ph, 'ce', s:snip_end)
-		let l:length = col('.') - l:start + 1
-		call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
-		call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
-		call cursor(line('.'), col('.') + 1)
-		let l:i += 1
-	endwhile
+	let l:matchpositions = SimpleSnippets#colorMatches(l:ph)
 	call cursor(s:snip_start, 1)
 	call search(l:ph, 'c', s:snip_end)
 	let a:cursor_pos = getpos(".")
@@ -471,17 +455,15 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	cnoremap <Tab> <Cr>
 	cnoremap <S-Tab> <Esc><Esc>:execute("cunmap <S-Tab>")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
 	redraw
-	let l:rename = input('Replace placeholder "'.a:placeholder.'" with: ')
+	let l:rename = input('Replace placeholder "'.l:echo.'" with: ')
 	cunmap <Tab>
 	if l:rename != ''
 		execute s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g'
 		noh
 	endif
-	let l:i = 0
-	while l:i < l:count * 2
-		call matchdelete(l:matchpositions[l:i])
-		let l:i += 1
-	endwhile
+	for matchpos in l:matchpositions
+		call matchdelete(matchpos)
+	endfor
 	redraw
 	call cursor(a:cursor_pos[1], a:cursor_pos[2])
 	if l:reenable_cursorline == 1
@@ -490,6 +472,40 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	if s:jump_stack != []
 		call SimpleSnippets#jump()
 	endif
+endfunction
+
+function! SimpleSnippets#colorMatches(text)
+	let l:ph = a:text
+	if l:ph =~ "\\n"
+		let l:ph = join(split(l:ph), "\\n")
+		let l:echo = l:ph
+	elseif a:text !~ "\\W"
+		let l:echo = a:placeholder
+		let l:ph = '\<' . l:ph . '\>'
+	endif
+	redir => l:cnt
+	silent! exe s:snip_start.','.s:snip_end.'s/' . a:text . '//gn'
+	redir END
+	noh
+	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
+	let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
+	let l:i = 0
+	let l:matchpositions = []
+	call cursor(s:snip_start, 1)
+	while l:i < l:count
+		for l:lin in split(a:text, '\\n')
+			call search(l:lin, 'c', s:snip_end + 1)
+			let l:line = line('.')
+			let l:start = col('.')
+			call search(l:lin, 'ce', s:snip_end + 1)
+			let l:length = col('.') - l:start + 1
+			call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
+			call cursor(line('.'), col('.') + 1)
+		endfor
+		call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
+		let l:i += 1
+	endwhile
+	return l:matchpositions
 endfunction
 
 function! SimpleSnippets#edit()
