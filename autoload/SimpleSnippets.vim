@@ -290,17 +290,15 @@ function! SimpleSnippets#getPlaceholderType()
 	let l:ph = matchstr(getline('.'), '\v%'.l:col.'c\$\{[0-9]+.{-}\}')
 	if match(l:ph, '\v\$\{[0-9]+:.{-}\}') == 0
 		return 1
-	elseif match(l:ph, '\v\$\{[0-9]+\|.{-}\}') == 0
-		return 2
 	elseif match(l:ph, '\v\$\{[0-9]+!.{-}\}') == 0
-		return 3
+		return 2
 	endif
 endfunction
 
 function! SimpleSnippets#initPlaceholder(current, type)
 	if a:type == 1
 		call SimpleSnippets#initNormal(a:current)
-	elseif a:type == 3
+	elseif a:type == 2
 		call SimpleSnippets#initCommand(a:current)
 	endif
 endfunction
@@ -314,7 +312,7 @@ function! SimpleSnippets#initNormal(current)
 	let @" = l:save_quote
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
-		call add(s:type_stack, 2)
+		call add(s:type_stack, 3)
 		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
 	else
 		call add(s:type_stack, 1)
@@ -350,11 +348,12 @@ function! SimpleSnippets#initCommand(current)
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	call add(s:jump_stack, l:result)
 	if l:repeater_count != 0
-		call add(s:type_stack, 2)
+		call add(s:type_stack, 3)
 		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
 	else
 		call add(s:type_stack, 1)
 	endif
+	noh
 endfunction
 
 function! SimpleSnippets#removeTrailings(text)
@@ -374,9 +373,9 @@ function! SimpleSnippets#initRepeaters(current, content, count)
 	let l:i = 0
 	while l:i < l:repeater_count
 		call cursor(s:snip_start, 1)
-		call search('\v\$'.a:current, 'cW', s:snip_end)
+		call search('\v\$'.a:current, 'c', s:snip_end)
 		normal! mq
-		call search('\v\$'.a:current, 'ceW', s:snip_end)
+		call search('\v\$'.a:current, 'ce', s:snip_end)
 		normal! mp
 		exe "normal! g`qvg`pr"
 		let s:snip_end += l:amount_of_lines - 1
@@ -386,7 +385,9 @@ function! SimpleSnippets#initRepeaters(current, content, count)
 	let @s = l:save_s
 	let @" = l:save_quote
 	call cursor(s:snip_start, 1)
-	let s:snip_end -= 1
+	if l:amount_of_lines != 1
+		let s:snip_end -= 1
+	endif
 endfunction
 
 function! SimpleSnippets#jump()
@@ -398,7 +399,7 @@ function! SimpleSnippets#jump()
 		endif
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
-		elseif match(l:current_type, '2') == 0
+		elseif match(l:current_type, '3') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
 	else
@@ -413,7 +414,7 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 		let l:current_type = s:type_stack[-1]
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
-		elseif match(l:current_type, '2') == 0
+		elseif match(l:current_type, '3') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
 		let s:jump_stack = []
@@ -627,7 +628,7 @@ function! SimpleSnippets#availableSnippets()
 	endif
 	if s:flash_snippets != {}
 		for trigger in keys(s:flash_snippets)
-			let l:snippets[trigger] = substitute(s:flash_snippets[trigger], '\v\$\{[0-9]+(:|!|\|)(.{-})\}', '\2', 'g')
+			let l:snippets[trigger] = substitute(s:flash_snippets[trigger], '\v\$\{[0-9]+(:|!)(.{-})\}', '\2', 'g')
 		endfor
 	endif
 	return l:snippets
@@ -641,7 +642,7 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 		for i in l:dir
 			let l:descr = ''
 			for line in readfile(a:path.a:filetype.'/'.i)
-				let l:descr .= substitute(line, '\v\$\{[0-9]+(:|!|\|)(.{-})\}', '\2', 'g')
+				let l:descr .= substitute(line, '\v\$\{[0-9]+(:|!)(.{-})\}', '\2', 'g')
 				break
 			endfor
 			let l:descr = substitute(l:descr, '\v(\S+)(\})', '\1 \2', 'g')
