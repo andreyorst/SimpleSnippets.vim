@@ -164,8 +164,8 @@ filetypes mean same thing to SimpleSnippets.
     `$HOME.'/MyAvesomeProject/.snippets/ruby'`
 
   And so on.  Some  filetypes  are quite the same, and  for  example  `tex`  and
-  `plaintex` both will  be stored  at  `tex` folder. It can be configured variable
-  `g:SimpleSnippets_similar_filetypes`.  See   |SimpleSnippets_similar_filetypes|.
+  `plaintex` both will  be stored  at `tex` folder. It can be configured variable
+  `g:SimpleSnippets_similar_filetypes`.  See  |SimpleSnippets_similar_filetypes|.
   If you found  that  logically  similar  filetypes  are  stored  in  separate
   folders, and you  think  that  they  should  be  added  to  standard  plugin
   configuration, please open an issue at github repo of this plugin describing
@@ -192,8 +192,8 @@ filetypes mean same thing to SimpleSnippets.
                           `\ ['tex', 'plaintex', 'latex']`
                           `\]`
 
-  SimpleSnippets will now detect `tex`, `plaintex` and `latex`, as "tex" filetypes,
-  as it is first item in the list.
+  SimpleSnippets will now detect  `tex`,  `plaintex`  and  `latex`,  as  "tex"
+  filetypes, as it is first item in the list.
 
   You're also can define here a custom folder name, if you wish to store  both
   C and C++ snippets  at  the  same  folder,  by  defining  similar  filetypes
@@ -769,4 +769,4 @@ You can contribute by fixing or reporting bugs in our issue tracker:
 https://github.com/andreyorst/SimpleSnippets.vim/issues
 
 ==============================================================================
-  vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:ft=help:norl:nornu:nonu:scl=no
