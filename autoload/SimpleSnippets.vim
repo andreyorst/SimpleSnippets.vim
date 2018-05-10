@@ -348,7 +348,12 @@ function! SimpleSnippets#initCommand(current)
 	let @s = l:save_s
 	let @" = l:save_quote
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
-	if l:repeater_count != 0
+	call add(s:jump_stack, l:result)
+	if l:repeater_count != 0 && l:result_line_count == 1
+		call add(s:type_stack, 2)
+		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
+	else
+		call add(s:type_stack, 1)
 		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
 	endif
 endfunction
@@ -423,9 +428,9 @@ function! SimpleSnippets#jumpNormal(placeholder)
 		let ph = '\<' . ph . '\>'
 	endif
 	call cursor(s:snip_start, 1)
-	call search(ph, 'c', s:snip_end)
+	call search(split(ph)[0], 'c', s:snip_end)
 	normal! mq
-	call search(ph, 'ce', s:snip_end)
+	call search(split(ph)[-1], 'ce', s:snip_end)
 	normal! mp
 	exec "normal! g`qvg`p\<c-g>"
 endfunction
@@ -482,7 +487,9 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	if l:reenable_cursorline == 1
 		set cursorline
 	endif
-	call SimpleSnippets#jump()
+	if s:jump_stack != []
+		call SimpleSnippets#jump()
+	endif
 endfunction
 
 function! SimpleSnippets#edit()
