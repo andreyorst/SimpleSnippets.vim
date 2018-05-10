@@ -370,20 +370,23 @@ function! SimpleSnippets#initRepeaters(current, content, count)
 	let l:save_quote = @"
 	let @s = a:content
 	let l:repeater_count = a:count
+	let l:amount_of_lines = len(split(a:content, "\\n"))
 	let l:i = 0
 	while l:i < l:repeater_count
 		call cursor(s:snip_start, 1)
-		call search('\v\$'.a:current, 'c', s:snip_end)
+		call search('\v\$'.a:current, 'cW', s:snip_end)
 		normal! mq
-		call search('\v\$'.a:current, 'ce', s:snip_end)
+		call search('\v\$'.a:current, 'ceW', s:snip_end)
 		normal! mp
 		exe "normal! g`qvg`pr"
+		let s:snip_end += l:amount_of_lines - 1
 		normal! "sp
 		let l:i += 1
 	endwhile
 	let @s = l:save_s
 	let @" = l:save_quote
 	call cursor(s:snip_start, 1)
+	let s:snip_end -= 1
 endfunction
 
 function! SimpleSnippets#jump()
@@ -464,6 +467,9 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	for matchpos in l:matchpositions
 		call matchdelete(matchpos)
 	endfor
+	if s:snip_end > line('$')
+		let s:snip_end = line('$')
+	endif
 	redraw
 	call cursor(a:cursor_pos[1], a:cursor_pos[2])
 	if l:reenable_cursorline == 1
@@ -494,10 +500,10 @@ function! SimpleSnippets#colorMatches(text)
 	call cursor(s:snip_start, 1)
 	while l:i < l:count
 		for l:lin in split(a:text, '\\n')
-			call search(l:lin, 'c', s:snip_end + 1)
+			call search(l:lin, 'cW', s:snip_end)
 			let l:line = line('.')
 			let l:start = col('.')
-			call search(l:lin, 'ce', s:snip_end + 1)
+			call search(l:lin, 'ceW', s:snip_end)
 			let l:length = col('.') - l:start + 1
 			call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
 			call cursor(line('.'), col('.') + 1)
@@ -517,7 +523,7 @@ function! SimpleSnippets#edit()
 	let l:trigger = input('Select a trigger: ')
 	if l:trigger != ''
 		if win_gotoid(s:snip_edit_win)
-			execute "edit " . l:path . '/' . l:trigger
+			execute "normal! e " . l:path . '/' . l:trigger
 			execute "setf " . l:filetype
 		else
 			vertical new
