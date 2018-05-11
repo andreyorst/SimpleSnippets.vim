@@ -1,9 +1,9 @@
 # SimpleSnippets.vim
 
 Simple snippets is a simple snippet manager for Vim and NeoVim, based on standard
-editor features, designed to be fast and lightweight. It integrates with deoplete
+editor features, designed to be fast and lightweight. It integrates with Deoplete
 to provide available snippets in popup menu and provides basic support of
-snippet feature to vim.
+snippet feature to Vim.
 
 ![simplesnippets](https://user-images.githubusercontent.com/19470159/39535519-c4904d2a-4e3c-11e8-9e1c-9796515f1913.gif)
 
@@ -39,7 +39,7 @@ Back in the days I didn't used snippets at all. Because, I thought, that I don't
 need them at all. The idea was that it is not that big difference in time spent on typing
 everything by hands, and I was lazy to figure out how to setup and use snippet managers.
 
-But then I've watched [this amasing talk](https://www.youtube.com/watch?v=XA2WjJbmmoM&t=937s) about how to do most of your things without plugins. I was inspired with snippets, that can be created with abbreviations, and I've started experimenting.
+But then I've watched [this amazing talk](https://www.youtube.com/watch?v=XA2WjJbmmoM&t=937s) about how to do most of your things without plugins. I was inspired with snippets, that can be created with abbreviations, and I've started experimenting.
 
 First approach was something like this:
 
@@ -72,9 +72,9 @@ I highly recommend to went through this by yourselves, it boost's your Vim's
 movement knowledge beyond the limitations of any emacs user. But again, I decided
 to try snippet managers. I've tried many, and sticked with Ultisnips. It is great
 plugin, and I highly recommend you to use it, if you're using Vim (ultisnips works
-in neovim too, but it is not supported officially), and you have rather powerful
+in NeoVim too, but it is not supported officially), and you have rather powerful
 machine, because ultisnips requires some resources, wich in my case was performance
-killer on my GPD Pocket, and Nexus 5x (yes I use neovim on my smartpfone a lot).
+killer on my GPD Pocket, and Nexus 5x (yes I use NeoVim on my smartphone a lot).
 
 So I've decided to try other plugins, but some of them were poor for functional,
 some were even slower, and some lacked functions to use in my mappings.
@@ -95,7 +95,7 @@ started working on this plugin and here it is.
 ## But!
 
 You may think that there are already plenty of other snippet managers, and you may noticed
-that I've said, that I've made it with just vim's native features, wich means
+that I've said, that I've made it with just Vim's native features, wich means
 that it should have lot of limitations, and will have even poorer functional then
 other plugins?
 
@@ -112,33 +112,31 @@ languages.
 Here I'll try to list all limitations that you may encounter when using Simple Snippets:
 
 - [ ] No tabstops.  
-Why? Because jumping is based on text searching. Because placeholders are deleted from snippet body when it is pasted to your file there is no way to find empty ones, because text behind them for example may change. If neovim will add ability to use multicursor and position it in text like in other modern editors this may be implemented. Because of this limitation mirroring is done differently too.
+Why? Because jumping is based on text searching. Because placeholders are deleted from snippet body when it is pasted to your file there is no way to find empty ones, because text behind them for example may change. If NeoVim will add ability to use multicursor and position it in text like in other modern editors this may be implemented. Because of this limitation mirroring is done differently too.
 - [ ] Placeholders have slightly different syntax than other plugins use.  
 SimpleSnippets supports normal: `${1:text}`, command: `${2!command}`, and repeater `$3` placeholders.
 - [ ] Normal placeholders should contain per snippet unique bodies.  
 So you can't use `${2:text_a} ${0:text_b} ${1:text_a}` constructions. SimpleSnippets will jump to first match of `text_a` in snippet body. This is major limitation.
-- [ ] Command placeholders, that output is more then single line can't be jumped.  
-Command placeholders can be nested in normal placeholders `${2:${1!cmd}`, so you can jump on them, however this won't work for commands that result in multiline output.
 - [ ] Jumping is based on searching for a string.  
 As was already said before. So if you replace some part of snippets in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
 - [ ] No back jumping.  
 Because of previous point. Actually I don't know how to get last user input to store it in vimscript to search for it inside snippet body.
 - [ ] Single snippet editing at time.
-If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet. (I'm working on jump stack implementation wich may make availible multiple snippet editing, however I'm not sure about it, because of substitution range limitation).
-- [ ] Only command placeholder can be nested.  
+If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet.
 - [ ] Trigger must be separated from everything  
-I couldn't come up with a way of getting user input trigger better way, so it would be possible to use both `#if` and `if` triggers, therefore `(if`<kbd>Tab</kbd>`)` will be considered as `(if` trigger. I'm trying to do something with this rightnow.
+I couldn't come up with a way of getting user input trigger better way, so it would be possible to use both `#if` and `if` triggers, therefore `(if`<kbd>Tab</kbd>`)` will be considered as `(if` trigger. I'm trying to do something with this right now.
+- [ ] No nested placeholders.
 - There may be more, which I've not thought about.
 
 **Withdrawn limitations:**
 - [x] Every snippet **must** contain zero indexed placeholder, aka `${0:text}`
-- [x] No nested placeholders.
+- [x] Command placeholders, that output is more then single line can't be jumped.
 
 After reading this list you may want to ask me this question:
 
 ## Why do I even may want to use it?
 
-You probably won't! I understand this, because I've developed it for myself in first place, and I can obey these restrictions and limitatuons because I need simple snippets and fast plugin for them.
+You probably won't! I understand this, because I've developed it for myself in first place, and I can obey these restrictions and limitations because I need simple snippets and fast plugin for them.
 I know that having an advanced, full-featured, complex solution is great, because of powers, that you gain form it.
 However often too powerful tool need a powerful hardware to run smoothly.
 If you feel that other snippet solutions are making your Vim slow,
