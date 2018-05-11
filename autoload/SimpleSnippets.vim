@@ -95,6 +95,12 @@ function! SimpleSnippets#expand()
 	else
 		let l:path = SimpleSnippets#getSnipPath(l:snip, l:filetype)
 		let l:snippet = readfile(l:path)
+		if l:snippet[0] == ''
+			call remove(l:snippet, 0)
+		endif
+		if l:snippet[-1] == ''
+			call remove(l:snippet, -1)
+		endif
 		let s:snip_line_count = len(l:snippet)
 		if s:snip_line_count != 0
 			let l:snippet = join(l:snippet, "\n")
@@ -378,7 +384,9 @@ function! SimpleSnippets#initRepeaters(current, content, count)
 		call search('\v\$'.a:current, 'ce', s:snip_end)
 		normal! mp
 		exe "normal! g`qvg`pr"
-		let s:snip_end += l:amount_of_lines - 1
+		if l:amount_of_lines > 1
+			let s:snip_end += l:amount_of_lines - 1
+		endif
 		normal! "sp
 		let l:i += 1
 	endwhile
