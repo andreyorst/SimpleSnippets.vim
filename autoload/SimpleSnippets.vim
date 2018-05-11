@@ -219,7 +219,7 @@ function! SimpleSnippets#parseAndInit()
 	let s:active = 1
 	let s:current_file = @%
 
-	let a:cursor_pos = getpos(".")
+	let l:cursor_pos = getpos(".")
 	let l:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!|\|)')
 	if l:ph_amount != 0
 		call SimpleSnippets#parseSnippet(l:ph_amount)
@@ -237,7 +237,7 @@ function! SimpleSnippets#parseAndInit()
 		endif
 	else
 		let s:active = 0
-		call cursor(a:cursor_pos[1], a:cursor_pos[2])
+		call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	endif
 endfunction
 
@@ -445,16 +445,18 @@ endfunction
 function! SimpleSnippets#jumpMirror(placeholder)
 	let l:ph = a:placeholder
 	if l:ph =~ "\\n"
+		let s:placeholder_line_count = len(split(l:ph, "\\n"))
 		let l:ph = join(split(l:ph), "\\n")
 		let l:echo = l:ph
 	elseif l:ph !~ "\\W"
+		let s:placeholder_line_count = 1
 		let l:echo = a:placeholder
 		let l:ph = '\<' . l:ph . '\>'
 	endif
 	let l:matchpositions = SimpleSnippets#colorMatches(l:ph)
 	call cursor(s:snip_start, 1)
 	call search(l:ph, 'c', s:snip_end)
-	let a:cursor_pos = getpos(".")
+	let l:cursor_pos = getpos(".")
 	let l:reenable_cursorline = 0
 	if &cursorline == 1
 		set nocursorline
@@ -464,19 +466,21 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	cnoremap <S-Tab> <Esc><Esc>:execute("cunmap <S-Tab>")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
 	redraw
 	let l:rename = input('Replace placeholder "'.l:echo.'" with: ')
+	let s:result_line_count = len(split(l:rename, '\\r'))
 	cunmap <Tab>
 	if l:rename != ''
+		redir => l:cnt
 		execute s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g'
+		redir END
+		let l:subst_amount = strpart(l:cnt, 0, stridx(l:cnt, " "))
+		let l:subst_amount = substitute(l:subst_amount, '\v%^\_s+|\_s+%$', '', 'g')
+		let s:snip_end = s:snip_end + (s:result_line_count * l:subst_amount) - (s:placeholder_line_count * l:subst_amount)
 		noh
 	endif
 	for matchpos in l:matchpositions
 		call matchdelete(matchpos)
 	endfor
-	if s:snip_end > line('$')
-		let s:snip_end = line('$')
-	endif
-	redraw
-	call cursor(a:cursor_pos[1], a:cursor_pos[2])
+	call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	if l:reenable_cursorline == 1
 		set cursorline
 	endif
