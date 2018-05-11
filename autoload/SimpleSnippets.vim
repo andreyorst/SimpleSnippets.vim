@@ -426,14 +426,18 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 endfunction
 
 function! SimpleSnippets#jumpNormal(placeholder)
-	let ph = a:placeholder
-	if ph !~ "\\W"
-		let ph = '\<' . ph . '\>'
-	endif
+	let l:ph = a:placeholder
 	call cursor(s:snip_start, 1)
-	call search(split(ph)[0], 'c', s:snip_end)
+	if l:ph =~ "\\n"
+		let l:ph = join(split(l:ph), "\\n")
+		let l:echo = l:ph
+	elseif l:ph !~ "\\W"
+		let l:echo = a:placeholder
+		let l:ph = '\<' . l:ph . '\>'
+	endif
+	call search(split(l:ph, '\\n')[0], 'c', s:snip_end)
 	normal! mq
-	call search(split(ph)[-1], 'ce', s:snip_end)
+	call search(split(l:ph, '\\n')[-1], 'ce', s:snip_end)
 	normal! mp
 	exec "normal! g`qvg`p\<c-g>"
 endfunction
