@@ -95,12 +95,12 @@ function! SimpleSnippets#expand()
 	else
 		let l:path = SimpleSnippets#getSnipPath(l:snip, l:filetype)
 		let l:snippet = readfile(l:path)
-		if l:snippet[0] == ''
+		while l:snippet[0] == ''
 			call remove(l:snippet, 0)
-		endif
-		if l:snippet[-1] == ''
+		endwhile
+		while l:snippet[-1] == ''
 			call remove(l:snippet, -1)
-		endif
+		endwhile
 		let s:snip_line_count = len(l:snippet)
 		if s:snip_line_count != 0
 			let l:snippet = join(l:snippet, "\n")
