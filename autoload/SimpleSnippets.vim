@@ -487,7 +487,7 @@ function! SimpleSnippets#colorMatches(text)
 		let l:ph = join(split(l:ph), "\\n")
 		let l:echo = l:ph
 	elseif a:text !~ "\\W"
-		let l:echo = a:placeholder
+		let l:echo = a:text
 		let l:ph = '\<' . l:ph . '\>'
 	endif
 	redir => l:cnt
@@ -518,14 +518,20 @@ endfunction
 function! SimpleSnippets#edit()
 	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
 	let l:path = g:SimpleSnippets_search_path . l:filetype
+	let s:snip_edit_buf = 0
 	if !isdirectory(l:path)
 		call mkdir(l:path, "p")
 	endif
 	let l:trigger = input('Select a trigger: ')
 	if l:trigger != ''
 		if win_gotoid(s:snip_edit_win)
-			execute "normal! e " . l:path . '/' . l:trigger
-			execute "setf " . l:filetype
+			try
+				exec "buffer " . s:snip_edit_buf
+			catch
+				let l:trigger = SimpleSnippets#triggerEscape(l:trigger)
+				exec "edit " . l:path . '/' . l:trigger
+				exec "setf " . l:filetype
+			endtry
 		else
 			vertical new
 			try
