@@ -39,7 +39,7 @@ Back in the days I didn't used snippets at all. Because, I thought, that I don't
 need them at all. The idea was that it is not that big difference in time spent on typing
 everything by hands, and I was lazy to figure out how to setup and use snippet managers.
 
-But then I've watched [this amazing talk](https://www.youtube.com/watch?v=XA2WjJbmmoM&t=937s) about how to do most of your things without plugins. I was inspired with snippets, that can be created with abbreviations, and I've started experimenting.
+But then I've watched [this amazing talk](https://www.youtube.com/watch?v=XA2WjJbmmoM&t=2300s) about how to do most of your things without plugins. I was inspired with snippets, that can be created with abbreviations, and I've started experimenting.
 
 First approach was something like this:
 
