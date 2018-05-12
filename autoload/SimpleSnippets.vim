@@ -13,30 +13,40 @@ let s:jump_stack = []
 let s:type_stack = []
 
 "Functions
+function! SimpleSnippets#isExpandable()
+	call SimpleSnippets#obtainTrigger()
+	if SimpleSnippets#getSnipFileType(s:trigger) != -1
+		return 1
+	endif
+	call SimpleSnippets#obtainAlternateTrigger()
+	if SimpleSnippets#getSnipFileType(s:trigger) != -1
+		return 1
+	endif
+	let s:trigger = ''
+	return 0
+endfunction
+
 function! SimpleSnippets#obtainTrigger()
 	if s:trigger == ''
-		let l:mode = mode()
-		if l:mode == 'i'
-			let l:col = col('.') - 1
-			let s:trigger = matchstr(getline('.'), '\v(\w+|(\s+)@!\W+(\s)@<!(\w+)?)%' . l:col . 'c.')
+		if mode() == 'i'
+			call cursor(line('.'), col('.') - 1)
+			let s:trigger = expand("<cWORD>")
 		else
 			let s:trigger = expand("<cWORD>")
 		endif
 	endif
 endfunction
 
-function! SimpleSnippets#isExpandable()
-	call SimpleSnippets#obtainTrigger()
-	if SimpleSnippets#getSnipFileType(s:trigger) != -1
-		return 1
+function! SimpleSnippets#obtainAlternateTrigger()
+	if mode() == 'i'
+		call cursor(line('.'), col('.') - 1)
+		let s:trigger = expand("<cword>")
 	else
-		let s:trigger = ''
-		return 0
+		let s:trigger = expand("<cword>")
 	endif
 endfunction
 
 function! SimpleSnippets#isExpandableOrJumpable()
-	call SimpleSnippets#obtainTrigger()
 	if SimpleSnippets#isExpandable()
 		return 1
 	elseif SimpleSnippets#isJumpable()
@@ -45,6 +55,16 @@ function! SimpleSnippets#isExpandableOrJumpable()
 		let s:trigger = ''
 		return 0
 	endif
+endfunction
+
+function! SimpleSnippets#isJumpable()
+	if SimpleSnippets#isInside()
+		if SimpleSnippets#isActive()
+			return 1
+		endif
+	endif
+	let s:active = 0
+	return 0
 endfunction
 
 function! SimpleSnippets#isInside()
@@ -66,16 +86,6 @@ function! SimpleSnippets#isActive()
 	else
 		return 0
 	endif
-endfunction
-
-function! SimpleSnippets#isJumpable()
-	if SimpleSnippets#isInside()
-		if SimpleSnippets#isActive()
-			return 1
-		endif
-	endif
-	let s:active = 0
-	return 0
 endfunction
 
 function! SimpleSnippets#expandOrJump()
@@ -108,10 +118,13 @@ function! SimpleSnippets#expand()
 			let @s = l:snippet
 			let l:save_quote = @"
 			if l:snip =~ "\\W"
-				normal! ciW
+				let l:delete = l:snip
 			else
-				normal! ciw
+				let l:delete = '<' . l:snip . '>'
 			endif
+			execute line('.') . ',' . line('.') . 's/\v(.*)' . l:delete . '/\1snippet/'
+			call search('snippet', 'c', line('.'))
+			normal! ciw
 			normal! "sp
 			let @" = l:save_quote
 			let @s = l:save_s
