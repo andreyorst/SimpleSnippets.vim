@@ -112,7 +112,7 @@ languages.
 Here I'll try to list all limitations that you may encounter when using Simple Snippets:
 
 - [ ] No tabstops.  
-Why? Because jumping is based on text searching. Because placeholders are deleted from snippet body when it is pasted to your file there is no way to find empty ones, because text behind them for example may change. If NeoVim will add ability to use multicursor and position it in text like in other modern editors this may be implemented. Because of this limitation mirroring is done differently too.
+Why? Well, jumping is based on text searching. Because placeholders are deleted from snippet body when it is pasted to your file there is no way to find empty ones, because text behind them for example may change. If NeoVim will add ability to use multicursor and position it in text like in other modern editors this may be implemented. Because of this limitation mirroring is done differently too.
 - [ ] Placeholders have slightly different syntax than other plugins use.  
 SimpleSnippets supports normal: `${1:text}`, command: `${2!command}`, and repeater `$3` placeholders.
 - [ ] Normal placeholders should contain per snippet unique bodies.  
@@ -123,14 +123,13 @@ As was already said before. So if you replace some part of snippets in the same 
 Because of previous point. Actually I don't know how to get last user input to store it in vimscript to search for it inside snippet body.
 - [ ] Single snippet editing at time.
 If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet.
-- [ ] Trigger must be separated from everything  
-I couldn't come up with a way of getting user input trigger better way, so it would be possible to use both `#if` and `if` triggers, therefore `(if`<kbd>Tab</kbd>`)` will be considered as `(if` trigger. I'm trying to do something with this right now.
 - [ ] No nested placeholders.
 - There may be more, which I've not thought about.
 
 **Withdrawn limitations:**
 - [x] Every snippet **must** contain zero indexed placeholder, aka `${0:text}`
 - [x] Command placeholders, that output is more then single line can't be jumped.
+- [x] Trigger must be separated from everything
 
 After reading this list you may want to ask me this question:
 
