@@ -84,10 +84,13 @@ endfunction
 function! SimpleSnippets#expandFlashSnippet(snip)
 	let l:save_quote = @"
 	if a:snip =~ "\\W"
-		normal! ciW
+		let l:delete = a:snip
 	else
-		normal! ciw
+		let l:delete = '<' . a:snip . '>'
 	endif
+	execute line('.') . ',' . line('.') . 's/\v(.*)' . l:delete . '/\1snippet/'
+	call search('snippet', 'c', line('.'))
+	normal! ciw
 	let l:save_quote = @"
 	let l:save_s = @s
 	let @s = s:flash_snippets[a:snip]
