@@ -63,15 +63,12 @@ function! SimpleSnippets#expand()
 			let l:save_s = @s
 			let @s = l:snippet
 			let l:save_quote = @"
+			sleep 2
 			if l:snip =~ "\\W"
-				let l:delete = l:snip
+				normal! ciW
 			else
-				let l:delete = '<' . l:snip . '>'
+				normal! ciw
 			endif
-			"let s:trigger = matchstr(getline('.'), '\v(\w+|(\s+)@!\W+(\s)@<!(\w+)?)%' . l:col . 'c.')
-			execute line('.') . ',' . line('.') . 's/\v(.*)' . l:delete . '%' . col('.'). 'c./\1snippet/'
-			call search('snippet', 'c', line('.'))
-			normal! ciw
 			normal! "sp
 			let @" = l:save_quote
 			let @s = l:save_s
@@ -85,14 +82,10 @@ endfunction
 function! SimpleSnippets#expandFlashSnippet(snip)
 	let l:save_quote = @"
 	if a:snip =~ "\\W"
-		let l:delete = a:snip
+		normal! ciW
 	else
-		let l:delete = '<' . a:snip . '>'
+		normal! ciw
 	endif
-	execute line('.') . ',' . line('.') . 's/\v(.*)' . l:delete . '/\1snippet/'
-	call search('snippet', 'c', line('.'))
-	normal! ciw
-	let l:save_quote = @"
 	let l:save_s = @s
 	let @s = s:flash_snippets[a:snip]
 	let s:snip_line_count = len(substitute(s:flash_snippets[a:snip], '[^\n]', '', 'g')) + 1
@@ -273,7 +266,6 @@ endfunction
 
 function! SimpleSnippets#obtainAlternateTrigger()
 	if mode() == 'i'
-		call cursor(line('.'), col('.') - 1)
 		let s:trigger = expand("<cword>")
 	else
 		let s:trigger = expand("<cword>")
