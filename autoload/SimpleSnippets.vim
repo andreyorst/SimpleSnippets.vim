@@ -68,7 +68,8 @@ function! SimpleSnippets#expand()
 			else
 				let l:delete = '<' . l:snip . '>'
 			endif
-			execute line('.') . ',' . line('.') . 's/\v(.*)' . l:delete . '/\1snippet/'
+			"let s:trigger = matchstr(getline('.'), '\v(\w+|(\s+)@!\W+(\s)@<!(\w+)?)%' . l:col . 'c.')
+			execute line('.') . ',' . line('.') . 's/\v(.*)' . l:delete . '%' . col('.'). 'c./\1snippet/'
 			call search('snippet', 'c', line('.'))
 			normal! ciw
 			normal! "sp
