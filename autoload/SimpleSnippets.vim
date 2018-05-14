@@ -192,10 +192,13 @@ function! SimpleSnippets#getSnipPath(snip, filetype)
 endfunction
 
 function! SimpleSnippets#triggerEscape(trigger)
-	if a:trigger =~ "\\W"
-		return escape(a:trigger, '/\*#|{}()"'."'")
+	let l:trigg = SimpleSnippets#removeTrailings(a:trigger)
+	if l:trigg =~ "\\s"
+		return -1
+	elseif l:trigg =~ "\\W"
+		return escape(l:trigg, '/\*#|{}()"'."'")
 	else
-		return a:trigger
+		return l:trigg
 	endif
 endfunction
 
@@ -531,20 +534,29 @@ function! SimpleSnippets#colorMatches(text)
 	return l:matchpositions
 endfunction
 
-function! SimpleSnippets#edit()
+function! SimpleSnippets#edit(...)
 	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
 	let l:path = g:SimpleSnippets_search_path . l:filetype
 	let s:snip_edit_buf = 0
 	if !isdirectory(l:path)
 		call mkdir(l:path, "p")
 	endif
-	let l:trigger = input('Select a trigger: ')
+	if a:0 != 0
+		let l:trigger = a:1
+	else
+		let l:trigger = input('Select a trigger: ')
+	endif
+	let l:trigger = SimpleSnippets#triggerEscape(l:trigger)
+	if l:trigger == -1
+		redraw
+		echo "Whitespace characters can't be used in trigger definition"
+		return -1
+	endif
 	if l:trigger != ''
 		if win_gotoid(s:snip_edit_win)
 			try
 				exec "buffer " . s:snip_edit_buf
 			catch
-				let l:trigger = SimpleSnippets#triggerEscape(l:trigger)
 				exec "edit " . l:path . '/' . l:trigger
 				exec "setf " . l:filetype
 			endtry
@@ -553,13 +565,15 @@ function! SimpleSnippets#edit()
 			try
 				exec "buffer " . s:snip_edit_buf
 			catch
-				let l:trigger = SimpleSnippets#triggerEscape(l:trigger)
 				execute "edit " . l:path . '/' . l:trigger
 				execute "setf " . l:filetype
 				let s:snip_edit_buf = bufnr("")
 			endtry
 			let s:snip_edit_win = win_getid()
 		endif
+	else
+		redraw
+		echo "Empty trigger"
 	endif
 endfunction
 
