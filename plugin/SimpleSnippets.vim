@@ -29,6 +29,6 @@ else
 	let g:SimpleSnippets_similar_filetypes = s:similar_filetypes
 endif
 
-command! -nargs=1 SimpleSnippetsEdit call SimpleSnippets#edit("<args>")
+command! -nargs=? SimpleSnippetsEdit call SimpleSnippets#edit("<args>")
 command! SimpleSnippetsList call SimpleSnippets#listSnippets()
 

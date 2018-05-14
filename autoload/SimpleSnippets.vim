@@ -534,15 +534,15 @@ function! SimpleSnippets#colorMatches(text)
 	return l:matchpositions
 endfunction
 
-function! SimpleSnippets#edit(...)
+function! SimpleSnippets#edit(trigg)
 	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
 	let l:path = g:SimpleSnippets_search_path . l:filetype
 	let s:snip_edit_buf = 0
 	if !isdirectory(l:path)
 		call mkdir(l:path, "p")
 	endif
-	if a:0 != 0
-		let l:trigger = a:1
+	if a:trigg != ''
+		let l:trigger = a:trigg
 	else
 		let l:trigger = input('Select a trigger: ')
 	endif
