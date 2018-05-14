@@ -63,7 +63,6 @@ function! SimpleSnippets#expand()
 			let l:save_s = @s
 			let @s = l:snippet
 			let l:save_quote = @"
-			sleep 2
 			if l:snip =~ "\\W"
 				normal! ciW
 			else
