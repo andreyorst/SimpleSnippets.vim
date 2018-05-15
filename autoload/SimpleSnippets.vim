@@ -183,8 +183,9 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	let l:ph = a:placeholder
 	if l:ph =~ "\\n"
 		let s:placeholder_line_count = len(split(l:ph, "\\n"))
-		let l:ph = join(split(l:ph), "\\n")
-		let l:echo = l:ph
+		let l:list = split(l:ph)
+		let l:ph = join(l:list, "\\n")
+		let l:echo = l:list[0].' ... '.l:list[-1]
 	elseif l:ph !~ "\\W"
 		let s:placeholder_line_count = 1
 		let l:echo = a:placeholder
