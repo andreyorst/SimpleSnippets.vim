@@ -210,6 +210,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		redir => l:cnt
 		execute s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g'
 		redir END
+		call histdel("/", -1)
 		let l:subst_amount = strpart(l:cnt, 0, stridx(l:cnt, " "))
 		let l:subst_amount = substitute(l:subst_amount, '\v%^\_s+|\_s+%$', '', 'g')
 		let s:snip_end = s:snip_end + (s:result_line_count * l:subst_amount) - (s:placeholder_line_count * l:subst_amount)
@@ -496,6 +497,7 @@ function! SimpleSnippets#countPlaceholders(pattern)
 	redir => l:cnt
 	silent! exe '%s/' . a:pattern . '//gn'
 	redir END
+	call histdel("/", -1)
 	if match(l:cnt, 'not found') >= 0
 		return 0
 	endif
@@ -602,6 +604,7 @@ function! SimpleSnippets#colorMatches(text)
 	redir => l:cnt
 	silent! exe s:snip_start.','.s:snip_end.'s/' . a:text . '//gn'
 	redir END
+	call histdel("/", -1)
 	noh
 	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
 	let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
