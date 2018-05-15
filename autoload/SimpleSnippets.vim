@@ -183,8 +183,9 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	let l:ph = a:placeholder
 	if l:ph =~ "\\n"
 		let s:placeholder_line_count = len(split(l:ph, "\\n"))
-		let l:ph = join(split(l:ph), "\\n")
-		let l:echo = l:ph
+		let l:list = split(l:ph)
+		let l:ph = join(l:list, "\\n")
+		let l:echo = l:list[0].' ... '.l:list[-1]
 	elseif l:ph !~ "\\W"
 		let s:placeholder_line_count = 1
 		let l:echo = a:placeholder
@@ -209,6 +210,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		redir => l:cnt
 		execute s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g'
 		redir END
+		call histdel("/", -1)
 		let l:subst_amount = strpart(l:cnt, 0, stridx(l:cnt, " "))
 		let l:subst_amount = substitute(l:subst_amount, '\v%^\_s+|\_s+%$', '', 'g')
 		let s:snip_end = s:snip_end + (s:result_line_count * l:subst_amount) - (s:placeholder_line_count * l:subst_amount)
@@ -255,8 +257,10 @@ endfunction
 function! SimpleSnippets#obtainTrigger()
 	if s:trigger == ''
 		if mode() == 'i'
+			let l:cursor_pos = getpos(".")
 			call cursor(line('.'), col('.') - 1)
 			let s:trigger = expand("<cWORD>")
+			call cursor(l:cursor_pos[1], l:cursor_pos[2])
 		else
 			let s:trigger = expand("<cWORD>")
 		endif
@@ -265,7 +269,10 @@ endfunction
 
 function! SimpleSnippets#obtainAlternateTrigger()
 	if mode() == 'i'
+		let l:cursor_pos = getpos(".")
+		call cursor(line('.'), col('.') - 1)
 		let s:trigger = expand("<cword>")
+		call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	else
 		let s:trigger = expand("<cword>")
 	endif
@@ -498,6 +505,7 @@ function! SimpleSnippets#countPlaceholders(pattern)
 	redir => l:cnt
 	silent! exe '%s/' . a:pattern . '//gn'
 	redir END
+	call histdel("/", -1)
 	if match(l:cnt, 'not found') >= 0
 		return 0
 	endif
@@ -604,6 +612,7 @@ function! SimpleSnippets#colorMatches(text)
 	redir => l:cnt
 	silent! exe s:snip_start.','.s:snip_end.'s/' . a:text . '//gn'
 	redir END
+	call histdel("/", -1)
 	noh
 	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
 	let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
