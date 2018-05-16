@@ -11,9 +11,8 @@ let s:trigger = ''
 
 let s:jump_stack = []
 let s:type_stack = []
+let g:current_jump = 0
 
-let s:back_jump_stack = []
-let s:back_type_stack = []
 "Functions
 function! SimpleSnippets#expandOrJump()
 	if SimpleSnippets#isExpandable()
@@ -104,8 +103,7 @@ endfunction
 function! SimpleSnippets#parseAndInit()
 	let s:jump_stack = []
 	let s:type_stack = []
-	let s:back_jump_stack = []
-	let s:back_type_stack = []
+	let g:current_jump = 0
 	let s:active = 1
 	let s:current_file = @%
 
@@ -133,17 +131,21 @@ endfunction
 
 function! SimpleSnippets#jump()
 	if SimpleSnippets#isInside()
-		let l:current_ph = remove(s:jump_stack, 0)
-		let l:current_type = remove(s:type_stack, 0)
-		call add(s:back_jump_stack, l:current_ph)
-		call add(s:back_type_stack, l:current_type)
-		if get(s:back_type_stack, -2, -1) != -1
-			let g:user_iput = SimpleSnippets#getLastInput()
+		let l:current_ph = get(s:jump_stack, g:current_jump)
+		let l:current_type = get(s:type_stack, g:current_jump)
+		if g:current_jump != len(s:jump_stack)
+			let g:current_jump += 1
+		else
+			echo "[WARN]: No forward jumps left"
+			return
+		endif
+		if g:current_jump - 2 >= 0
+			if s:type_stack[g:current_jump - 2] != 3
+				let s:jump_stack[g:current_jump - 2] = SimpleSnippets#getLastInput()
+			endif
+			echo s:jump_stack
 		endif
 		let l:current_ph = escape(l:current_ph, '/\*~')
-		if s:jump_stack == []
-			let s:active = 0
-		endif
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, '3') == 0
@@ -152,6 +154,9 @@ function! SimpleSnippets#jump()
 	else
 		echo "[WARN]: Can't jump outside of snippet's body"
 	endif
+endfunction
+
+function! SimpleSnippets#jumpBackwards()
 endfunction
 
 function! SimpleSnippets#jumpToLastPlaceholder()
@@ -232,6 +237,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:subst_amount = strpart(l:cnt, 0, stridx(l:cnt, " "))
 		let l:subst_amount = substitute(l:subst_amount, '\v%^\_s+|\_s+%$', '', 'g')
 		let s:snip_end = s:snip_end + (s:result_line_count * l:subst_amount) - (s:placeholder_line_count * l:subst_amount)
+		let s:jump_stack[g:current_jump - 1] = l:rename
 		noh
 	endif
 	for matchpos in l:matchpositions
@@ -241,6 +247,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	if l:reenable_cursorline == 1
 		set cursorline
 	endif
+	redraw
 	if s:jump_stack != []
 		call SimpleSnippets#jump()
 	endif
