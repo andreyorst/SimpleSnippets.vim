@@ -137,7 +137,8 @@ function! SimpleSnippets#jump()
 		if g:current_jump != len(g:jump_stack) + 1
 			let g:current_jump += 1
 			if g:current_jump == len(g:jump_stack) + 1
-				call cursor(l:cursor_pos[1], l:cursor_pos[2])
+				call cursor(s:snip_end, 1)
+				startinsert!
 				return
 			endif
 		else
