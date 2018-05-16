@@ -12,7 +12,6 @@ let s:trigger = ''
 let g:jump_stack = []
 let s:type_stack = []
 let g:current_jump = 0
-let s:motion = "forward"
 
 "Functions
 function! SimpleSnippets#expandOrJump()
@@ -102,7 +101,6 @@ function! SimpleSnippets#expandFlashSnippet(snip)
 endfunction
 
 function! SimpleSnippets#parseAndInit()
-	let s:motion = "forward"
 	let g:jump_stack = []
 	let s:type_stack = []
 	let g:current_jump = 0
@@ -133,7 +131,6 @@ endfunction
 
 function! SimpleSnippets#jump()
 	if SimpleSnippets#isInside()
-		let s:motion = "forward"
 		let l:cursor_pos = getpos(".")
 		let l:current_ph = get(g:jump_stack, g:current_jump)
 		let l:current_type = get(s:type_stack, g:current_jump)
@@ -177,7 +174,6 @@ endfunction
 
 function! SimpleSnippets#jumpBackwards()
 	if SimpleSnippets#isInside()
-		let s:motion = "backward"
 		let l:cursor_pos = getpos(".")
 		if g:current_jump != 0
 			let g:current_jump -= 1
@@ -189,8 +185,8 @@ function! SimpleSnippets#jumpBackwards()
 		if g:current_jump - 1 >= 0
 			let l:current_ph = get(g:jump_stack, g:current_jump - 1)
 			let l:current_type = get(s:type_stack, g:current_jump - 1)
-			if s:type_stack[g:current_jump] != 3
-				let g:prev_ph = g:jump_stack[g:current_jump]
+			if s:type_stack[g:current_jump - 1] != 3
+				let g:prev_ph = g:jump_stack[g:current_jump - 1]
 				if g:prev_ph !~ "\\W"
 					let g:prev_ph = '\<' . g:prev_ph . '\>'
 				else
@@ -218,7 +214,7 @@ endfunction
 function! SimpleSnippets#jumpToLastPlaceholder()
 	if SimpleSnippets#isInside()
 		let l:current_ph = escape(g:jump_stack[-1], '/\*~')
-		let g:current_jump = len(s:type_stack) - 1
+		let g:current_jump = len(g:jump_stack)
 		let l:current_type = s:type_stack[-1]
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
@@ -275,6 +271,7 @@ endfunction
 
 function! SimpleSnippets#jumpMirror(placeholder)
 	let l:ph = a:placeholder
+	let l:echo = a:placeholder
 	if l:ph =~ "\\n"
 		let s:placeholder_line_count = len(split(l:ph, "\\n"))
 		let l:list = split(l:ph)
