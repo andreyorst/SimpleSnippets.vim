@@ -137,8 +137,12 @@ function! SimpleSnippets#jump()
 		let l:cursor_pos = getpos(".")
 		let l:current_ph = get(g:jump_stack, g:current_jump)
 		let l:current_type = get(s:type_stack, g:current_jump)
-		if g:current_jump != len(g:jump_stack)
+		if g:current_jump != len(g:jump_stack) + 1
 			let g:current_jump += 1
+			if g:current_jump == len(g:jump_stack) + 1
+				call cursor(l:cursor_pos[1], l:cursor_pos[2])
+				return
+			endif
 		else
 			echo "[WARN]: No forward jumps left"
 			call cursor(l:cursor_pos[1], l:cursor_pos[2])
@@ -149,6 +153,8 @@ function! SimpleSnippets#jump()
 				let l:prev_ph = g:jump_stack[g:current_jump - 2]
 				if l:prev_ph !~ "\\W"
 					let l:prev_ph = '\<' . l:prev_ph . '\>'
+				else
+					let g:prev_ph = escape(g:prev_ph, '/\*~')
 				endif
 				call cursor(s:snip_start, 1)
 				if search(l:prev_ph, "c", s:snip_end) == 0
@@ -173,7 +179,7 @@ function! SimpleSnippets#jumpBackwards()
 	if SimpleSnippets#isInside()
 		let s:motion = "backward"
 		let l:cursor_pos = getpos(".")
-		if g:current_jump != 1
+		if g:current_jump != 0
 			let g:current_jump -= 1
 		else
 			echo "[WARN]: No backward jumps left"
@@ -184,12 +190,14 @@ function! SimpleSnippets#jumpBackwards()
 			let l:current_ph = get(g:jump_stack, g:current_jump - 1)
 			let l:current_type = get(s:type_stack, g:current_jump - 1)
 			if s:type_stack[g:current_jump] != 3
-				let l:prev_ph = g:jump_stack[g:current_jump]
-				if l:prev_ph !~ "\\W"
-					let l:prev_ph = '\<' . l:prev_ph . '\>'
+				let g:prev_ph = g:jump_stack[g:current_jump]
+				if g:prev_ph !~ "\\W"
+					let g:prev_ph = '\<' . g:prev_ph . '\>'
+				else
+					let g:prev_ph = escape(g:prev_ph, '/\*~')
 				endif
 				call cursor(s:snip_start, 1)
-				if search(l:prev_ph, "c", s:snip_end) == 0
+				if search(g:prev_ph, "c", s:snip_end) == 0
 					let g:jump_stack[g:current_jump] = SimpleSnippets#getLastInput()
 				endif
 				call cursor(l:cursor_pos[1], l:cursor_pos[2])
@@ -286,7 +294,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		set nocursorline
 		let l:reenable_cursorline = 1
 	endif
-	cnoremap <Tab> <Cr>
+	cnoremap <Tab> <Cr><Esc>:call SimpleSnippets#jump()<Cr>
 	cnoremap <S-Tab> <Esc><Esc>:execute("cunmap <S-Tab>")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
 	cnoremap <S-j> <Esc><Esc>:execute("cunmap <S-j>")<Cr>:call SimpleSnippets#jumpBackwards()<Cr>
 	redraw
@@ -312,9 +320,6 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		set cursorline
 	endif
 	redraw
-	if g:current_jump != len(g:jump_stack) && s:motion == "forward"
-		call SimpleSnippets#jump()
-	endif
 endfunction
 
 function! SimpleSnippets#isInside()
