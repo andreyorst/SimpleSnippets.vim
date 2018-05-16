@@ -12,6 +12,8 @@ let s:trigger = ''
 let s:jump_stack = []
 let s:type_stack = []
 
+let s:back_jump_stack = []
+let s:back_type_stack = []
 "Functions
 function! SimpleSnippets#expandOrJump()
 	if SimpleSnippets#isExpandable()
@@ -102,6 +104,8 @@ endfunction
 function! SimpleSnippets#parseAndInit()
 	let s:jump_stack = []
 	let s:type_stack = []
+	let s:back_jump_stack = []
+	let s:back_type_stack = []
 	let s:active = 1
 	let s:current_file = @%
 
@@ -129,8 +133,14 @@ endfunction
 
 function! SimpleSnippets#jump()
 	if SimpleSnippets#isInside()
-		let l:current_ph = escape(remove(s:jump_stack, 0), '/\*~')
+		let l:current_ph = remove(s:jump_stack, 0)
 		let l:current_type = remove(s:type_stack, 0)
+		call add(s:back_jump_stack, l:current_ph)
+		call add(s:back_type_stack, l:current_type)
+		if get(s:back_type_stack, -2, -1) != -1
+			let g:user_iput = SimpleSnippets#getLastInput()
+		endif
+		let l:current_ph = escape(l:current_ph, '/\*~')
 		if s:jump_stack == []
 			let s:active = 0
 		endif
@@ -177,6 +187,14 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	call search(split(l:ph, '\\n')[-1], 'ce', s:snip_end)
 	normal! mp
 	exec "normal! g`qvg`p\<c-g>"
+endfunction
+
+function! SimpleSnippets#getLastInput()
+	let l:save_quote = @"
+	normal! g`qvg`.y
+	let l:user_input = @"
+	let @" = l:save_quote
+	return l:user_input
 endfunction
 
 function! SimpleSnippets#jumpMirror(placeholder)
