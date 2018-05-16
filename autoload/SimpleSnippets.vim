@@ -11,7 +11,8 @@ let s:trigger = ''
 
 let s:jump_stack = []
 let s:type_stack = []
-let g:current_jump = 0
+let s:current_jump = 0
+let s:motion = "forward"
 
 "Functions
 function! SimpleSnippets#expandOrJump()
@@ -101,9 +102,10 @@ function! SimpleSnippets#expandFlashSnippet(snip)
 endfunction
 
 function! SimpleSnippets#parseAndInit()
+	let s:motion = "forward"
 	let s:jump_stack = []
 	let s:type_stack = []
-	let g:current_jump = 0
+	let s:current_jump = 0
 	let s:active = 1
 	let s:current_file = @%
 
@@ -131,23 +133,34 @@ endfunction
 
 function! SimpleSnippets#jump()
 	if SimpleSnippets#isInside()
-		let l:current_ph = get(s:jump_stack, g:current_jump)
-		let l:current_type = get(s:type_stack, g:current_jump)
-		if g:current_jump != len(s:jump_stack)
-			let g:current_jump += 1
+		let s:motion = "forward"
+		let l:cursor_pos = getpos(".")
+		let l:current_ph = get(s:jump_stack, s:current_jump)
+		let l:current_type = get(s:type_stack, s:current_jump)
+		if s:current_jump != len(s:jump_stack)
+			let s:current_jump += 1
 		else
 			echo "[WARN]: No forward jumps left"
+			call cursor(l:cursor_pos[1], l:cursor_pos[2])
 			return
 		endif
-		if g:current_jump - 2 >= 0
-			if s:type_stack[g:current_jump - 2] != 3
-				let s:jump_stack[g:current_jump - 2] = SimpleSnippets#getLastInput()
+		if s:current_jump - 2 >= 0
+			if s:type_stack[s:current_jump - 2] != 3
+				let l:prev_ph = s:jump_stack[s:current_jump - 2]
+				if l:prev_ph !~ "\\W"
+					let l:prev_ph = '\<' . l:prev_ph . '\>'
+				endif
+				call cursor(s:snip_start, 1)
+				if search(l:prev_ph, "c", s:snip_end) == 0
+					let s:jump_stack[s:current_jump - 2] = SimpleSnippets#getLastInput()
+				endif
+				call cursor(l:cursor_pos[1], l:cursor_pos[2])
 			endif
-			echo s:jump_stack
 		endif
 		let l:current_ph = escape(l:current_ph, '/\*~')
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
+			call SimpleSnippets#printJumpStackState()
 		elseif match(l:current_type, '3') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
@@ -157,24 +170,74 @@ function! SimpleSnippets#jump()
 endfunction
 
 function! SimpleSnippets#jumpBackwards()
+	if SimpleSnippets#isInside()
+		let s:motion = "backward"
+		let l:cursor_pos = getpos(".")
+		if s:current_jump != 1
+			let s:current_jump -= 1
+		else
+			echo "[WARN]: No backward jumps left"
+			call cursor(l:cursor_pos[1], l:cursor_pos[2])
+			return
+		endif
+		if s:current_jump - 1 >= 0
+			let l:current_ph = get(s:jump_stack, s:current_jump - 1)
+			let l:current_type = get(s:type_stack, s:current_jump - 1)
+			if s:type_stack[s:current_jump] != 3
+				let l:prev_ph = s:jump_stack[s:current_jump]
+				if l:prev_ph !~ "\\W"
+					let l:prev_ph = '\<' . l:prev_ph . '\>'
+				endif
+				call cursor(s:snip_start, 1)
+				if search(l:prev_ph, "c", s:snip_end) == 0
+					let s:jump_stack[s:current_jump] = SimpleSnippets#getLastInput()
+				endif
+				call cursor(l:cursor_pos[1], l:cursor_pos[2])
+			endif
+			let l:current_ph = escape(l:current_ph, '/\*~')
+			if match(l:current_type, '1') == 0
+				call SimpleSnippets#jumpNormal(l:current_ph)
+				call SimpleSnippets#printJumpStackState()
+			elseif match(l:current_type, '3') == 0
+				call SimpleSnippets#jumpMirror(l:current_ph)
+			endif
+		endif
+	else
+		echo "[WARN]: Can't jump outside of snippet's body"
+	endif
 endfunction
 
 function! SimpleSnippets#jumpToLastPlaceholder()
 	if SimpleSnippets#isInside()
-		let s:active = 0
 		let l:current_ph = escape(s:jump_stack[-1], '/\*~')
+		let s:current_jump = len(s:type_stack) - 1
 		let l:current_type = s:type_stack[-1]
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
+			call SimpleSnippets#printJumpStackState()
 		elseif match(l:current_type, '3') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
-		let s:jump_stack = []
-		let s:type_stack = []
-		let s:active = 0
 	else
 		echo "[WARN]: Can't jump outside of snippet's body"
 	endif
+endfunction
+
+" debug function
+function! SimpleSnippets#printJumpStackState()
+	let l:i = 0
+	for item in s:jump_stack
+		if l:i != s:current_jump - 1
+			echon string(item)
+		else
+			echon "[".string(item)."]"
+		endif
+		if l:i != len(s:jump_stack) - 1
+			echon ", "
+		endif
+		let l:i += 1
+	endfor
+	echon " | current_jump = ". s:current_jump
 endfunction
 
 function! SimpleSnippets#jumpNormal(placeholder)
@@ -225,6 +288,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	endif
 	cnoremap <Tab> <Cr>
 	cnoremap <S-Tab> <Esc><Esc>:execute("cunmap <S-Tab>")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
+	cnoremap <S-j> <Esc><Esc>:execute("cunmap <S-j>")<Cr>:call SimpleSnippets#jumpBackwards()<Cr>
 	redraw
 	let l:rename = input('Replace placeholder "'.l:echo.'" with: ')
 	let s:result_line_count = len(split(l:rename, '\\r'))
@@ -237,7 +301,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:subst_amount = strpart(l:cnt, 0, stridx(l:cnt, " "))
 		let l:subst_amount = substitute(l:subst_amount, '\v%^\_s+|\_s+%$', '', 'g')
 		let s:snip_end = s:snip_end + (s:result_line_count * l:subst_amount) - (s:placeholder_line_count * l:subst_amount)
-		let s:jump_stack[g:current_jump - 1] = l:rename
+		let s:jump_stack[s:current_jump - 1] = l:rename
 		noh
 	endif
 	for matchpos in l:matchpositions
@@ -248,7 +312,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		set cursorline
 	endif
 	redraw
-	if s:jump_stack != []
+	if s:current_jump + 1 != len(s:jump_stack) && s:motion == "forward"
 		call SimpleSnippets#jump()
 	endif
 endfunction
