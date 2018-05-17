@@ -328,14 +328,14 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:reenable_cursorline = 1
 	endif
 
-	if mapcheck(g:SimpleSnippetsExpandOrJumpTrigger) != ''
-		let l:save_cmap1 = maparg(g:SimpleSnippetsExpandOrJumpTrigger)
+	if mapcheck(g:SimpleSnippetsExpandOrJumpTrigger, "c") != ''
+		let l:save_cmap1 = maparg(g:SimpleSnippetsExpandOrJumpTrigger, "c")
 	endif
-	if mapcheck(g:SimpleSnippetsExpandOrJumpTrigger) != ''
-		let l:save_cmap2 = maparg(g:SimpleSnippetsExpandOrJumpTrigger)
+	if mapcheck(g:SimpleSnippetsExpandOrJumpTrigger, "c") != ''
+		let l:save_cmap2 = maparg(g:SimpleSnippetsExpandOrJumpTrigger, "c")
 	endif
-	if mapcheck(g:SimpleSnippetsJumpBackwardTrigger) != ''
-		let l:save_cmap3 = maparg(g:SimpleSnippetsJumpBackwardTrigger)
+	if mapcheck(g:SimpleSnippetsJumpBackwardTrigger, "c") != ''
+		let l:save_cmap3 = maparg(g:SimpleSnippetsJumpBackwardTrigger, "c")
 	endif
 	exec "cnoremap <silent>".g:SimpleSnippetsExpandOrJumpTrigger.' <Cr><Esc>:call SimpleSnippets#jump()<Cr>'
 	exec "cnoremap <silent>".g:SimpleSnippetsJumpBackwardTrigger.' <Esc><Esc>:execute("cunmap '.g:SimpleSnippetsJumpBackwardTrigger.'")<Cr>:call SimpleSnippets#jumpBackwards()<Cr>'
