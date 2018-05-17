@@ -156,6 +156,7 @@ function! SimpleSnippets#jump()
 		else
 			echo "[WARN]: No forward jumps left"
 			call cursor(l:cursor_pos[1], l:cursor_pos[2])
+			startinsert!
 			return
 		endif
 		if s:current_jump - 2 >= 0
@@ -192,14 +193,16 @@ function! SimpleSnippets#jumpBackwards()
 			if s:current_jump == 0
 				normal! `q
 				startinsert
+				return
 			endif
+			let l:current_ph = get(s:jump_stack, s:current_jump - 1)
 		else
 			echo "[WARN]: No backward jumps left"
-			call cursor(l:cursor_pos[1], l:cursor_pos[2])
+			call cursor(l:cursor_pos[1], l:cursor_pos[2] + 1)
+			startinsert
 			return
 		endif
 		if s:current_jump - 1 >= 0
-			let l:current_ph = get(s:jump_stack, s:current_jump - 1)
 			let l:current_type = get(s:type_stack, s:current_jump - 1)
 			if s:type_stack[s:current_jump - 1] != 3
 				let l:prev_ph = s:jump_stack[s:current_jump - 1]
@@ -214,12 +217,12 @@ function! SimpleSnippets#jumpBackwards()
 				endif
 				call cursor(l:cursor_pos[1], l:cursor_pos[2])
 			endif
-			let l:current_ph = escape(l:current_ph, '/\*~')
-			if match(l:current_type, '1') == 0
-				call SimpleSnippets#jumpNormal(l:current_ph)
-			elseif match(l:current_type, '3') == 0
-				call SimpleSnippets#jumpMirror(l:current_ph)
-			endif
+		endif
+		let l:current_ph = escape(l:current_ph, '/\*~')
+		if match(l:current_type, '1') == 0
+			call SimpleSnippets#jumpNormal(l:current_ph)
+		elseif match(l:current_type, '3') == 0
+			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
 	else
 		echo "[WARN]: Can't jump outside of snippet's body"
