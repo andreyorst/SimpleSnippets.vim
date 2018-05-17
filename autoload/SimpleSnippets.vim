@@ -134,28 +134,10 @@ function! SimpleSnippets#jump()
 		let l:cursor_pos = getpos(".")
 		let l:current_ph = get(s:jump_stack, s:current_jump)
 		let l:current_type = get(s:type_stack, s:current_jump)
-		if s:current_jump != len(s:jump_stack) + 1
-			let s:current_jump += 1
-			if s:current_jump == len(s:jump_stack) + 1
-				if s:type_stack[-1] != 3
-					let l:prev_ph = s:jump_stack[-1]
-					if l:prev_ph !~ "\\W"
-						let l:prev_ph = '\<' . l:prev_ph . '\>'
-					else
-						let l:prev_ph = escape(l:prev_ph, '/\*~')
-					endif
-					call cursor(s:snip_start, 1)
-					if search(l:prev_ph, "c", s:snip_end) == 0
-						let s:jump_stack[-1] = SimpleSnippets#getLastInput()
-					endif
-					call cursor(s:snip_end, 1)
-					startinsert!
-					return
-				endif
-			endif
-		else
-			echo "[WARN]: No forward jumps left"
-			call cursor(l:cursor_pos[1], l:cursor_pos[2])
+		let s:current_jump += 1
+		if s:current_jump == len(s:jump_stack) + 1
+			call cursor(s:snip_end, 1)
+			let s:active = 0
 			startinsert!
 			return
 		endif
@@ -188,20 +170,21 @@ endfunction
 function! SimpleSnippets#jumpBackwards()
 	if SimpleSnippets#isInside()
 		let l:cursor_pos = getpos(".")
-		if s:current_jump != 0
+		if s:current_jump -1 != 0
 			let s:current_jump -= 1
-			if s:current_jump == 0
-				normal! `q
-				startinsert
-				return
-			endif
-			let l:current_ph = get(s:jump_stack, s:current_jump - 1)
 		else
-			echo "[WARN]: No backward jumps left"
-			call cursor(l:cursor_pos[1], l:cursor_pos[2] + 1)
-			startinsert
-			return
+			let l:prev_ph = s:jump_stack[0]
+			if l:prev_ph !~ "\\W"
+				let l:prev_ph = '\<' . l:prev_ph . '\>'
+			else
+				let l:prev_ph = escape(l:prev_ph, '/\*~')
+			endif
+			call cursor(s:snip_start, 1)
+			if search(l:prev_ph, "c", s:snip_end) == 0
+				let s:jump_stack[0] = SimpleSnippets#getLastInput()
+			endif
 		endif
+		let l:current_ph = get(s:jump_stack, s:current_jump - 1)
 		if s:current_jump - 1 >= 0
 			let l:current_type = get(s:type_stack, s:current_jump - 1)
 			if s:type_stack[s:current_jump - 1] != 3
