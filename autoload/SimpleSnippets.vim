@@ -327,14 +327,27 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		set nocursorline
 		let l:reenable_cursorline = 1
 	endif
+
+	if mapcheck(g:SimpleSnippetsExpandOrJumpTrigger) != ''
+		let l:save_cmap1 = maparg(g:SimpleSnippetsExpandOrJumpTrigger)
+	endif
+	if mapcheck(g:SimpleSnippetsExpandOrJumpTrigger) != ''
+		let l:save_cmap2 = maparg(g:SimpleSnippetsExpandOrJumpTrigger)
+	endif
+	if mapcheck(g:SimpleSnippetsJumpBackwardTrigger) != ''
+		let l:save_cmap3 = maparg(g:SimpleSnippetsJumpBackwardTrigger)
+	endif
 	exec "cnoremap <silent>".g:SimpleSnippetsExpandOrJumpTrigger.' <Cr><Esc>:call SimpleSnippets#jump()<Cr>'
-	exec "cnoremap <silent>".g:SimpleSnippetsJumpToLastTrigger.' <Esc><Esc>:execute("cunmap '.g:SimpleSnippetsJumpToLastTrigger.'")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>'
 	exec "cnoremap <silent>".g:SimpleSnippetsJumpBackwardTrigger.' <Esc><Esc>:execute("cunmap '.g:SimpleSnippetsJumpBackwardTrigger.'")<Cr>:call SimpleSnippets#jumpBackwards()<Cr>'
+	exec "cnoremap <silent>".g:SimpleSnippetsJumpToLastTrigger.' <Esc><Esc>:execute("cunmap '.g:SimpleSnippetsJumpToLastTrigger.'")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>'
 	redraw
 	let l:rename = input('Replace placeholder "'.l:echo.'" with: ')
+	exec "cunmap ".g:SimpleSnippetsExpandOrJumpTrigger
+	if exists(l:save_cmap1)
+		exec "cnoremap ".l:save_cmap1
+	endif
 	normal! :
 	let s:result_line_count = len(split(l:rename, '\\r'))
-	exec "cunmap ".g:SimpleSnippetsExpandOrJumpTrigger
 	if l:rename != ''
 		redir => l:cnt
 		execute s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g'
