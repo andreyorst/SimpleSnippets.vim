@@ -233,6 +233,9 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 		let l:cursor_pos = getpos(".")
 		let l:current_ph = escape(s:jump_stack[-1], '/\*~')
 		let s:prev_jump = s:current_jump - 1
+		if s:prev_jump >= len(s:jump_stack)
+			let s:prev_jump = len(s:jump_stack) - 1
+		endif
 		let s:current_jump = len(s:jump_stack)
 		let l:current_type = s:type_stack[-1]
 		if s:type_stack[s:prev_jump] != 3
@@ -317,6 +320,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	let l:matchpositions = SimpleSnippets#colorMatches(l:ph)
 	call cursor(s:snip_start, 1)
 	call search(l:ph, 'c', s:snip_end)
+	normal! mq
 	let l:cursor_pos = getpos(".")
 	let l:reenable_cursorline = 0
 	if &cursorline == 1
