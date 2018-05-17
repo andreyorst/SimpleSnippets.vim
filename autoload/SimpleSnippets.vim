@@ -223,14 +223,14 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 		let s:current_jump = len(s:jump_stack)
 		let l:current_type = s:type_stack[-1]
 		if s:type_stack[s:prev_jump] != 3
-			let g:prev_ph = get(s:jump_stack, s:prev_jump)
-			if g:prev_ph !~ "\\W"
-				let g:prev_ph = '\<' . g:prev_ph . '\>'
+			let s:prev_ph = get(s:jump_stack, s:prev_jump)
+			if s:prev_ph !~ "\\W"
+				let s:prev_ph = '\<' . s:prev_ph . '\>'
 			else
-				let g:prev_ph = escape(g:prev_ph, '/\*~')
+				let s:prev_ph = escape(s:prev_ph, '/\*~')
 			endif
 			call cursor(s:snip_start, 1)
-			if search(g:prev_ph, "c", s:snip_end) == 0
+			if search(s:prev_ph, "c", s:snip_end) == 0
 				let s:jump_stack[s:prev_jump] = SimpleSnippets#getLastInput()
 			endif
 			call cursor(l:cursor_pos[1], l:cursor_pos[2])
@@ -288,6 +288,23 @@ function! SimpleSnippets#getLastInput()
 endfunction
 
 function! SimpleSnippets#jumpMirror(placeholder)
+	if s:current_jump + 1 <= len(s:jump_stack)
+		if s:type_stack[s:current_jump] != 3
+			let l:cursor_pos = getpos(".")
+			let s:prev_ph = get(s:jump_stack, s:current_jump)
+			if s:prev_ph !~ "\\W"
+				let s:prev_ph = '\<' . s:prev_ph . '\>'
+			else
+				let s:prev_ph = escape(s:prev_ph, '/\*~')
+			endif
+			call cursor(s:snip_start, 1)
+			if search(s:prev_ph, "c", s:snip_end) == 0
+				let s:jump_stack[s:current_jump] = SimpleSnippets#getLastInput()
+			endif
+			call cursor(l:cursor_pos[1], l:cursor_pos[2])
+		endif
+	endif
+
 	let l:ph = a:placeholder
 	let l:echo = a:placeholder
 	if l:ph =~ "\\n"
