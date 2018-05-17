@@ -16,9 +16,13 @@ endif
 if s:allow_remap == 1
 	nnoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
 	inoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
-	inoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
 	snoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
-	snoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
+	nnoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpBackwards()<Cr>" : "\<S-Tab>"
+	inoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpBackwards()<Cr>" : "\<S-Tab>"
+	snoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpBackwards()<Cr>" : "\<S-Tab>"
+	nnoremap <silent><expr><S-j> SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpBackwards()<Cr>" : "\<S-j>"
+	inoremap <silent><expr><S-j> SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpBackwards()<Cr>" : "\<S-j>"
+	snoremap <silent><expr><S-j> SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpBackwards()<Cr>" : "\<S-j>"
 endif
 
 let s:similar_filetypes = [['tex', 'plaintex'], ['bash', 'zsh', 'sh']]

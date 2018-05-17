@@ -328,8 +328,8 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:reenable_cursorline = 1
 	endif
 	cnoremap <silent><Tab> <Cr><Esc>:call SimpleSnippets#jump()<Cr>
-	cnoremap <silent><S-Tab> <Esc><Esc>:execute("cunmap <S-Tab>")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
-	cnoremap <silent><S-j> <Esc><Esc>:execute("cunmap <S-j>")<Cr>:call SimpleSnippets#jumpBackwards()<Cr>
+	cnoremap <silent><S-j> <Esc><Esc>:execute("cunmap <S-j>")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
+	cnoremap <silent><S-Tab> <Esc><Esc>:execute("cunmap <S-Tab>")<Cr>:call SimpleSnippets#jumpBackwards()<Cr>
 	redraw
 	let l:rename = input('Replace placeholder "'.l:echo.'" with: ')
 	normal! :
