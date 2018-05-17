@@ -176,7 +176,6 @@ function! SimpleSnippets#jump()
 		let l:current_ph = escape(l:current_ph, '/\*~')
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
-			call SimpleSnippets#printJumpStackState()
 		elseif match(l:current_type, '3') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
@@ -218,7 +217,6 @@ function! SimpleSnippets#jumpBackwards()
 			let l:current_ph = escape(l:current_ph, '/\*~')
 			if match(l:current_type, '1') == 0
 				call SimpleSnippets#jumpNormal(l:current_ph)
-				call SimpleSnippets#printJumpStackState()
 			elseif match(l:current_type, '3') == 0
 				call SimpleSnippets#jumpMirror(l:current_ph)
 			endif
@@ -253,7 +251,6 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 		endif
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
-			call SimpleSnippets#printJumpStackState()
 		elseif match(l:current_type, '3') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
