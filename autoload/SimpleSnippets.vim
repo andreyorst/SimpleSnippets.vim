@@ -166,9 +166,9 @@ function! SimpleSnippets#jumpBackwards()
 			call SimpleSnippets#checkIfChangesWereMade(0, 0)
 		endif
 		let l:current_ph = get(s:jump_stack, s:current_jump - 1)
+		let l:current_type = get(s:type_stack, s:current_jump - 1)
 		if s:current_jump - 1 >= 0
-			let l:current_type = get(s:type_stack, s:current_jump - 1)
-			call SimpleSnippets#checkIfChangesWereMade(s:current_jump - 1, s:current_jump)
+			call SimpleSnippets#checkIfChangesWereMade(s:current_jump, s:current_jump)
 		endif
 		let l:current_ph = escape(l:current_ph, '/\*~')
 		if match(l:current_type, '1') == 0
@@ -217,6 +217,7 @@ function! SimpleSnippets#printJumpStackState()
 		let l:i += 1
 	endfor
 	echon " | current_jump = ". s:current_jump
+	sleep 1
 endfunction
 
 function! SimpleSnippets#jumpNormal(placeholder)
