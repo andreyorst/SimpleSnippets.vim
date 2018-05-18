@@ -167,3 +167,7 @@ provided with the plugins to understand how things work. If you encounter any pr
 
 ![shell and plain text](https://user-images.githubusercontent.com/19470159/39097254-8cbc957a-4662-11e8-841b-65d239551517.gif)
 ![viml and shell](https://user-images.githubusercontent.com/19470159/39826577-d4f29124-53bd-11e8-812c-07c160e84298.gif)
+
+#### Jumping back and forth
+
+![backjumping](https://user-images.githubusercontent.com/19470159/40218859-b84e4c06-5a7b-11e8-8841-95ccbf45636f.gif)
