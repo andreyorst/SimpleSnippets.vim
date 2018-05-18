@@ -30,8 +30,13 @@ You're ready to use SimpleSnippets. However SimpleSnippets.vim doesn't come with
 Snippets can be installed with [SimpleSnippets-snippets](https://github.com/andreyorst/SimpleSnippets-snippets) plugin.
 It's not full featured collections of snippets for now, but I will extend it over time. Help is always appreciated.
 
-If you want to change mappings, consider adding `let g:SimpleSnippets_dont_remap_tab = 1` to
-your vimrc. For other settings please read the documentation.
+If you want to redefine keys, consider adding this:
+```vim
+let g:SimpleSnippetsExpandOrJumpTrigger = "<Tab>"
+let g:SimpleSnippetsJumpBackwardTrigger = "<S-Tab>"
+let g:SimpleSnippetsJumpToLastTrigger = "<S-j>"
+```
+to your vimrc. If you want to disable default mappings, to write your own using functions, append `let g:SimpleSnippets_dont_remap_tab = 1` to those settings. For other settings please read the documentation.
 
 ## Why?
 
