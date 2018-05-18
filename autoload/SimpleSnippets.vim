@@ -11,6 +11,7 @@ let s:trigger = ''
 
 let s:jump_stack = []
 let s:type_stack = []
+let s:current_jump = 0
 
 "Functions
 function! SimpleSnippets#expandOrJump()
@@ -102,6 +103,7 @@ endfunction
 function! SimpleSnippets#parseAndInit()
 	let s:jump_stack = []
 	let s:type_stack = []
+	let s:current_jump = 0
 	let s:active = 1
 	let s:current_file = @%
 
@@ -129,11 +131,77 @@ endfunction
 
 function! SimpleSnippets#jump()
 	if SimpleSnippets#isInside()
-		let l:current_ph = escape(remove(s:jump_stack, 0), '/\*~')
-		let l:current_type = remove(s:type_stack, 0)
-		if s:jump_stack == []
+		let l:cursor_pos = getpos(".")
+		let l:current_ph = get(s:jump_stack, s:current_jump)
+		let l:current_type = get(s:type_stack, s:current_jump)
+		let s:current_jump += 1
+		if s:current_jump == len(s:jump_stack) + 1
+			call cursor(s:snip_end, 1)
 			let s:active = 0
+			startinsert!
+			return
 		endif
+		if s:current_jump - 2 >= 0
+			if s:type_stack[s:current_jump - 2] != 3
+				let l:prev_ph = s:jump_stack[s:current_jump - 2]
+				if l:prev_ph !~ "\\W"
+					let l:prev_ph = '\<' . l:prev_ph . '\>'
+				else
+					let l:prev_ph = escape(l:prev_ph, '/\*~')
+				endif
+				call cursor(s:snip_start, 1)
+				if search(l:prev_ph, "c", s:snip_end) == 0
+					let s:jump_stack[s:current_jump - 2] = SimpleSnippets#getLastInput()
+				endif
+				call cursor(l:cursor_pos[1], l:cursor_pos[2])
+			endif
+		endif
+		let l:current_ph = escape(l:current_ph, '/\*~')
+		if match(l:current_type, '1') == 0
+			call SimpleSnippets#jumpNormal(l:current_ph)
+		elseif match(l:current_type, '3') == 0
+			call SimpleSnippets#jumpMirror(l:current_ph)
+		endif
+	else
+		echo "[WARN]: Can't jump outside of snippet's body"
+	endif
+endfunction
+
+function! SimpleSnippets#jumpBackwards()
+	if SimpleSnippets#isInside()
+		let l:cursor_pos = getpos(".")
+		if s:current_jump -1 != 0
+			let s:current_jump -= 1
+		else
+			let l:prev_ph = s:jump_stack[0]
+			if l:prev_ph !~ "\\W"
+				let l:prev_ph = '\<' . l:prev_ph . '\>'
+			else
+				let l:prev_ph = escape(l:prev_ph, '/\*~')
+			endif
+			call cursor(s:snip_start, 1)
+			if search(l:prev_ph, "c", s:snip_end) == 0
+				let s:jump_stack[0] = SimpleSnippets#getLastInput()
+			endif
+		endif
+		let l:current_ph = get(s:jump_stack, s:current_jump - 1)
+		if s:current_jump - 1 >= 0
+			let l:current_type = get(s:type_stack, s:current_jump - 1)
+			if s:type_stack[s:current_jump - 1] != 3
+				let l:prev_ph = s:jump_stack[s:current_jump - 1]
+				if l:prev_ph !~ "\\W"
+					let l:prev_ph = '\<' . l:prev_ph . '\>'
+				else
+					let l:prev_ph = escape(l:prev_ph, '/\*~')
+				endif
+				call cursor(s:snip_start, 1)
+				if search(l:prev_ph, "c", s:snip_end) == 0
+					let s:jump_stack[s:current_jump] = SimpleSnippets#getLastInput()
+				endif
+				call cursor(l:cursor_pos[1], l:cursor_pos[2])
+			endif
+		endif
+		let l:current_ph = escape(l:current_ph, '/\*~')
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, '3') == 0
@@ -146,20 +214,52 @@ endfunction
 
 function! SimpleSnippets#jumpToLastPlaceholder()
 	if SimpleSnippets#isInside()
-		let s:active = 0
+		let l:cursor_pos = getpos(".")
 		let l:current_ph = escape(s:jump_stack[-1], '/\*~')
+		let s:prev_jump = s:current_jump - 1
+		if s:prev_jump >= len(s:jump_stack)
+			let s:prev_jump = len(s:jump_stack) - 1
+		endif
+		let s:current_jump = len(s:jump_stack)
 		let l:current_type = s:type_stack[-1]
+		if s:type_stack[s:prev_jump] != 3
+			let s:prev_ph = get(s:jump_stack, s:prev_jump)
+			if s:prev_ph !~ "\\W"
+				let s:prev_ph = '\<' . s:prev_ph . '\>'
+			else
+				let s:prev_ph = escape(s:prev_ph, '/\*~')
+			endif
+			call cursor(s:snip_start, 1)
+			if search(s:prev_ph, "c", s:snip_end) == 0
+				let s:jump_stack[s:prev_jump] = SimpleSnippets#getLastInput()
+			endif
+			call cursor(l:cursor_pos[1], l:cursor_pos[2])
+		endif
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, '3') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
-		let s:jump_stack = []
-		let s:type_stack = []
-		let s:active = 0
 	else
 		echo "[WARN]: Can't jump outside of snippet's body"
 	endif
+endfunction
+
+" debug function
+function! SimpleSnippets#printJumpStackState()
+	let l:i = 0
+	for item in s:jump_stack
+		if l:i != s:current_jump - 1
+			echon string(item)
+		else
+			echon "[".string(item)."]"
+		endif
+		if l:i != len(s:jump_stack) - 1
+			echon ", "
+		endif
+		let l:i += 1
+	endfor
+	echon " | current_jump = ". s:current_jump
 endfunction
 
 function! SimpleSnippets#jumpNormal(placeholder)
@@ -179,8 +279,34 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	exec "normal! g`qvg`p\<c-g>"
 endfunction
 
+function! SimpleSnippets#getLastInput()
+	let l:save_quote = @"
+	normal! g`qvg`.y
+	let l:user_input = @"
+	let @" = l:save_quote
+	return l:user_input
+endfunction
+
 function! SimpleSnippets#jumpMirror(placeholder)
+	if s:current_jump + 1 <= len(s:jump_stack)
+		if s:type_stack[s:current_jump] != 3
+			let l:cursor_pos = getpos(".")
+			let s:prev_ph = get(s:jump_stack, s:current_jump)
+			if s:prev_ph !~ "\\W"
+				let s:prev_ph = '\<' . s:prev_ph . '\>'
+			else
+				let s:prev_ph = escape(s:prev_ph, '/\*~')
+			endif
+			call cursor(s:snip_start, 1)
+			if search(s:prev_ph, "c", s:snip_end) == 0
+				let s:jump_stack[s:current_jump] = SimpleSnippets#getLastInput()
+			endif
+			call cursor(l:cursor_pos[1], l:cursor_pos[2])
+		endif
+	endif
+
 	let l:ph = a:placeholder
+	let l:echo = a:placeholder
 	if l:ph =~ "\\n"
 		let s:placeholder_line_count = len(split(l:ph, "\\n"))
 		let l:list = split(l:ph)
@@ -194,18 +320,22 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	let l:matchpositions = SimpleSnippets#colorMatches(l:ph)
 	call cursor(s:snip_start, 1)
 	call search(l:ph, 'c', s:snip_end)
+	normal! mq
 	let l:cursor_pos = getpos(".")
 	let l:reenable_cursorline = 0
 	if &cursorline == 1
 		set nocursorline
 		let l:reenable_cursorline = 1
 	endif
-	cnoremap <Tab> <Cr>
-	cnoremap <S-Tab> <Esc><Esc>:execute("cunmap <S-Tab>")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
+
+	exec "cnoremap <silent>".g:SimpleSnippetsExpandOrJumpTrigger.' <Cr><Esc>:call SimpleSnippets#jump()<Cr>'
+	exec "cnoremap <silent>".g:SimpleSnippetsJumpBackwardTrigger.' <Esc><Esc>:execute("cunmap '.g:SimpleSnippetsJumpBackwardTrigger.'")<Cr>:call SimpleSnippets#jumpBackwards()<Cr>'
+	exec "cnoremap <silent>".g:SimpleSnippetsJumpToLastTrigger.' <Esc><Esc>:execute("cunmap '.g:SimpleSnippetsJumpToLastTrigger.'")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>'
 	redraw
 	let l:rename = input('Replace placeholder "'.l:echo.'" with: ')
+	exec "cunmap ".g:SimpleSnippetsExpandOrJumpTrigger
+	normal! :
 	let s:result_line_count = len(split(l:rename, '\\r'))
-	cunmap <Tab>
 	if l:rename != ''
 		redir => l:cnt
 		execute s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g'
@@ -214,6 +344,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:subst_amount = strpart(l:cnt, 0, stridx(l:cnt, " "))
 		let l:subst_amount = substitute(l:subst_amount, '\v%^\_s+|\_s+%$', '', 'g')
 		let s:snip_end = s:snip_end + (s:result_line_count * l:subst_amount) - (s:placeholder_line_count * l:subst_amount)
+		let s:jump_stack[s:current_jump - 1] = l:rename
 		noh
 	endif
 	for matchpos in l:matchpositions
@@ -223,9 +354,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	if l:reenable_cursorline == 1
 		set cursorline
 	endif
-	if s:jump_stack != []
-		call SimpleSnippets#jump()
-	endif
+	redraw
 endfunction
 
 function! SimpleSnippets#isInside()
@@ -418,10 +547,13 @@ function! SimpleSnippets#edit()
 endfunction
 
 function! SimpleSnippets#triggerEscape(trigger)
-	if a:trigger =~ "\\W"
-		return escape(a:trigger, '/\*#|{}()"'."'")
+	let l:trigg = SimpleSnippets#removeTrailings(a:trigger)
+	if l:trigg =~ "\\s"
+		return -1
+	elseif l:trigg =~ "\\W"
+		return escape(l:trigg, '/\*#|{}()"'."'")
 	else
-		return a:trigger
+		return l:trigg
 	endif
 endfunction
 
@@ -630,6 +762,76 @@ function! SimpleSnippets#colorMatches(text)
 		let l:i += 1
 	endwhile
 	return l:matchpositions
+endfunction
+
+function! SimpleSnippets#edit(trigg)
+	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
+	let l:path = g:SimpleSnippets_search_path . l:filetype
+	let s:snip_edit_buf = 0
+	if !isdirectory(l:path)
+		call mkdir(l:path, "p")
+	endif
+	if a:trigg != ''
+		let l:trigger = a:trigg
+	else
+		let l:trigger = input('Select a trigger: ')
+	endif
+	let l:trigger = SimpleSnippets#triggerEscape(l:trigger)
+	if l:trigger == -1
+		redraw
+		echo "Whitespace characters can't be used in trigger definition"
+		return -1
+	endif
+	if l:trigger != ''
+		if win_gotoid(s:snip_edit_win)
+			try
+				exec "buffer " . s:snip_edit_buf
+			catch
+				exec "edit " . l:path . '/' . l:trigger
+				exec "setf " . l:filetype
+			endtry
+		else
+			vertical new
+			try
+				exec "buffer " . s:snip_edit_buf
+			catch
+				execute "edit " . l:path . '/' . l:trigger
+				execute "setf " . l:filetype
+				let s:snip_edit_buf = bufnr("")
+			endtry
+			let s:snip_edit_win = win_getid()
+		endif
+	else
+		redraw
+		echo "Empty trigger"
+	endif
+endfunction
+
+function! SimpleSnippets#listSnippets()
+	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
+	call SimpleSnippets#checkExternalSnippets()
+	let l:user_snips = g:SimpleSnippets_search_path
+	call SimpleSnippets#printSnippets("User snippets:", l:user_snips, l:filetype)
+	if s:flash_snippets != {}
+		let l:string = ''
+		echo 'Flash snippets:'
+		for snippet in s:flash_snippets
+			let l:item = join(snippet, ": ")
+			let l:string .= l:item .'\n'
+		endfor
+		echo system('echo ' . shellescape(l:string) . '| nl')
+	endif
+	if s:SimpleSnippets_snippets_plugin_installed == 1
+		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
+		let l:plugin_filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_snippets_similar_filetypes)
+		call SimpleSnippets#printSnippets("Plugin snippets:", l:plug_snips, l:plugin_filetype)
+	endif
+	if l:filetype != 'all'
+		call SimpleSnippets#printSnippets('User \"all\" snippets:', l:user_snips, 'all')
+		if s:SimpleSnippets_snippets_plugin_installed == 1
+			call SimpleSnippets#printSnippets('Plugin \"all\" snippets:', l:plug_snips, 'all')
+		endif
+	endif
 endfunction
 
 function! SimpleSnippets#printSnippets(message, path, filetype)

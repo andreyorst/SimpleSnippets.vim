@@ -119,8 +119,6 @@ SimpleSnippets supports normal: `${1:text}`, command: `${2!command}`, and repeat
 So you can't use `${2:text_a} ${0:text_b} ${1:text_a}` constructions. SimpleSnippets will jump to first match of `text_a` in snippet body. This is major limitation.
 - [ ] Jumping is based on searching for a string.  
 As was already said before. So if you replace some part of snippets in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
-- [ ] No back jumping.  
-Because of previous point. Actually I don't know how to get last user input to store it in vimscript to search for it inside snippet body.
 - [ ] Single snippet editing at time.
 If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet.
 - [ ] No nested placeholders.
@@ -130,6 +128,7 @@ If you expanded a snippet, and you try to expand snippet inside this one, you wi
 - [x] Every snippet **must** contain zero indexed placeholder, aka `${0:text}`
 - [x] Command placeholders, that output is more then single line can't be jumped.
 - [x] Trigger must be separated from everything
+- [x] No back jumping.
 
 After reading this list you may want to ask me this question:
 

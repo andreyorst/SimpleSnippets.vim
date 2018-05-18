@@ -13,12 +13,28 @@ if exists('g:SimpleSnippets_dont_remap_tab')
 	endif
 endif
 
+if !exists('g:SimpleSnippetsExpandOrJumpTrigger')
+	let g:SimpleSnippetsExpandOrJumpTrigger = "<Tab>"
+endif
+
+if !exists('g:SimpleSnippetsJumpBackwardTrigger')
+	let g:SimpleSnippetsJumpBackwardTrigger = "<S-Tab>"
+endif
+
+if !exists('g:SimpleSnippetsJumpToLastTrigger')
+	let g:SimpleSnippetsJumpToLastTrigger = "<S-j>"
+endif
+
 if s:allow_remap == 1
-	nnoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
-	inoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
-	inoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
-	snoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"
-	snoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\<S-Tab>"
+	exec "nnoremap <silent><expr>".g:SimpleSnippetsExpandOrJumpTrigger.' SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\'.g:SimpleSnippetsExpandOrJumpTrigger.'"'
+	exec "inoremap <silent><expr>".g:SimpleSnippetsExpandOrJumpTrigger.' SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\'.g:SimpleSnippetsExpandOrJumpTrigger.'"'
+	exec "snoremap <silent><expr>".g:SimpleSnippetsExpandOrJumpTrigger.' SimpleSnippets#isExpandableOrJumpable() ? "<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\'.g:SimpleSnippetsExpandOrJumpTrigger.'"'
+	exec "nnoremap <silent><expr>".g:SimpleSnippetsJumpBackwardTrigger.' SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpBackwards()<Cr>" : "\'.g:SimpleSnippetsJumpBackwardTrigger.'"'
+	exec "inoremap <silent><expr>".g:SimpleSnippetsJumpBackwardTrigger.' SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpBackwards()<Cr>" : "\'.g:SimpleSnippetsJumpBackwardTrigger.'"'
+	exec "snoremap <silent><expr>".g:SimpleSnippetsJumpBackwardTrigger.' SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpBackwards()<Cr>" : "\'.g:SimpleSnippetsJumpBackwardTrigger.'"'
+	exec "nnoremap <silent><expr>".g:SimpleSnippetsJumpToLastTrigger.' SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\'.g:SimpleSnippetsJumpToLastTrigger.'"'
+	exec "inoremap <silent><expr>".g:SimpleSnippetsJumpToLastTrigger.' SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\'.g:SimpleSnippetsJumpToLastTrigger.'"'
+	exec "snoremap <silent><expr>".g:SimpleSnippetsJumpToLastTrigger.' SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\'.g:SimpleSnippetsJumpToLastTrigger.'"'
 endif
 
 let s:similar_filetypes = [['tex', 'plaintex'], ['bash', 'zsh', 'sh']]
@@ -29,6 +45,6 @@ else
 	let g:SimpleSnippets_similar_filetypes = s:similar_filetypes
 endif
 
-command! SimpleSnippetsEdit call SimpleSnippets#edit()
+command! -nargs=? SimpleSnippetsEdit call SimpleSnippets#edit("<args>")
 command! SimpleSnippetsList call SimpleSnippets#listSnippets()
 
