@@ -144,19 +144,7 @@ function! SimpleSnippets#jump()
 			return
 		endif
 		if s:current_jump - 2 >= 0
-			if s:type_stack[s:current_jump - 2] != 3
-				let l:prev_ph = s:jump_stack[s:current_jump - 2]
-				if l:prev_ph !~ "\\W"
-					let l:prev_ph = '\<' . l:prev_ph . '\>'
-				else
-					let l:prev_ph = escape(l:prev_ph, '/\*~')
-				endif
-				call cursor(s:snip_start, 1)
-				if search(l:prev_ph, "c", s:snip_end) == 0
-					let s:jump_stack[s:current_jump - 2] = SimpleSnippets#getLastInput()
-				endif
-				call cursor(l:cursor_pos[1], l:cursor_pos[2])
-			endif
+			call SimpleSnippets#checkIfChangesWereMade(s:current_jump - 2, s:current_jump - 2)
 		endif
 		let l:current_ph = escape(l:current_ph, '/\*~')
 		if match(l:current_type, '1') == 0
@@ -172,36 +160,15 @@ endfunction
 function! SimpleSnippets#jumpBackwards()
 	if SimpleSnippets#isInside()
 		let l:cursor_pos = getpos(".")
-		if s:current_jump -1 != 0
+		if s:current_jump - 1 != 0
 			let s:current_jump -= 1
 		else
-			let l:prev_ph = s:jump_stack[0]
-			if l:prev_ph !~ "\\W"
-				let l:prev_ph = '\<' . l:prev_ph . '\>'
-			else
-				let l:prev_ph = escape(l:prev_ph, '/\*~')
-			endif
-			call cursor(s:snip_start, 1)
-			if search(l:prev_ph, "c", s:snip_end) == 0
-				let s:jump_stack[0] = SimpleSnippets#getLastInput()
-			endif
+			call SimpleSnippets#checkIfChangesWereMade(0, 0)
 		endif
 		let l:current_ph = get(s:jump_stack, s:current_jump - 1)
 		if s:current_jump - 1 >= 0
 			let l:current_type = get(s:type_stack, s:current_jump - 1)
-			if s:type_stack[s:current_jump - 1] != 3
-				let l:prev_ph = s:jump_stack[s:current_jump - 1]
-				if l:prev_ph !~ "\\W"
-					let l:prev_ph = '\<' . l:prev_ph . '\>'
-				else
-					let l:prev_ph = escape(l:prev_ph, '/\*~')
-				endif
-				call cursor(s:snip_start, 1)
-				if search(l:prev_ph, "c", s:snip_end) == 0
-					let s:jump_stack[s:current_jump] = SimpleSnippets#getLastInput()
-				endif
-				call cursor(l:cursor_pos[1], l:cursor_pos[2])
-			endif
+			call SimpleSnippets#checkIfChangesWereMade(s:current_jump - 1, s:current_jump)
 		endif
 		let l:current_ph = escape(l:current_ph, '/\*~')
 		if match(l:current_type, '1') == 0
@@ -224,19 +191,7 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 		endif
 		let s:current_jump = len(s:jump_stack)
 		let l:current_type = s:type_stack[-1]
-		if s:type_stack[s:prev_jump] != 3
-			let s:prev_ph = get(s:jump_stack, s:prev_jump)
-			if s:prev_ph !~ "\\W"
-				let s:prev_ph = '\<' . s:prev_ph . '\>'
-			else
-				let s:prev_ph = escape(s:prev_ph, '/\*~')
-			endif
-			call cursor(s:snip_start, 1)
-			if search(s:prev_ph, "c", s:snip_end) == 0
-				let s:jump_stack[s:prev_jump] = SimpleSnippets#getLastInput()
-			endif
-			call cursor(l:cursor_pos[1], l:cursor_pos[2])
-		endif
+		call SimpleSnippets#checkIfChangesWereMade(s:prev_jump, s:current_jump)
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, '3') == 0
@@ -287,6 +242,23 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	call setpos("'p", save_p_mark)
 endfunction
 
+function! SimpleSnippets#checkIfChangesWereMade(jump, prev)
+	if s:type_stack[a:jump] != 3
+		let l:cursor_pos = getpos(".")
+		let l:prev_ph = get(s:jump_stack, a:jump)
+		if l:prev_ph !~ "\\W"
+			let l:prev_ph = '\<' . l:prev_ph . '\>'
+		else
+			let l:prev_ph = escape(l:prev_ph, '/\*~')
+		endif
+		call cursor(s:snip_start, 1)
+		if search(l:prev_ph, "c", s:snip_end) == 0
+			let s:jump_stack[a:prev] = SimpleSnippets#getLastInput()
+		endif
+		call cursor(l:cursor_pos[1], l:cursor_pos[2])
+	endif
+endfunction
+
 function! SimpleSnippets#getLastInput()
 	let l:save_quote = @"
 	let save_q_mark = getpos("'q")
@@ -300,20 +272,7 @@ endfunction
 
 function! SimpleSnippets#jumpMirror(placeholder)
 	if s:current_jump + 1 <= len(s:jump_stack)
-		if s:type_stack[s:current_jump] != 3
-			let l:cursor_pos = getpos(".")
-			let s:prev_ph = get(s:jump_stack, s:current_jump)
-			if s:prev_ph !~ "\\W"
-				let s:prev_ph = '\<' . s:prev_ph . '\>'
-			else
-				let s:prev_ph = escape(s:prev_ph, '/\*~')
-			endif
-			call cursor(s:snip_start, 1)
-			if search(s:prev_ph, "c", s:snip_end) == 0
-				let s:jump_stack[s:current_jump] = SimpleSnippets#getLastInput()
-			endif
-			call cursor(l:cursor_pos[1], l:cursor_pos[2])
-		endif
+		call SimpleSnippets#checkIfChangesWereMade(s:current_jump, s:current_jump)
 	endif
 
 	let l:ph = a:placeholder
