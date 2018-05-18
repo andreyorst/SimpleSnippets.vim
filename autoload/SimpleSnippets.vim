@@ -144,7 +144,7 @@ function! SimpleSnippets#jump()
 			return
 		endif
 		if s:current_jump - 2 >= 0
-			call SimpleSnippets#checkIfChangesWereMade(s:current_jump - 2, s:current_jump - 2)
+			call SimpleSnippets#checkIfChangesWereMade(s:current_jump - 2)
 		endif
 		let l:current_ph = escape(l:current_ph, '/\*~')
 		if match(l:current_type, '1') == 0
@@ -163,12 +163,12 @@ function! SimpleSnippets#jumpBackwards()
 		if s:current_jump - 1 != 0
 			let s:current_jump -= 1
 		else
-			call SimpleSnippets#checkIfChangesWereMade(0, 0)
+			call SimpleSnippets#checkIfChangesWereMade(0)
 		endif
 		let l:current_ph = get(s:jump_stack, s:current_jump - 1)
 		let l:current_type = get(s:type_stack, s:current_jump - 1)
 		if s:current_jump - 1 >= 0
-			call SimpleSnippets#checkIfChangesWereMade(s:current_jump, s:current_jump)
+			call SimpleSnippets#checkIfChangesWereMade(s:current_jump)
 		endif
 		let l:current_ph = escape(l:current_ph, '/\*~')
 		if match(l:current_type, '1') == 0
@@ -191,7 +191,7 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 		endif
 		let s:current_jump = len(s:jump_stack)
 		let l:current_type = s:type_stack[-1]
-		call SimpleSnippets#checkIfChangesWereMade(s:prev_jump, s:prev_jump)
+		call SimpleSnippets#checkIfChangesWereMade(s:prev_jump)
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, '3') == 0
@@ -243,7 +243,7 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	call setpos("'p", save_p_mark)
 endfunction
 
-function! SimpleSnippets#checkIfChangesWereMade(jump, prev)
+function! SimpleSnippets#checkIfChangesWereMade(jump)
 	if s:type_stack[a:jump] != 3
 		let l:cursor_pos = getpos(".")
 		let l:prev_ph = get(s:jump_stack, a:jump)
@@ -254,7 +254,7 @@ function! SimpleSnippets#checkIfChangesWereMade(jump, prev)
 		endif
 		call cursor(s:snip_start, 1)
 		if search(l:prev_ph, "c", s:snip_end) == 0
-			let s:jump_stack[a:prev] = SimpleSnippets#getLastInput()
+			let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
 		endif
 		call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	endif
@@ -273,7 +273,7 @@ endfunction
 
 function! SimpleSnippets#jumpMirror(placeholder)
 	if s:current_jump + 1 <= len(s:jump_stack)
-		call SimpleSnippets#checkIfChangesWereMade(s:current_jump, s:current_jump)
+		call SimpleSnippets#checkIfChangesWereMade(s:current_jump)
 	endif
 
 	let l:ph = a:placeholder
