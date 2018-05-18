@@ -12,7 +12,7 @@ CONTENTS                                               *SimpleSnippets-contents*
 
  1. Description .................................. |SimpleSnippets-description|
     1.1 Requirements ............................ |SimpleSnippets-requirements|
-    1.2 Limitations .............................. |SimpleSnippets-limitations|
+    1.2 Limitations / bugs ....................... |SimpleSnippets-limitations|
     1.3 Acknowledgments ...................... |SimpleSnippets-acknowledgments|
  2. Installation and Updating ................. |SimpleSnippets-installnupdate|
     2.1 External snippet plugin ...... |SimpleSnippets-external-snippet-plugin|
@@ -64,22 +64,50 @@ unsupported, but might work too.  This plugin  works  only  in  'nocompatible'
 mode.
 
 
-1.2 Limitations                                     *SimpleSnippets-limitations*
----------------
+1.2 Limitations / bugs                              *SimpleSnippets-limitations*
+----------------------
 
 This plugin has some limitations, which may make you decide not  to  use  this
 plugin at all.  I've developed this plugin to be as simple as possible, to use
 it on smartphone, and weak devices, like netbooks, which I  still  use  during
 trips.
 
+Limitations:~
+
   1. No empty placeholders.
+     Which means no tabstops, like `if ($1) {$2}$0`, this syntax  is  used  by
+     |repeater|s.
   2. Placeholders must contain unique bodies.
-  3. Mirroring is just substitution over snippet body.
-  4. Command placeholders, that result to multiline output can't be jumped.
-  5. No back jumping.
-  6. Single snippet editing at one time.
-  7. Only command  placeholders can be nested.
-  8. Trigger must be separated from other text.
+     You can't use same bodies for different placeholders.  So `${2:a} ${1:a}`
+     is not possible. If you need same placeholders use |repeater|s.
+  3. Single snippet editing at one time.
+     Expanding another snippet  will  make  jumping  unavailable  in  previous
+     snippet.
+  4. Backward jumping requires monitoring user's input. Therefore if you want
+     jump back to somewhere, be sure to leave placeholder in jumpable state.
+  5. Placeholder syntax differs form other plugins.
+  6. Jumping is based on searching for a string.
+
+
+Known bugs / design flaws~
+
+  1. Mirroring maps your key in command-line mode with `cnoremap` and  unmaps
+     it after jumping.  So if you're using your expand  key  in  command  mode
+     mappings beware of them being wiped out by plugin.  (I don't know  anyone
+     who's using  command  mode  mappings,  so  I  don't  want  to  mess  with
+     workarounds until really needed.  Not a best  approach,  but  I'd  rather
+     spend time on more important things for now.   Until  actual  bug  report
+     appear, or no other bugs/limitations/etc. remain).
+  2. Placeholders must be separated form other text with non-word characters.
+     You can't use something like  `${1:hello}_${2:world}`  because  resulting
+     text would be `hello_world` which  Vim  understands  as  single  word  or
+     `<cword>`.  Jumping is based on text searching, and SimpleSnippets  looks
+     for `\<placeholder_body\>` while searching over snippet's  body.   So  in
+     this case first jump would look for `\<hello\>` in `\<hello_world\>`  and
+     it will not find anything.  However  I  can't  search  for  just  `hello`
+     instead, because it would break snippets with single letter placeholders.
+     Like `for(int ${1:i} = 0; $1 < 10; $1++)` if we would search for  `i`  we
+     would find `i` inside `int`, but not placeholder's `i`.
 
 Even with these limitations you can  use  advanced  snippets,  with  vimscript
 functions, shell commands, mirroring, and more.  If You still want to use this
