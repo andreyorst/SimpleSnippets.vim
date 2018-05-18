@@ -191,7 +191,7 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 		endif
 		let s:current_jump = len(s:jump_stack)
 		let l:current_type = s:type_stack[-1]
-		call SimpleSnippets#checkIfChangesWereMade(s:prev_jump, s:current_jump)
+		call SimpleSnippets#checkIfChangesWereMade(s:prev_jump, s:prev_jump)
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, '3') == 0
