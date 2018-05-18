@@ -12,6 +12,8 @@ let s:trigger = ''
 let s:jump_stack = []
 let s:type_stack = []
 let s:current_jump = 0
+let s:ph_start = []
+let s:ph_end = []
 
 "Functions
 function! SimpleSnippets#expandOrJump()
@@ -272,16 +274,25 @@ function! SimpleSnippets#jumpNormal(placeholder)
 		let l:echo = a:placeholder
 		let l:ph = '\<' . l:ph . '\>'
 	endif
+	let save_q_mark = getpos("'q")
+	let save_p_mark = getpos("'p")
 	call search(split(l:ph, '\\n')[0], 'c', s:snip_end)
 	normal! mq
 	call search(split(l:ph, '\\n')[-1], 'ce', s:snip_end)
 	normal! mp
+	let s:ph_start = getpos("'q")
+	let s:ph_end = getpos("'p")
 	exec "normal! g`qvg`p\<c-g>"
+	call setpos("'q", save_q_mark)
+	call setpos("'p", save_p_mark)
 endfunction
 
 function! SimpleSnippets#getLastInput()
 	let l:save_quote = @"
+	let save_q_mark = getpos("'q")
+	call setpos("'q", s:ph_start)
 	normal! g`qvg`.y
+	call setpos("'q", save_q_mark)
 	let l:user_input = @"
 	let @" = l:save_quote
 	return l:user_input
@@ -320,7 +331,10 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	let l:matchpositions = SimpleSnippets#colorMatches(l:ph)
 	call cursor(s:snip_start, 1)
 	call search(l:ph, 'c', s:snip_end)
+	let save_q_mark = getpos("'q")
 	normal! mq
+	let s:ph_start = getpos("'q")
+	call setpos("'q", save_q_mark)
 	let l:cursor_pos = getpos(".")
 	let l:reenable_cursorline = 0
 	if &cursorline == 1
@@ -612,11 +626,17 @@ function! SimpleSnippets#initCommand(current)
 	if l:result_line_count > 1
 		let s:snip_end += l:result_line_count
 	endif
+	let save_q_mark = getpos("'q")
+	let save_p_mark = getpos("'p")
 	normal! mq
 	call search('\v\$\{'.a:current.'!.{-}\}', 'ce', s:snip_end)
 	normal! mp
+	let s:ph_start = getpos("'q")
+	let s:ph_end = getpos("'p")
 	exe "normal! g`qvg`pr"
 	normal! "sp
+	call setpos("'q", save_q_mark)
+	call setpos("'p", save_p_mark)
 	let @s = l:save_s
 	let @" = l:save_quote
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
@@ -708,6 +728,8 @@ function! SimpleSnippets#initRepeaters(current, content, count)
 	let l:repeater_count = a:count
 	let l:amount_of_lines = len(split(a:content, "\\n"))
 	let l:i = 0
+	let save_q_mark = getpos("'q")
+	let save_p_mark = getpos("'p")
 	while l:i < l:repeater_count
 		call cursor(s:snip_start, 1)
 		call search('\v\$'.a:current, 'c', s:snip_end)
@@ -721,6 +743,8 @@ function! SimpleSnippets#initRepeaters(current, content, count)
 		normal! "sp
 		let l:i += 1
 	endwhile
+	call setpos("'q", save_q_mark)
+	call setpos("'p", save_p_mark)
 	let @s = l:save_s
 	let @" = l:save_quote
 	call cursor(s:snip_start, 1)
