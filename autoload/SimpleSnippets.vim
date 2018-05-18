@@ -328,24 +328,12 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:reenable_cursorline = 1
 	endif
 
-	if mapcheck(g:SimpleSnippetsExpandOrJumpTrigger, "c") != ''
-		let l:save_cmap1 = maparg(g:SimpleSnippetsExpandOrJumpTrigger, "c")
-	endif
-	if mapcheck(g:SimpleSnippetsExpandOrJumpTrigger, "c") != ''
-		let l:save_cmap2 = maparg(g:SimpleSnippetsExpandOrJumpTrigger, "c")
-	endif
-	if mapcheck(g:SimpleSnippetsJumpBackwardTrigger, "c") != ''
-		let l:save_cmap3 = maparg(g:SimpleSnippetsJumpBackwardTrigger, "c")
-	endif
 	exec "cnoremap <silent>".g:SimpleSnippetsExpandOrJumpTrigger.' <Cr><Esc>:call SimpleSnippets#jump()<Cr>'
 	exec "cnoremap <silent>".g:SimpleSnippetsJumpBackwardTrigger.' <Esc><Esc>:execute("cunmap '.g:SimpleSnippetsJumpBackwardTrigger.'")<Cr>:call SimpleSnippets#jumpBackwards()<Cr>'
 	exec "cnoremap <silent>".g:SimpleSnippetsJumpToLastTrigger.' <Esc><Esc>:execute("cunmap '.g:SimpleSnippetsJumpToLastTrigger.'")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>'
 	redraw
 	let l:rename = input('Replace placeholder "'.l:echo.'" with: ')
 	exec "cunmap ".g:SimpleSnippetsExpandOrJumpTrigger
-	if exists(l:save_cmap1)
-		exec "cnoremap ".l:save_cmap1
-	endif
 	normal! :
 	let s:result_line_count = len(split(l:rename, '\\r'))
 	if l:rename != ''
