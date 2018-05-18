@@ -175,8 +175,26 @@ filetypes mean same thing to SimpleSnippets.
   3.1.2 Default mappings                       *SimpleSnippets-default-mappings*
   ----------------------------------------------------------------------------~
 
-  The other setting if to disable default mappings.  You can  disable  default
-  mappings by defining `g:SimpleSnippets_dont_remap_tab` to `1`
+  You can set different keys for  expanding,  jumping,  backward  jumping  and
+  jumping to last placeholder with this variables:
+
+    `let g:SimpleSnippetsExpandOrJumpTrigger = "<Tab>"`
+    `let g:SimpleSnippetsJumpBackwardTrigger = "<S-Tab>"`
+    `let g:SimpleSnippetsJumpToLastTrigger = "<S-j>"`
+
+  Note that expanding and jumping means  same  thing  for  SimpleSnippets,  so
+  if you planning to use same key for expanding snippet and jumping inside  it
+  consider using `g:SimpleSnippetsExpandOrJumpTrigger` variable.  There is  no
+  standard way of defining different keys for this two actions,  because  most
+  modern  snippet  managers  use  single  key  for  all   actions,   therefore
+  SimpleSnippets shares same policy.  You can define your custom  mapping  for
+  this separate actions if you want to.
+
+  The other setting is to disable default mappings.  SimpleSnippets comes with
+  several predefined mappings for expanding  and  jumping.   You  can  disable
+  default mappings by defining `g:SimpleSnippets_dont_remap_tab`  to  `1`  and
+  define  your  own  mappings.   However   keep   those   variables,   because
+  SimpleSnippets uses them in mirroring to remap jump keys in command mode.
 
   We will talk about it in |SimpleSnippets-mappings| section.
 
@@ -271,10 +289,19 @@ or nvim-completion-manager, you  probably  would  like  to  disable  automatic
 remapping.  You can disable it by defining this variable  in  your  vimrc,  or
 init.vim:
 
+  `let g:SimpleSnippetsExpandOrJumpTrigger = "<Tab>"`
+  `let g:SimpleSnippetsJumpBackwardTrigger = "<S-Tab>"`
+  `let g:SimpleSnippetsJumpToLastTrigger = "<S-j>"`
+
   `let g:SimpleSnippets_dont_remap_tab = 1`
 
-The main functions to use in mappings are |SimpleSnippets#isExpandableOrJumpable|
-and |SimpleSnippets#expandOrJump|.  They  provide  all  functionality  to  figure
+This will disable predefined mappings so you can define  your  own.   However,
+triggers, that has been set up with those variables should be  defined  still.
+Because SimpleSnippets uses them in `cnoremap` to provide ability  of  jumping
+outside of `mirroring mode`.
+
+Main functions to use in mappings are  |SimpleSnippets#isExpandableOrJumpable|
+and |SimpleSnippets#expandOrJump|.  They provide all functionality  to  figure
 out if typed text is a trigger, and if jump is possible.
 
 Again, if you're using completion managers,  that  occupy  <Tab>  and  <S-Tab>
@@ -754,7 +781,7 @@ Here are some snippets to start with:
   `${0:Today is} ${1!date}`
 
 
-For more advanced snippets check ount SimpleSnippets-snippets plugin at:
+For more advanced snippets check out SimpleSnippets-snippets plugin at:
 https://github.com/andreyorst/SimpleSnippets-snippets
 
 

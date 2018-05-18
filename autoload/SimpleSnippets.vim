@@ -327,14 +327,15 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		set nocursorline
 		let l:reenable_cursorline = 1
 	endif
-	cnoremap <silent><Tab> <Cr><Esc>:call SimpleSnippets#jump()<Cr>
-	cnoremap <silent><S-j> <Esc><Esc>:execute("cunmap <S-j>")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>
-	cnoremap <silent><S-Tab> <Esc><Esc>:execute("cunmap <S-Tab>")<Cr>:call SimpleSnippets#jumpBackwards()<Cr>
+
+	exec "cnoremap <silent>".g:SimpleSnippetsExpandOrJumpTrigger.' <Cr><Esc>:call SimpleSnippets#jump()<Cr>'
+	exec "cnoremap <silent>".g:SimpleSnippetsJumpBackwardTrigger.' <Esc><Esc>:execute("cunmap '.g:SimpleSnippetsJumpBackwardTrigger.'")<Cr>:call SimpleSnippets#jumpBackwards()<Cr>'
+	exec "cnoremap <silent>".g:SimpleSnippetsJumpToLastTrigger.' <Esc><Esc>:execute("cunmap '.g:SimpleSnippetsJumpToLastTrigger.'")<Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>'
 	redraw
 	let l:rename = input('Replace placeholder "'.l:echo.'" with: ')
+	exec "cunmap ".g:SimpleSnippetsExpandOrJumpTrigger
 	normal! :
 	let s:result_line_count = len(split(l:rename, '\\r'))
-	cunmap <Tab>
 	if l:rename != ''
 		redir => l:cnt
 		execute s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g'
