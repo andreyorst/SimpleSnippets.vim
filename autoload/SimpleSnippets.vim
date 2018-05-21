@@ -15,6 +15,7 @@ let s:current_jump = 0
 let s:ph_start = []
 let s:ph_end = []
 
+
 "Functions
 function! SimpleSnippets#expandOrJump()
 	if SimpleSnippets#isExpandable()
