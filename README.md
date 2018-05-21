@@ -8,12 +8,12 @@ snippet feature to Vim.
 ![simplesnippets](https://user-images.githubusercontent.com/19470159/39535519-c4904d2a-4e3c-11e8-9e1c-9796515f1913.gif)
 
 This plugin was inspired by other snippet managers, like UltiSnips, snipMate,
-Neosnippets, and others. However it has major differences in implementation, and
+Neosnippets, etc. However it has major differences in implementation, and
 features it provides.
 
 ## Installation
 
-Assuming you using Vundle, place this in your .vimrc:
+Assuming you are using Vundle, place this in your .vimrc:
 
 ```vim
 Plugin 'andreyorst/SimpleSnippets.vim'
@@ -40,7 +40,7 @@ to your vimrc. If you want to disable default mappings, to write your own using 
 
 ## Why?
 
-Back in the days I didn't used snippets at all. Because, I thought, that I don't
+Back in the days I didn't use snippets at all. Because, I thought, that I don't
 need them at all. The idea was that it is not that big difference in time spent on typing
 everything by hands, and I was lazy to figure out how to setup and use snippet managers.
 
@@ -73,10 +73,10 @@ inoremap <silent><c-j> <Esc>:set nohlsearch<Cr>/\v\$\{[0-9]+:.*\}<Cr>msdf:f}:set
 nnoremap <silent><c-j> <Esc>:set nohlsearch<Cr>/\v\$\{[0-9]+:.*\}<Cr>msdf:f}:set hlsearch<Cr>:noh<Cr>i<Del><Esc>me`sv`e<c-g>
 ```
 
-I highly recommend to went through this by yourselves, it boost's your Vim's
+I highly recommend you go through this yourselves, as it boosts your Vim's
 movement knowledge beyond the limitations of any emacs user. But again, I decided
 to try snippet managers. I've tried many, and sticked with Ultisnips. It is great
-plugin, and I highly recommend you to use it, if you're using Vim (ultisnips works
+plugin, and I highly recommend you use it, if you're using Vim (ultisnips works
 in NeoVim too, but it is not supported officially), and you have rather powerful
 machine, because ultisnips requires some resources, wich in my case was performance
 killer on my GPD Pocket, and Nexus 5x (yes I use NeoVim on my smartphone a lot).
@@ -107,9 +107,9 @@ other plugins?
 The answer is... Yes. It has _some_ limitations, and far less functions, than other
 snippet managers. It's main feature is speed. It provides **basic**
 snippet support to Vim. Which means that you can expand, jump, mirror, use shell
-commands, and there is even a small interface wich other plugins can use to integrate with SimpleSnippets.
+commands, and there is even a small interface which other plugins can use to integrate with SimpleSnippets.
 
-I may extend the functionality of a plugin in the future, if I figure out how, to
+I may extend the functionality of this plugin in the future, if I figure out how, to
 implement things in better way, without using third party plugins, or other
 languages.
 
@@ -137,7 +137,7 @@ If you expanded a snippet, and you try to expand snippet inside this one, you wi
 
 After reading this list you may want to ask me this question:
 
-## Why do I even may want to use it?
+## Why would I even may want to use it?
 
 You probably won't! I understand this, because I've developed it for myself in first place, and I can obey these restrictions and limitations because I need simple snippets and fast plugin for them.
 I know that having an advanced, full-featured, complex solution is great, because of powers, that you gain form it.
@@ -146,11 +146,11 @@ If you feel that other snippet solutions are making your Vim slow,
 then you probably may want to use it.
 
 This plugin is fast. It is lightweight, and can be used on phones, netbooks, slow
-PCs, via ssh, and maybe in more cases, wich I've not thought about for now. And there was
+PCs, via ssh, and maybe in more cases, which I've not thought about for now. And there was
 a reason to call it _SimpleSnippets_, you know.
 
-If after reading this you're still want to try it out, you re welcome to!
-This plugin is not that bad, how you may think of it. Please read the documentation
+If after reading this you still want to try it out, you re welcome to!
+This plugin is not that bad, however you may think of it. Please read the documentation
 provided with the plugins to understand how things work. If you encounter any problem
 [feel free to file an Issue](https://github.com/andreyorst/SimpleSnippets.vim/issues/new)
 
