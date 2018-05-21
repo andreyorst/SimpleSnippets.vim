@@ -38,6 +38,8 @@ let g:SimpleSnippetsJumpToLastTrigger = "<C-j>"
 ```
 to your vimrc. If you want to disable default mappings, to write your own using functions, append `let g:SimpleSnippets_dont_remap_tab = 1` to those settings. For other settings please read the documentation.
 
+Plugin was created and being maintained by [@andreyorst](https://github.com/andreyorst). If you found an issue, or want to propose a change, you're welcome to do so at SimpleSnippets.vim GitHub repository: https://github.com/andreyorst/SimpleSnippets.vim 
+
 ## Why?
 
 Back in the days I didn't use snippets at all. Because, I thought, that I don't
