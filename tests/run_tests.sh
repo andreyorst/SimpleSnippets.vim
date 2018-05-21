@@ -1,4 +1,6 @@
 #!/bin/bash
-tmux new-session -n SimpleSnippetsTest
-./for_test/test.sh || ERROR=1
-return $ERROR
+ERROR=0
+tmux new-session -d -n SimpleSnippetsTest
+tests/for_test/test.sh || ERROR=$[ $ERROR + 1 ]
+pkill tmux
+exit $ERROR
