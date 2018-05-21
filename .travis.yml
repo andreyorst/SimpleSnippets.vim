@@ -1,0 +1,5 @@
+language: generic
+before-script:
+    - tmux new-session -n SimpleSnippetsTest
+script:
+    - ./run_tests.sh
