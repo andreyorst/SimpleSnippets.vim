@@ -140,11 +140,18 @@ function! SimpleSnippets#jump()
 		let l:current_type = get(s:type_stack, s:current_jump)
 		let s:current_jump += 1
 		if s:current_jump == len(s:jump_stack) + 1
-			set lazyredraw
+			if &lazyredraw != 1
+				set lazyredraw
+				let l:disable_lazyredraw = 1
+			else
+				let l:disable_lazyredraw = 0
+			endif
 			call cursor(s:snip_end, 1)
 			let s:active = 0
 			startinsert!
-			set nolazyredraw
+			if l:disable_lazyredraw == 1
+				set nolazyredraw
+			endif
 			return
 		endif
 		if s:current_jump - 2 >= 0
@@ -242,9 +249,16 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	normal! mp
 	let s:ph_start = getpos("'q")
 	let s:ph_end = getpos("'p")
-	set lazyredraw
+	if &lazyredraw != 1
+		set lazyredraw
+		let l:disable_lazyredraw = 1
+	else
+		let l:disable_lazyredraw = 0
+	endif
 	exec "normal! g`qvg`p\<c-g>"
-	set nolazyredraw
+	if l:disable_lazyredraw == 1
+		set nolazyredraw
+	endif
 	call setpos("'q", save_q_mark)
 	call setpos("'p", save_p_mark)
 endfunction
