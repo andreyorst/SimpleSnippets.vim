@@ -34,7 +34,7 @@ If you want to redefine keys, consider adding this:
 ```vim
 let g:SimpleSnippetsExpandOrJumpTrigger = "<Tab>"
 let g:SimpleSnippetsJumpBackwardTrigger = "<S-Tab>"
-let g:SimpleSnippetsJumpToLastTrigger = "<S-j>"
+let g:SimpleSnippetsJumpToLastTrigger = "<C-j>"
 ```
 to your vimrc. If you want to disable default mappings, to write your own using functions, append `let g:SimpleSnippets_dont_remap_tab = 1` to those settings. For other settings please read the documentation.
 
