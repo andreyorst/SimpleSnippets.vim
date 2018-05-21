@@ -106,6 +106,8 @@ function! SimpleSnippets#parseAndInit()
 	let s:jump_stack = []
 	let s:type_stack = []
 	let s:current_jump = 0
+	let s:ph_start = []
+	let s:ph_end = []
 	let s:active = 1
 	let s:current_file = @%
 
@@ -138,8 +140,8 @@ function! SimpleSnippets#jump()
 		let l:current_type = get(s:type_stack, s:current_jump)
 		let s:current_jump += 1
 		if s:current_jump == len(s:jump_stack) + 1
-			call cursor(s:snip_end, 1)
 			set lazyredraw
+			call cursor(s:snip_end, 1)
 			let s:active = 0
 			startinsert!
 			set nolazyredraw
@@ -306,12 +308,12 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	endif
 	call SimpleSnippets#saveUserCMappings()
 	exec "cnoremap <silent>".g:SimpleSnippetsExpandOrJumpTrigger.' <Cr><Esc>:call SimpleSnippets#jump()<Cr>'
-	exec "cnoremap <silent>".g:SimpleSnippetsJumpBackwardTrigger.' <Cr>:call SimpleSnippets#jumpBackwards()<Cr>'
-	exec "cnoremap <silent>".g:SimpleSnippetsJumpToLastTrigger.' <Cr>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>'
+	exec "cnoremap <silent>".g:SimpleSnippetsJumpBackwardTrigger.' <Cr><Esc>:call SimpleSnippets#jumpBackwards()<Cr>'
+	exec "cnoremap <silent>".g:SimpleSnippetsJumpToLastTrigger.' <Cr><Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>'
 	redraw
 	let l:rename = input('Replace placeholder "'.l:echo.'" with: ')
-	call SimpleSnippets#restoreCMappings()
 	normal! :
+	call SimpleSnippets#restoreCMappings()
 	let s:result_line_count = len(split(l:rename, '\\r'))
 	if l:rename != ''
 		redir => l:cnt
@@ -337,12 +339,27 @@ endfunction
 function! SimpleSnippets#saveUserCMappings()
 	if mapcheck(g:SimpleSnippetsExpandOrJumpTrigger, "c") != ""
 		let s:save_user_cmap_forward = maparg(g:SimpleSnippetsExpandOrJumpTrigger, "c", 0, 1)
+		if get(s:save_user_cmap_forward, "buffer") == 1
+			exec "cunmap <buffer> ". g:SimpleSnippetsExpandOrJumpTrigger
+		else
+			exec "cunmap ". g:SimpleSnippetsExpandOrJumpTrigger
+		endif
 	endif
 	if mapcheck(g:SimpleSnippetsJumpBackwardTrigger, "c") != ""
 		let s:save_user_cmap_backward = maparg(g:SimpleSnippetsJumpBackwardTrigger, "c", 0, 1)
+		if get(s:save_user_cmap_backward, "buffer") == 1
+			exec "cunmap <buffer> ". g:SimpleSnippetsJumpBackwardTrigger
+		else
+			exec "cunmap ". g:SimpleSnippetsJumpBackwardTrigger
+		endif
 	endif
 	if mapcheck(g:SimpleSnippetsJumpToLastTrigger, "c") != ""
 		let s:save_user_cmap_last = maparg(g:SimpleSnippetsJumpToLastTrigger, "c", 0, 1)
+		if get(s:save_user_cmap_last, "buffer") == 1
+			exec "cunmap <buffer> ". g:SimpleSnippetsJumpToLastTrigger
+		else
+			exec "cunmap ". g:SimpleSnippetsJumpToLastTrigger
+		endif
 	endif
 endfunction
 
@@ -387,9 +404,12 @@ function! SimpleSnippets#restoreUserMap(mapping)
 	if get(a:mapping, "buffer") == 1
 		let l:params .= '<buffer>'
 	endif
+	if get(a:mapping, "expr") == 1
+		let l:params .= '<expr>'
+	endif
 	let l:lhs = get(a:mapping, "lhs")
 	let l:rhs = get(a:mapping, "rhs")
-	execute l:mode . ' '.l:params.' '.l:lhs.' '.l:rhs
+	execute ''.l:mode.' '.l:params.' '.l:lhs.' '.l:rhs
 endfunction
 
 function! SimpleSnippets#isInside()
