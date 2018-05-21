@@ -1,0 +1,13 @@
+set nocompatible
+filetype off
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'andreyorst/SimpleSnippets.vim'
+Plugin 'andreyorst/SimpleSnippets-snippets'
+call vundle#end()
+filetype plugin indent on
+let g:SimpleSnippetsExpandOrJumpTrigger = "<Tab>"
+let g:SimpleSnippetsJumpBackwardTrigger = "<C-k>"
+let g:SimpleSnippetsJumpToLastTrigger = "<C-j>"
+
