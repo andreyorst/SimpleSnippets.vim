@@ -1,5 +1,7 @@
 language: generic
 before-script:
+    -pwd
     - tmux new-session -n SimpleSnippetsTest
 script:
     - ./tests/run_tests.sh
+    - exit
