@@ -22,7 +22,7 @@ if !exists('g:SimpleSnippetsJumpBackwardTrigger')
 endif
 
 if !exists('g:SimpleSnippetsJumpToLastTrigger')
-	let g:SimpleSnippetsJumpToLastTrigger = "<S-j>"
+	let g:SimpleSnippetsJumpToLastTrigger = "<C-j>"
 endif
 
 if s:allow_remap == 1
