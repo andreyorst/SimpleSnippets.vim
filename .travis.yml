@@ -1,6 +1,5 @@
 language: generic
 script:
-    - pwd
     - tmux new-session -d -n SimpleSnippetsTest
     - ./tests/run_tests.sh
     - exit
