@@ -45,6 +45,8 @@ CONTENTS                                               *SimpleSnippets-contents*
       4.2.4 Repeaters ............................... |SimpleSnippets-repeater|
     4.3 Snippets Examples ................... |SimpleSnippets-snippet-examples|
  5. Contributing ................................ |SimpleSnippets-contributing|
+    5.1 Running tests .......................... |SimpleSnippets-running-tests|
+    5.2 Writing tests .......................... |SimpleSnippets-writing-tests|
 
 
 ==============================================================================
@@ -822,6 +824,28 @@ feel  free  to  send  pull  requests  to  SimpleSnippets  GitHub   repository.
 
 You can contribute by fixing or reporting bugs in our issue tracker:
 https://github.com/andreyorst/SimpleSnippets.vim/issues
+
+5.1 Running tests                                 *SimpleSnippets-running-tests*
+-----------------
+
+SimpleSnippets is shipped with tests.  Every new feature  or bug fix  must  be
+tested before pushing.  To run tests execute `tests/run_tests.sh` from project
+root.  Each test creates tmux session, and executes snippets in it by  sending
+keys to tmux.  Then saves file, and compares  checksum  with  reference  file.
+After that next test is being run.
+
+Testing should be done for NeoVim and Vim both and  none  of  the  tests  must
+fail.
+
+5.2 Writing tests                                 *SimpleSnippets-writing-tests*
+-----------------
+
+If you developed a new feature that is not covered with  existing  tests,  you
+should write a test for it.  Test consists of executing snippet with this  new
+feature by sending key input as user will do.  Each test  must  start  with  a
+comment `test start` and end with a comment `test end` on new lines. Reference
+file should contain expanded and edited snippet.   For  test  examples  please
+refer to existing tests.
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:nornu:nonu:scl=no
