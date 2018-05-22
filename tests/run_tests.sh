@@ -5,7 +5,7 @@ tmux new-session -d -n SimpleSnippetsTest
 
 echo "Running tests:"
 tests/for_test/test.sh || ERROR=$[ $ERROR + 1 ]
-tests/cla_test/test.sh || ERROR=$[ $ERROR + 1 ]
+#tests/cla_test/test.sh || ERROR=$[ $ERROR + 1 ]
 
-pkill tmux
+tmux kill-window -t SimpleSnippetsTest
 exit $ERROR
