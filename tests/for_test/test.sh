@@ -1,13 +1,13 @@
 #!/bin/bash
-error=0
-cd for_test/
 ref_file=for_ref.c
 test_file=for.c
 log=log.txt
-touch $test_file
 start_size=$(stat -c %s $test_file)
+tmux_session=SimpleSnippetsTest
 
-tmux new-session -d -n SimpleSnippetsTest
+cd for_test/
+touch $test_file
+tmux new-session -d -n $tmux_session
 tmux send-keys -t SimpleSnippetsTest "$1 -n -u ../testrc $test_file" enter "ggdGi/* test start */" enter "for" escape "a" tab "22" tab "j" tab "10" c-k c-k "0" tab "l" tab "100" tab ">" tab "--" c-j "while body" c-k "char" tab "// for body" tab enter "/* test end */Qw"
 
 while [[ $start_size == $(stat -c %s $test_file) ]]; do
@@ -24,8 +24,9 @@ if [[ $sha_ref != $sha_res ]]; then
 else
     echo "[OK]: for test"
     rm $test_file
+    error=0
 fi
 
-tmux kill-window -t SimpleSnippetsTest
+tmux kill-window -t $tmux_session
 cd ..
 exit $error
