@@ -6,7 +6,7 @@ test_file=cla.cpp
 log=log.txt
 tmux_session=SimpleSnippetsTest
 
-cd cla_test/
+cd $(dirname $0)
 touch $test_file
 start_size=$(stat -c %s $test_file)
 
