@@ -1,6 +1,7 @@
 #!/bin/bash
 ERROR=0
 cd cla_test/
+touch cla_test_result.cpp
 
 tmux new-session -d -n SimpleSnippetsTest
 tmux send-keys -t SimpleSnippetsTest "nvim -u ../testrc cla_test_result.cpp" enter "ggdGi/* test start */" enter "cla" escape "a" tab "travis" tab "TRAVIS_H" tab "int trav" c-k c-k "SimpleSnippets" c-j "char simple" c-k "SIMPLE_SNIPPETS_H" tab tab enter "/* test end */" escape ":x" enter
