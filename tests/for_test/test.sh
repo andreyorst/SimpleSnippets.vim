@@ -8,5 +8,6 @@ if [[ $SHA_REF != $SHA_RES ]]; then
     echo "[ERR]: for test"
     exit 1
 else
+    echo "[OK]: for test"
     exit 0
 fi
