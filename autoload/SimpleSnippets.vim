@@ -196,7 +196,6 @@ endfunction
 function! SimpleSnippets#jumpToLastPlaceholder()
 	if SimpleSnippets#isInside()
 		let l:cursor_pos = getpos(".")
-		let l:current_ph = escape(s:jump_stack[-1], '/\*~')
 		let s:prev_jump = s:current_jump - 1
 		if s:prev_jump >= len(s:jump_stack)
 			let s:prev_jump = len(s:jump_stack) - 1
@@ -204,6 +203,7 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 		let s:current_jump = len(s:jump_stack)
 		let l:current_type = s:type_stack[-1]
 		call SimpleSnippets#checkIfChangesWereMade(s:prev_jump)
+		let l:current_ph = escape(s:jump_stack[-1], '/\*~')
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, '3') == 0
