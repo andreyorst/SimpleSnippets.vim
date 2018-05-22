@@ -1,6 +1,6 @@
 language: generic
 before-install:
     - sudo apt-get -qq update
-    - sudo apt-get install -y neovim pyrhon-neovim python3-neovim vim
+    - sudo apt-get install -y neovim python-neovim python3-neovim vim
 script:
     - ./tests/run_tests.sh
