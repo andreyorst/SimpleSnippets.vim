@@ -8,6 +8,7 @@ for vim in ${vim_versions[*]}; do
     echo -n "Running tests for $vim:"
     [[ $verbose != 0 ]] && echo
 
+    lorem_test/test.sh $vim $verbose || error=$[ $error + 1 ]
     for_test/test.sh $vim $verbose || error=$[ $error + 1 ]
     cla_test/test.sh $vim $verbose || error=$[ $error + 1 ]
 
