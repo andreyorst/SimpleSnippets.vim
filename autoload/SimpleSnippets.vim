@@ -838,7 +838,9 @@ function! SimpleSnippets#colorMatches(text)
 			call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
 			call cursor(line('.'), col('.') + 1)
 		endfor
-		call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
+		if has('nvim')
+			call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
+		endif
 		let l:i += 1
 	endwhile
 	return l:matchpositions
