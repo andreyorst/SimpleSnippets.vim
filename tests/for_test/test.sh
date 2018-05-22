@@ -7,6 +7,7 @@ SHE_RES=$(sha256sum tests/for_test/for_test_result.c | sed -E "s/(\w+).*/\1/")
 
 if [[ $SHA_REF != $SHA_RES ]]; then
     echo "[ERR]: for test"
+    cat tests/for_test/for_test_result.c
     exit 1
 else
     echo "[OK]: for test"
