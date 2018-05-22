@@ -10,4 +10,5 @@ filetype plugin indent on
 let g:SimpleSnippetsExpandOrJumpTrigger = "<Tab>"
 let g:SimpleSnippetsJumpBackwardTrigger = "<C-k>"
 let g:SimpleSnippetsJumpToLastTrigger = "<C-j>"
+inoremap Qw <Esc>:x<Cr>
 
