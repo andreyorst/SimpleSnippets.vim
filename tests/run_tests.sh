@@ -4,13 +4,14 @@ verbose=1
 vim_versions=("nvim" "vim")
 tests=("lorem_test" "for_test" "cla_test")
 
-cd tests
+cd $(dirname $0)
+
 for vim in ${vim_versions[*]}; do
     echo -n "Running tests for $vim:"
     [[ $verbose != 0 ]] && echo
 
     for test in ${tests[*]}; do
-        $test/test.sh $vim $verbose || error=$[ $error + 1 ]
+        $test/test.sh $vim $verbose || ((++error))
     done
 
     if [[ $verbose == 0 ]]; then

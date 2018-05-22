@@ -7,7 +7,7 @@ test_file=lorem
 log=log.txt
 tmux_session=SimpleSnippetsTest
 
-cd lorem_test/
+cd $(dirname $0)
 touch $test_file
 start_size=$(stat -c %s $test_file)
 
