@@ -1,3 +1,9 @@
 language: generic
+addons:
+    apt:
+      update: true
+before-install:
+    - sudo apt-get -qq update
+    - sudo apt-get install -y neovim python-neovim python3-neovim vim tmux
 script:
     - ./tests/run_tests.sh
