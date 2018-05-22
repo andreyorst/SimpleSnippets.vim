@@ -18,8 +18,8 @@ while [[ $start_size == $(stat -c %s $test_file) ]]; do
     sleep 0.1
 done
 
-sha_ref=$(sha256sum $ref_file | sed -E "s/(\w+).*/\1/")
-sha_res=$(sha256sum $test_file | sed -E "s/(\w+).*/\1/")
+sha_ref=$(sha256sum $ref_file  | awk '{print $1}')
+sha_res=$(sha256sum $test_file | awk '{print $1}')
 
 if [[ $sha_ref != $sha_res ]]; then
     if [[ $verbose != 0 ]]; then
