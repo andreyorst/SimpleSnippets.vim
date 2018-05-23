@@ -10,5 +10,6 @@ filetype plugin indent on
 let g:SimpleSnippetsExpandOrJumpTrigger = "<Tab>"
 let g:SimpleSnippetsJumpBackwardTrigger = "<C-k>"
 let g:SimpleSnippetsJumpToLastTrigger = "<C-j>"
+let g:SimpleSnippets_search_path = $HOME."/.vim/bundle/SimpleSnippets.vim/tests/test_snippet_files/"
 inoremap Qw <Esc>:x<Cr>
 

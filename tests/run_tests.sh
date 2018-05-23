@@ -4,7 +4,7 @@ error=0
 verbose=1
 
 vim_versions=("nvim" "vim")
-tests=("lorem" "forward_jumping" "backward_jumping" "for" "cla")
+tests=("lorem" "forward_jumping" "backward_jumping" "for" "cla" "shell")
 
 cd $(dirname $0)
 
