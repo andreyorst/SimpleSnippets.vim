@@ -19,13 +19,12 @@ tests=("lorem" "forward_jumping" "backward_jumping" "for" "cla" "shell")
 cd $(dirname $0)
 
 for vim in ${vim_versions[*]}; do
-    #if hash $vim 2>/dev/null; then
     if [[ -x "$(command -v $vim)" ]]; then
         echo -n "Running tests for $vim:"
         [[ $verbose != 0 ]] && echo
 
-        for test in ${tests[*]}; do
-            $test/test.sh $vim $verbose || ((++error))
+        for test_name in ${tests[*]}; do
+            ./test.sh $test_name $vim $verbose || ((++error))
         done
 
         if [[ $verbose == 0 ]]; then

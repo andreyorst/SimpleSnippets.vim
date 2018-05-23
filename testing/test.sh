@@ -1,21 +1,32 @@
 #!/bin/bash
-vim=$1
-verbose=$2
-test_name="lorem snippet"
+test_name=$1
+vim=$2
+verbose=$3
+timeout=600
 ref_file=reference
-test_file=lorem
-log=log.txt
 tmux_session=SimpleSnippetsTest
 
-cd $(dirname $0)
-touch $test_file
-start_size=$(stat -c %s $test_file)
+cd tests/$test_name/
+
+if [[ $verbose != 0 ]]; then
+    echo -n "$test_name test: "
+fi
 
 tmux new-session -d -n $tmux_session
-tmux send-keys -t SimpleSnippetsTest "$vim -n -u ../testrc $test_file" enter "ggdGitest start" enter "lorem" escape "a" tab "otest endQw"
 
-while [[ $start_size == $(stat -c %s $test_file) ]]; do
+source test.sh
+
+before_test
+test_func
+after_test
+
+while [[ $(stat -c %s $test_file) == 0 ]]; do
     sleep 0.1
+    ((--timeout))
+    if [[ $timeout == 0 ]]; then
+        echo "Timeout"
+        error=0
+    fi
 done
 
 sha_ref=$(sha256sum $ref_file  | awk '{print $1}')
@@ -23,13 +34,13 @@ sha_res=$(sha256sum $test_file | awk '{print $1}')
 
 if [[ $sha_ref != $sha_res ]]; then
     if [[ $verbose != 0 ]]; then
-        echo "[ERR]: $test_name test"
+        echo "Error"
     fi
-    mv $test_file $log
+    rm $test_file
     error=1
 else
     if [[ $verbose != 0 ]]; then
-        echo "[OK]: $test_name test"
+        echo "Ok"
     fi
     rm $test_file
     error=0
