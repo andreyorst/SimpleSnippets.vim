@@ -6,6 +6,7 @@ timeout=600
 ref_file=reference
 tmux_session=SimpleSnippetsTest
 
+cd $(dirname $0)
 cd tests/$test_name/
 
 if [[ $verbose != 0 ]]; then

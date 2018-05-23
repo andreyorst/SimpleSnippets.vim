@@ -38,6 +38,7 @@ for vim in ${vim_versions[*]}; do
         echo "$vim is not installed. Skipping"
         ((++skip))
     fi
+    echo
 done
 
 if [[ $skip == ${#vim_versions[@]} ]]; then
