@@ -1,7 +1,8 @@
 #!/bin/bash
 vim=$1
 verbose=$2
-ref_file=cla_ref.cpp
+test_name="cla snippet"
+ref_file=reference
 test_file=cla.cpp
 log=log.txt
 tmux_session=SimpleSnippetsTest
@@ -22,13 +23,13 @@ sha_res=$(sha256sum $test_file | awk '{print $1}')
 
 if [[ $sha_ref != $sha_res ]]; then
     if [[ $verbose != 0 ]]; then
-        echo "[ERR]: cla test"
+        echo "[ERR]: $test_name test"
     fi
     mv $test_file $log
     error=1
 else
     if [[ $verbose != 0 ]]; then
-        echo "[OK]: cla test"
+        echo "[OK]: $test_name test"
     fi
     rm $test_file
     error=0

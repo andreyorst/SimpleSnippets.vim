@@ -1,0 +1,5 @@
+/* test start */
+for (char j = 100; j > 0; j--) {
+	// for body
+}
+/* test end */
