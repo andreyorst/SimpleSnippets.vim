@@ -4,7 +4,7 @@ error=0
 verbose=1
 
 vim_versions=("nvim" "vim")
-tests=("lorem_test" "for_test" "cla_test")
+tests=("lorem" "forward_jumping" "backward_jumping" "for" "cla")
 
 cd $(dirname $0)
 
@@ -24,4 +24,5 @@ for vim in ${vim_versions[*]}; do
         fi
     fi
 done
+
 exit $error
