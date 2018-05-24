@@ -82,25 +82,16 @@ Limitations:~
   2. Placeholders must contain unique bodies.
      You can't use same bodies for different placeholders.  So `${2:a} ${1:a}`
      is not possible. If you need same placeholders use |repeater|s.
-  3. Single snippet editing at one time.
+  3. Single snippet editing at time.
      Expanding another snippet  will  make  jumping  unavailable  in  previous
      snippet.
-  4. Backward jumping requires monitoring user's input. Therefore if you want
-     jump back to somewhere, be sure to leave placeholder in jumpable state.
-  5. Placeholder syntax differs form other plugins.
-  6. Jumping is based on searching for a string.
+  4. Placeholder syntax differs form other plugins.
+  5. Jumping is based on searching for a string.
 
 
 Known bugs / design flaws~
 
-  1. Mirroring maps your key in command-line mode with `cnoremap` and  unmaps
-     it after jumping.  So if you're using your expand  key  in  command  mode
-     mappings beware of them being wiped out by plugin.  (I don't know  anyone
-     who's using  command  mode  mappings,  so  I  don't  want  to  mess  with
-     workarounds until really needed.  Not a best  approach,  but  I'd  rather
-     spend time on more important things for now.   Until  actual  bug  report
-     appear, or no other bugs/limitations/etc. remain).
-  2. Placeholders must be separated form other text with non-word characters.
+  1. Placeholders must be separated form other text with non-word characters.
      You can't use something like  `${1:hello}_${2:world}`  because  resulting
      text would be `hello_world` which  Vim  understands  as  single  word  or
      `<cword>`.  Jumping is based on text searching, and SimpleSnippets  looks

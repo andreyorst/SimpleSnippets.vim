@@ -38,7 +38,7 @@ let g:SimpleSnippetsJumpToLastTrigger = "<C-j>"
 ```
 to your vimrc. If you want to disable default mappings, to write your own using functions, append `let g:SimpleSnippets_dont_remap_tab = 1` to those settings. For other settings please read the documentation.
 
-Plugin was created and being maintained by [@andreyorst](https://github.com/andreyorst). If you found an issue, or want to propose a change, you're welcome to do so at SimpleSnippets.vim GitHub repository: https://github.com/andreyorst/SimpleSnippets.vim 
+Plugin was created and being maintained by [@andreyorst](https://github.com/andreyorst). It is being tested against Vim 8.0 and NeoVim 0.3.0. Other versions are not supported, but might work. If you found an issue, or want to propose a change, you're welcome to do so at SimpleSnippets.vim GitHub repository: https://github.com/andreyorst/SimpleSnippets.vim
 
 ## Why?
 
@@ -126,9 +126,9 @@ SimpleSnippets supports normal: `${1:text}`, command: `${2!command}`, and repeat
 So you can't use `${2:text_a} ${0:text_b} ${1:text_a}` constructions. SimpleSnippets will jump to first match of `text_a` in snippet body. This is major limitation.
 - [ ] Jumping is based on searching for a string.  
 As was already said before. So if you replace some part of snippets in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
-- [ ] Single snippet editing at time.
+- [ ] Single snippet editing at time.  
 If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet.
-- [ ] No nested placeholders.
+- [ ] No nested placeholders.  
 - There may be more, which I've not thought about.
 
 **Withdrawn limitations:**
