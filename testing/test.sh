@@ -2,7 +2,8 @@
 test_name=$1
 vim=$2
 verbose=$3
-timeout=600
+timeout=200
+error=0
 ref_file=reference
 tmux_session=SimpleSnippetsTest
 
@@ -26,26 +27,29 @@ while [[ $(stat -c %s $test_file) == 0 ]]; do
     ((--timeout))
     if [[ $timeout == 0 ]]; then
         echo "Timeout"
-        error=0
+        error=1
+        break
     fi
 done
 
-sha_ref=$(sha256sum $ref_file  | awk '{print $1}')
-sha_res=$(sha256sum $test_file | awk '{print $1}')
+if [[ $error == 0 ]]; then
+    sha_ref=$(sha256sum $ref_file  | awk '{print $1}')
+    sha_res=$(sha256sum $test_file | awk '{print $1}')
 
-if [[ $sha_ref != $sha_res ]]; then
-    if [[ $verbose != 0 ]]; then
-        echo "Error"
+    if [[ $sha_ref != $sha_res ]]; then
+        if [[ $verbose != 0 ]]; then
+            echo "Error"
+        fi
+        error=1
+    else
+        if [[ $verbose != 0 ]]; then
+            echo "Ok"
+        fi
+        error=0
     fi
-    rm $test_file
-    error=1
-else
-    if [[ $verbose != 0 ]]; then
-        echo "Ok"
-    fi
-    rm $test_file
-    error=0
 fi
+
+rm $test_file
 
 tmux kill-window -t $tmux_session
 exit $error
