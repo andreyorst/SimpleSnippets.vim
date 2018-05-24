@@ -331,7 +331,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	call SimpleSnippets#restoreCMappings()
 	let s:result_line_count = len(split(l:rename, '\\r'))
 	if l:rename != ''
-		let l:cnt = execute(s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g')
+		let l:cnt = SimpleSnippets#execute(s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g', "")
 		call histdel("/", -1)
 		let l:subst_amount = strpart(l:cnt, 0, stridx(l:cnt, " "))
 		let l:subst_amount = substitute(l:subst_amount, '\v%^\_s+|\_s+%$', '', 'g')
@@ -668,7 +668,7 @@ function! SimpleSnippets#initCommand(current)
 	if executable(substitute(l:command, '\v(^\w+).*', '\1', 'g')) == 1
 		let l:result = system(l:command)
 	else
-		let l:result = execute("echo " . l:command, "silent!")
+		let l:result = SimpleSnippets#execute("echo " . l:command, "silent!")
 		if l:result == ''
 			let l:result = l:command
 		endif
@@ -705,7 +705,7 @@ function! SimpleSnippets#initCommand(current)
 endfunction
 
 function! SimpleSnippets#countPlaceholders(pattern)
-	let l:cnt = execute('%s/' . a:pattern . '//gn', "silent!")
+	let l:cnt = SimpleSnippets#execute('%s/' . a:pattern . '//gn', "silent!")
 	call histdel("/", -1)
 	if match(l:cnt, 'not found') >= 0
 		return 0
@@ -814,7 +814,7 @@ function! SimpleSnippets#colorMatches(text)
 		let l:echo = a:text
 		let l:ph = '\<' . l:ph . '\>'
 	endif
-	let l:cnt = execute(s:snip_start.','.s:snip_end.'s/' . a:text . '//gn', "silent!")
+	let l:cnt = SimpleSnippets#execute(s:snip_start.','.s:snip_end.'s/' . a:text . '//gn', "silent!")
 	call histdel("/", -1)
 	noh
 	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
@@ -985,3 +985,21 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 	return a:dict
 endfunction
 
+" 7.4 compability lyer
+
+function! SimpleSnippets#execute(command, silent)
+	if version < 800
+		redir => l:result
+		if a:silent == "silent"
+			silent execute a:command
+		elseif a:silent == "silent!"
+			silent! execute a:command
+		else
+			silent! execute a:command
+		endif
+		redir END
+	else
+		let l:result = execute(a:command, a:silent)
+	endif
+	return l:result
+endfunction
