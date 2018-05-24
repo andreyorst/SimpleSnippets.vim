@@ -337,7 +337,7 @@ so:
   `    \"\<Tab>"`
   `inoremap <silent><expr><S-Tab> pumvisible() ? "\<c-p>" :`
   `    \SimpleSnippets#isJumpable() ?`
-  `    \"<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" :`
+  `    \"<Esc>:call SimpleSnippets#jumpBackwards()<Cr>" :`
   `    \"\<S-Tab>"`
   `inoremap <silent><expr><Cr> pumvisible() ?`
   `    \SimpleSnippets#isExpandableOrJumpable() ?`
@@ -346,7 +346,7 @@ so:
   `snoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ?`
   `    \"<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"`
   `    snoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ?`
-  `    \"<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" :`
+  `    \"<Esc>:call SimpleSnippets#jumpBackwards()<Cr>" :`
   `    \"\<S-Tab>"`
 
 This is bit tricky, but you can still scroll  through  your  completion  popup
