@@ -308,7 +308,9 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:echo = a:placeholder
 		let l:ph = '\<' . l:ph . '\>'
 	endif
-	let l:matchpositions = SimpleSnippets#colorMatches(l:ph)
+	if exists("*matchaddpos")
+		let l:matchpositions = SimpleSnippets#colorMatches(l:ph)
+	endif
 	call cursor(s:snip_start, 1)
 	call search(l:ph, 'c', s:snip_end)
 	let save_q_mark = getpos("'q")
@@ -339,9 +341,11 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let s:jump_stack[s:current_jump - 1] = l:rename
 		noh
 	endif
-	for matchpos in l:matchpositions
-		call matchdelete(matchpos)
-	endfor
+	if exists("*matchaddpos")
+		for matchpos in l:matchpositions
+			call matchdelete(matchpos)
+		endfor
+	endif
 	call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	if l:reenable_cursorline == 1
 		set cursorline
