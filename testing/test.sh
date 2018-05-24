@@ -7,6 +7,11 @@ error=0
 ref_file=reference
 tmux_session=SimpleSnippetsTest
 
+if ! [[ -x "$(command -v $vim)" ]]; then
+    echo "No such program: $vim"
+    exit 1
+fi
+
 cd $(dirname $0)
 cd tests/$test_name/
 
