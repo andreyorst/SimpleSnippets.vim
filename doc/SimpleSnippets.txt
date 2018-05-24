@@ -61,9 +61,9 @@ build with standard Vim features only, so it may be faster then any of those.
 1.1 Requirements                                   *SimpleSnippets-requirements*
 ----------------
 
-This plugin is tested against Vim 8.0 and NeoVim 0.3.0. All other versions are
-unsupported, but might work too.  This plugin  works  only  in  'nocompatible'
-mode.
+This plugin is tested against Vim 8.0, Vim 7.4.1689  and  NeoVim  0.3.0.   All
+other versions are not supported, but might work too.  This plungin works only
+in  'nocompatible' mode.
 
 
 1.2 Limitations / bugs                              *SimpleSnippets-limitations*
@@ -820,7 +820,7 @@ https://github.com/andreyorst/SimpleSnippets.vim/issues
 -----------------
 
 SimpleSnippets is shipped with tests.  Every new feature  or bug fix  must  be
-tested before pushing.  To run tests execute `tests/run_tests.sh` from project
+tested before pushing. To run tests execute `testing/run_tests.sh` from project
 root.  Each test creates tmux session, and executes snippets in it by  sending
 keys to tmux.  Then saves file, and compares  checksum  with  reference  file.
 After that next test is being run.
@@ -835,8 +835,45 @@ If you developed a new feature that is not covered with  existing  tests,  you
 should write a test for it.  Test consists of executing snippet with this  new
 feature by sending key input as user will do.  Each test  must  start  with  a
 comment `test start` and end with a comment `test end` on new lines. Reference
-file should contain expanded and edited snippet.   For  test  examples  please
-refer to existing tests.
+file should contain expanded and edited snippet.
+
+Test consists of test script `test.sh` and reference file, both located at
+`testing/tests/testname/` folder. Reference file must be called `reference`
+and contain expanded and edited snipppet. Test script consists of three
+functions: `before_test()`, `test_function()` and `after_test()`. This script
+defines a bash variable called `test_file` and creates this file with touch.
+Then `before_test()` sends input to tmus session, which name is stored in
+`$tmux_session` variable, and opens `$test_file` editor stored in `$vim`
+variable. Then it starts the redir to log file, to log messages. Sampple
+`before_test()` function:
+
+  `test_file=lorem`
+  `before_test() {`
+      `touch $test_file`
+      `tmux send-keys -t $tmux_session "$vim -n -u ../../testrc $test_file" enter ":redir > $log_file" enter`
+  `}`
+
+Second function, which appears to be `test_function()` will send actual input
+to tmux with keys needed to expand a snippet:
+
+  `test_func() {`
+  `    tmux send-keys -t $tmux_session "ggdGitest start" enter "lorem" escape "a" tab "otest endQq"`
+  `}`
+
+Note that at the end of key sequence you can spot strange `Qq`. This is test
+inoremap that emulates <Esc> key in tmux. I don't know why, but sometimes
+Escape just do not work. there is another `inoremap` for save and quit from
+insert mode: `Qw`.
+
+The last function is `after_test()`, which stops redir and saves the file:
+
+  `after_test() {`
+  `    tmux send-keys -t $tmux_session ":redir END" enter ":x" enter`
+  `}`
+
+Theese functions are being sourced by another script, therefore no need to
+include shebang in this file.
+
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:nornu:nonu:scl=no
