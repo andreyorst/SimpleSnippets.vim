@@ -2,6 +2,7 @@
 test_name=$1
 vim=$2
 verbose=$3
+log_file=${vim}_log.txt
 timeout=200
 error=0
 ref_file=reference
@@ -45,16 +46,16 @@ if [[ $error == 0 ]]; then
         if [[ $verbose != 0 ]]; then
             echo "Error"
         fi
+        mv $test_file $log_file
         error=1
     else
         if [[ $verbose != 0 ]]; then
             echo "Ok"
         fi
+        rm $test_file
         error=0
     fi
 fi
-
-rm $test_file
 
 tmux kill-window -t $tmux_session
 exit $error
