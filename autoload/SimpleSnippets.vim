@@ -586,38 +586,6 @@ function! SimpleSnippets#getSnipPath(snip, filetype)
 	endif
 endfunction
 
-function! SimpleSnippets#edit()
-	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
-	let l:path = g:SimpleSnippets_search_path . l:filetype
-	let s:snip_edit_buf = 0
-	if !isdirectory(l:path)
-		call mkdir(l:path, "p")
-	endif
-	let l:trigger = input('Select a trigger: ')
-	if l:trigger != ''
-		if win_gotoid(s:snip_edit_win)
-			try
-				exec "buffer " . s:snip_edit_buf
-			catch
-				let l:trigger = SimpleSnippets#triggerEscape(l:trigger)
-				exec "edit " . l:path . '/' . l:trigger
-				exec "setf " . l:filetype
-			endtry
-		else
-			vertical new
-			try
-				exec "buffer " . s:snip_edit_buf
-			catch
-				let l:trigger = SimpleSnippets#triggerEscape(l:trigger)
-				execute "edit " . l:path . '/' . l:trigger
-				execute "setf " . l:filetype
-				let s:snip_edit_buf = bufnr("")
-			endtry
-			let s:snip_edit_win = win_getid()
-		endif
-	endif
-endfunction
-
 function! SimpleSnippets#triggerEscape(trigger)
 	let l:trigg = SimpleSnippets#removeTrailings(a:trigger)
 	if l:trigg =~ "\\s"
@@ -863,24 +831,31 @@ function! SimpleSnippets#edit(trigg)
 		return -1
 	endif
 	if l:trigger != ''
-		if win_gotoid(s:snip_edit_win)
-			try
-				exec "buffer " . s:snip_edit_buf
-			catch
-				exec "edit " . l:path . '/' . l:trigger
-				exec "setf " . l:filetype
-			endtry
+		if exists("*win_gotoid")
+			if win_gotoid(s:snip_edit_win)
+				try
+					exec "buffer " . s:snip_edit_buf
+				catch
+					exec "edit " . l:path . '/' . l:trigger
+					exec "setf " . l:filetype
+				endtry
+			else
+				vertical new
+				try
+					exec "buffer " . s:snip_edit_buf
+				catch
+					execute "edit " . l:path . '/' . l:trigger
+					execute "setf " . l:filetype
+					let s:snip_edit_buf = bufnr("")
+				endtry
+				let s:snip_edit_win = win_getid()
+			endif
 		else
 			vertical new
-			try
-				exec "buffer " . s:snip_edit_buf
-			catch
-				execute "edit " . l:path . '/' . l:trigger
-				execute "setf " . l:filetype
-				let s:snip_edit_buf = bufnr("")
-			endtry
-			let s:snip_edit_win = win_getid()
+			exec "edit " . l:path . '/' . l:trigger
+			exec "setf " . l:filetype
 		endif
+
 	else
 		redraw
 		echo "Empty trigger"
@@ -989,7 +964,7 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 	return a:dict
 endfunction
 
-" 7.4 compability lyer
+" 7.4 compability layer
 
 function! SimpleSnippets#execute(command, silent)
 	if version < 800
