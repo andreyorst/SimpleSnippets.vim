@@ -63,9 +63,9 @@ function! SimpleSnippets#expand()
 		endwhile
 		let s:snip_line_count = len(l:snippet)
 		if s:snip_line_count != 0
-			let l:snippet = join(l:snippet, "\n")
+			let l:snip_as_str = join(l:snippet, "\n")
 			let l:save_s = @s
-			let @s = l:snippet
+			let @s = l:snip_as_str
 			let l:save_quote = @"
 			if l:snip =~ "\\W"
 				normal! ciW
