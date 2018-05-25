@@ -13,7 +13,7 @@ for dep in ${dependencies[*]}; do
     fi
 done
 
-vim_versions=("nvim" "vim" "vim-7.4.1689")
+vim_versions=("nvim" "vim" "vim-7.4.1689" "vim-7.4.001")
 tests=("lorem" "forward_jumping" "backward_jumping" "for" "cla" "shell" "create_snippet")
 
 cd $(dirname $0)
@@ -45,6 +45,9 @@ if [[ $skip == ${#vim_versions[@]} ]]; then
     echo "No tests vere run at all."
     echo "Please install either vim or neovim and run corresponding tests"
     ((++error))
+else
+    echo "Total test count: $((${#vim_versions[@]} * ${#tests[@]}))"
+    echo "Amount of errors: $error"
 fi
 
 exit $error
