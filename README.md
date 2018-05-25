@@ -1,4 +1,8 @@
-# SimpleSnippets.vim
+# SimpleSnippets.vim 
+[![GitHub release](https://img.shields.io/github/release/andreyorst/simplesnippets.vim.svg)](https://github.com/andreyorst/SimpleSnippets.vim/releases)
+[![GitHub Release Date](https://img.shields.io/github/release-date/andreyorst/SimpleSnippets.vim.svg)](https://github.com/andreyorst/SimpleSnippets.vim/releases)
+![Github commits (since latest release)](https://img.shields.io/github/commits-since/andreyorst/Simplesnippets.vim/latest.svg)
+![license](https://img.shields.io/github/license/andreyorst/simplesnippets.vim.svg)
 
 Simple snippets is a simple snippet manager for Vim and NeoVim, based on standard
 editor features, designed to be fast and lightweight. It integrates with Deoplete
