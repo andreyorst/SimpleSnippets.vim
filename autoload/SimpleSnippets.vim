@@ -308,9 +308,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:echo = a:placeholder
 		let l:ph = '\<' . l:ph . '\>'
 	endif
-	if exists("*matchaddpos")
-		let l:matchpositions = SimpleSnippets#colorMatches(l:ph)
-	endif
+	let l:matchpositions = SimpleSnippets#colorMatches(l:ph)
 	call cursor(s:snip_start, 1)
 	call search(l:ph, 'c', s:snip_end)
 	let save_q_mark = getpos("'q")
@@ -341,11 +339,9 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let s:jump_stack[s:current_jump - 1] = l:rename
 		noh
 	endif
-	if exists("*matchaddpos")
-		for matchpos in l:matchpositions
-			call matchdelete(matchpos)
-		endfor
-	endif
+	for matchpos in l:matchpositions
+		call matchdelete(matchpos)
+	endfor
 	call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	if l:reenable_cursorline == 1
 		set cursorline
@@ -801,11 +797,19 @@ function! SimpleSnippets#colorMatches(text)
 			let l:start = col('.')
 			call search(l:lin, 'ceW', s:snip_end)
 			let l:length = col('.') - l:start + 1
-			call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
+			if hlexists("Visual")
+				if exists("*matchaddpos")
+					call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
+				else
+					call add(l:matchpositions, matchadd('Visual', l:lin))
+				endif
+			endif
 			call cursor(line('.'), col('.') + 1)
 		endfor
-		if has('nvim')
-			call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
+		if hlexists("Cursor")
+			if exists("*matchaddpos")
+				call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
+			endif
 		endif
 		let l:i += 1
 	endwhile
@@ -934,8 +938,8 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 	if isdirectory(a:path . a:filetype . '/')
 		let l:dir = system('ls '. a:path . a:filetype . '/')
 		let l:dir = substitute(l:dir, '\n\+$', '', '')
-		let l:dir = split(l:dir)
-		for i in l:dir
+		let l:dir_list = split(l:dir)
+		for i in l:dir_list
 			let l:descr = ''
 			for line in readfile(a:path.a:filetype.'/'.i)
 				let l:descr .= substitute(line, '\v\$\{[0-9]+(:|!)(.{-})\}', '\2', 'g')
@@ -963,6 +967,7 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 	endif
 	return a:dict
 endfunction
+
 
 " 7.4 compability layer
 
