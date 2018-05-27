@@ -1,0 +1,3 @@
+/* test start */
+flash_test(simple, snippets);
+/* test end */
