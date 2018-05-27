@@ -331,7 +331,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	call SimpleSnippets#restoreCMappings()
 	let s:result_line_count = len(split(l:rename, '\\r'))
 	if l:rename != ''
-		let l:cnt = SimpleSnippets#execute(s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g', "")
+		let l:cnt = SimpleSnippets#execute(s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g')
 		call histdel("/", -1)
 		let l:subst_amount = strpart(l:cnt, 0, stridx(l:cnt, " "))
 		let l:subst_amount = substitute(l:subst_amount, '\v%^\_s+|\_s+%$', '', 'g')
@@ -614,11 +614,13 @@ function! SimpleSnippets#filetypeWrapper(similar_filetypes)
 endfunction
 
 function! SimpleSnippets#initNormal(current)
-	let l:placeholder = '\v(\$\{'. a:current . ':)@<=.{-}(\})@='
+	let l:placeholder = '\v(\$\{'.a:current.':)@<=.{-}(\}($|[^\}]))@='
 	let l:result = matchstr(getline('.'), l:placeholder)
 	call add(s:jump_stack, l:result)
 	let l:save_quote = @"
-	exe "normal! df:f}i\<Del>\<Esc>"
+	let save_q_mark = getpos("'q")
+	exe "normal! f{mq%i\<Del>\<Esc>g`qF$df:"
+	call setpos("'q", save_q_mark)
 	let @" = l:save_quote
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
@@ -631,8 +633,9 @@ endfunction
 
 function! SimpleSnippets#initCommand(current)
 	let l:save_quote = @"
-	let l:placeholder = '\v(\$\{'. a:current . '!)@<=.{-}(\})@='
+	let l:placeholder = '\v(\$\{'.a:current.'!)@<=.{-}(\}($|[^\}]))@='
 	let l:command = matchstr(getline('.'), l:placeholder)
+	let g:com = l:command
 	if executable(substitute(l:command, '\v(^\w+).*', '\1', 'g')) == 1
 		let l:result = system(l:command)
 	else
@@ -651,7 +654,7 @@ function! SimpleSnippets#initCommand(current)
 	let save_q_mark = getpos("'q")
 	let save_p_mark = getpos("'p")
 	normal! mq
-	call search('\v\$\{'.a:current.'!.{-}\}', 'ce', s:snip_end)
+	call search('\v\$\{'.a:current.'!.{-}\}($|[^\}])@=', 'ce', s:snip_end)
 	normal! mp
 	let s:ph_start = getpos("'q")
 	let s:ph_end = getpos("'p")
@@ -835,31 +838,7 @@ function! SimpleSnippets#edit(trigg)
 		return -1
 	endif
 	if l:trigger != ''
-		if exists("*win_gotoid")
-			if win_gotoid(s:snip_edit_win)
-				try
-					exec "buffer " . s:snip_edit_buf
-				catch
-					exec "edit " . l:path . '/' . l:trigger
-					exec "setf " . l:filetype
-				endtry
-			else
-				vertical new
-				try
-					exec "buffer " . s:snip_edit_buf
-				catch
-					execute "edit " . l:path . '/' . l:trigger
-					execute "setf " . l:filetype
-					let s:snip_edit_buf = bufnr("")
-				endtry
-				let s:snip_edit_win = win_getid()
-			endif
-		else
-			vertical new
-			exec "edit " . l:path . '/' . l:trigger
-			exec "setf " . l:filetype
-		endif
-
+		call SimpleSnippets#createSplit(l:path, l:trigger, l:filetype)
 	else
 		redraw
 		echo "Empty trigger"
@@ -971,19 +950,51 @@ endfunction
 
 " 7.4 compability layer
 
-function! SimpleSnippets#execute(command, silent)
-	if version < 800
+function! SimpleSnippets#execute(command, ...)
+	if a:0 != 0
+		let l:silent = a:1
+	else
+		let l:silent = ""
+	endif
+	if exists("*execute")
+		let l:result = execute(a:command, l:silent)
+	else
 		redir => l:result
-		if a:silent == "silent"
+		if l:silent == "silent"
 			silent execute a:command
-		elseif a:silent == "silent!"
+		elseif l:silent == "silent!"
 			silent! execute a:command
 		else
-			silent! execute a:command
+			execute a:command
 		endif
 		redir END
-	else
-		let l:result = execute(a:command, a:silent)
 	endif
 	return l:result
+endfunction
+
+function! SimpleSnippets#createSplit(path, trigger, filetype)
+	if exists("*win_gotoid")
+		if win_gotoid(s:snip_edit_win)
+			try
+				exec "buffer " . s:snip_edit_buf
+			catch
+				exec "edit " . a:path . '/' . a:trigger
+				exec "setf " . a:filetype
+			endtry
+		else
+			vertical new
+			try
+				exec "buffer " . s:snip_edit_buf
+			catch
+				execute "edit " . a:path . '/' . a:trigger
+				execute "setf " . a:filetype
+				let s:snip_edit_buf = bufnr("")
+			endtry
+			let s:snip_edit_win = win_getid()
+		endif
+	else
+		vertical new
+		exec "edit " . a:path . '/' . a:trigger
+		exec "setf " . a:filetype
+	endif
 endfunction
