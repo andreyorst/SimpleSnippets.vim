@@ -614,11 +614,15 @@ function! SimpleSnippets#filetypeWrapper(similar_filetypes)
 endfunction
 
 function! SimpleSnippets#initNormal(current)
-	let l:placeholder = '\v(\$\{'. a:current . ':)@<=.{-}(\})@='
+	"let l:placeholder = '\v(\$\{'. a:current . ':)@<=.{-}(\})@='
+	let l:placeholder = '\v(\$\{'.a:current.':)@<=.{-}(\}($|[^\}]))@='
 	let l:result = matchstr(getline('.'), l:placeholder)
 	call add(s:jump_stack, l:result)
 	let l:save_quote = @"
-	exe "normal! df:f}i\<Del>\<Esc>"
+	"exe "normal! df:f}i\<Del>\<Esc>"
+	let save_q_mark = getpos("'q")
+	exe "normal! f{mq%i\<Del>\<Esc>g`qF$df:"
+	call setpos("'q", save_q_mark)
 	let @" = l:save_quote
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
@@ -631,8 +635,9 @@ endfunction
 
 function! SimpleSnippets#initCommand(current)
 	let l:save_quote = @"
-	let l:placeholder = '\v(\$\{'. a:current . '!)@<=.{-}(\})@='
+	let l:placeholder = '\v(\$\{'.a:current.'!)@<=.{-}(\}($|[^\}]))@='
 	let l:command = matchstr(getline('.'), l:placeholder)
+	let g:com = l:command
 	if executable(substitute(l:command, '\v(^\w+).*', '\1', 'g')) == 1
 		let l:result = system(l:command)
 	else
@@ -651,7 +656,7 @@ function! SimpleSnippets#initCommand(current)
 	let save_q_mark = getpos("'q")
 	let save_p_mark = getpos("'p")
 	normal! mq
-	call search('\v\$\{'.a:current.'!.{-}\}', 'ce', s:snip_end)
+	call search('\v\$\{'.a:current.'!.{-}\}($|[^\}])@=', 'ce', s:snip_end)
 	normal! mp
 	let s:ph_start = getpos("'q")
 	let s:ph_end = getpos("'p")
