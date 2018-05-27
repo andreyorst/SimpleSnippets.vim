@@ -308,9 +308,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:echo = a:placeholder
 		let l:ph = '\<' . l:ph . '\>'
 	endif
-	if exists("*matchaddpos")
-		let l:matchpositions = SimpleSnippets#colorMatches(l:ph)
-	endif
+	let l:matchpositions = SimpleSnippets#colorMatches(l:ph)
 	call cursor(s:snip_start, 1)
 	call search(l:ph, 'c', s:snip_end)
 	let save_q_mark = getpos("'q")
@@ -333,7 +331,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	call SimpleSnippets#restoreCMappings()
 	let s:result_line_count = len(split(l:rename, '\\r'))
 	if l:rename != ''
-		let l:cnt = SimpleSnippets#execute(s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g', "")
+		let l:cnt = SimpleSnippets#execute(s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g')
 		call histdel("/", -1)
 		let l:subst_amount = strpart(l:cnt, 0, stridx(l:cnt, " "))
 		let l:subst_amount = substitute(l:subst_amount, '\v%^\_s+|\_s+%$', '', 'g')
@@ -341,11 +339,9 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let s:jump_stack[s:current_jump - 1] = l:rename
 		noh
 	endif
-	if exists("*matchaddpos")
-		for matchpos in l:matchpositions
-			call matchdelete(matchpos)
-		endfor
-	endif
+	for matchpos in l:matchpositions
+		call matchdelete(matchpos)
+	endfor
 	call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	if l:reenable_cursorline == 1
 		set cursorline
@@ -806,11 +802,19 @@ function! SimpleSnippets#colorMatches(text)
 			let l:start = col('.')
 			call search(l:lin, 'ceW', s:snip_end)
 			let l:length = col('.') - l:start + 1
-			call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
+			if hlexists("Visual")
+				if exists("*matchaddpos")
+					call add(l:matchpositions, matchaddpos('Visual', [[l:line, l:start, l:length]]))
+				else
+					call add(l:matchpositions, matchadd('Visual', l:lin))
+				endif
+			endif
 			call cursor(line('.'), col('.') + 1)
 		endfor
-		if has('nvim')
-			call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
+		if hlexists("Cursor")
+			if exists("*matchaddpos")
+				call add(l:matchpositions, matchaddpos('Cursor', [[l:line, l:start + l:length - 1]]))
+			endif
 		endif
 		let l:i += 1
 	endwhile
@@ -836,31 +840,7 @@ function! SimpleSnippets#edit(trigg)
 		return -1
 	endif
 	if l:trigger != ''
-		if exists("*win_gotoid")
-			if win_gotoid(s:snip_edit_win)
-				try
-					exec "buffer " . s:snip_edit_buf
-				catch
-					exec "edit " . l:path . '/' . l:trigger
-					exec "setf " . l:filetype
-				endtry
-			else
-				vertical new
-				try
-					exec "buffer " . s:snip_edit_buf
-				catch
-					execute "edit " . l:path . '/' . l:trigger
-					execute "setf " . l:filetype
-					let s:snip_edit_buf = bufnr("")
-				endtry
-				let s:snip_edit_win = win_getid()
-			endif
-		else
-			vertical new
-			exec "edit " . l:path . '/' . l:trigger
-			exec "setf " . l:filetype
-		endif
-
+		call SimpleSnippets#createSplit(l:path, l:trigger, l:filetype)
 	else
 		redraw
 		echo "Empty trigger"
@@ -939,8 +919,8 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 	if isdirectory(a:path . a:filetype . '/')
 		let l:dir = system('ls '. a:path . a:filetype . '/')
 		let l:dir = substitute(l:dir, '\n\+$', '', '')
-		let l:dir = split(l:dir)
-		for i in l:dir
+		let l:dir_list = split(l:dir)
+		for i in l:dir_list
 			let l:descr = ''
 			for line in readfile(a:path.a:filetype.'/'.i)
 				let l:descr .= substitute(line, '\v\$\{[0-9]+(:|!)(.{-})\}', '\2', 'g')
@@ -969,21 +949,54 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 	return a:dict
 endfunction
 
+
 " 7.4 compability layer
 
-function! SimpleSnippets#execute(command, silent)
-	if version < 800
+function! SimpleSnippets#execute(command, ...)
+	if a:0 != 0
+		let l:silent = a:1
+	else
+		let l:silent = ""
+	endif
+	if exists("*execute")
+		let l:result = execute(a:command, l:silent)
+	else
 		redir => l:result
-		if a:silent == "silent"
+		if l:silent == "silent"
 			silent execute a:command
-		elseif a:silent == "silent!"
+		elseif l:silent == "silent!"
 			silent! execute a:command
 		else
-			silent! execute a:command
+			execute a:command
 		endif
 		redir END
-	else
-		let l:result = execute(a:command, a:silent)
 	endif
 	return l:result
+endfunction
+
+function! SimpleSnippets#createSplit(path, trigger, filetype)
+	if exists("*win_gotoid")
+		if win_gotoid(s:snip_edit_win)
+			try
+				exec "buffer " . s:snip_edit_buf
+			catch
+				exec "edit " . a:path . '/' . a:trigger
+				exec "setf " . a:filetype
+			endtry
+		else
+			vertical new
+			try
+				exec "buffer " . s:snip_edit_buf
+			catch
+				execute "edit " . a:path . '/' . a:trigger
+				execute "setf " . a:filetype
+				let s:snip_edit_buf = bufnr("")
+			endtry
+			let s:snip_edit_win = win_getid()
+		endif
+	else
+		vertical new
+		exec "edit " . a:path . '/' . a:trigger
+		exec "setf " . a:filetype
+	endif
 endfunction
