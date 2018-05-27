@@ -614,12 +614,10 @@ function! SimpleSnippets#filetypeWrapper(similar_filetypes)
 endfunction
 
 function! SimpleSnippets#initNormal(current)
-	"let l:placeholder = '\v(\$\{'. a:current . ':)@<=.{-}(\})@='
 	let l:placeholder = '\v(\$\{'.a:current.':)@<=.{-}(\}($|[^\}]))@='
 	let l:result = matchstr(getline('.'), l:placeholder)
 	call add(s:jump_stack, l:result)
 	let l:save_quote = @"
-	"exe "normal! df:f}i\<Del>\<Esc>"
 	let save_q_mark = getpos("'q")
 	exe "normal! f{mq%i\<Del>\<Esc>g`qF$df:"
 	call setpos("'q", save_q_mark)
