@@ -62,7 +62,7 @@ build with standard Vim features only, so it may be faster then any of those.
 ----------------
 
 This plugin is tested against Vim 8.0, Vim 7.4.1689  and  NeoVim  0.3.0.   All
-other versions are not supported, but might work too.  This plungin works only
+other versions are not supported, but might work too.  This plugin  works only
 in  'nocompatible' mode.
 
 
@@ -91,16 +91,36 @@ Limitations:~
 
 Known bugs / design flaws~
 
-  1. Placeholders must be separated form other text with non-word characters.
-     You can't use something like  `${1:hello}_${2:world}`  because  resulting
-     text would be `hello_world` which  Vim  understands  as  single  word  or
-     `<cword>`.  Jumping is based on text searching, and SimpleSnippets  looks
-     for `\<placeholder_body\>` while searching over snippet's  body.   So  in
-     this case first jump would look for `\<hello\>` in `\<hello_world\>`  and
-     it will not find anything.  However  I  can't  search  for  just  `hello`
-     instead, because it would break snippets with single letter placeholders.
-     Like `for(int ${1:i} = 0; $1 < 10; $1++)` if we would search for  `i`  we
-     would find `i` inside `int`, but not placeholder's `i`.
+  1. If you  replace one placeholder with body of another placeholder, changes
+     of this placeholder's text can't be tracked later on,  until  the  second
+     placeholder is changed too. For example:
+
+    `for (int i = 0; i < [10]; i++) {}`
+
+  And current jump stack state is:
+
+    `[10], i, 0, <, ++, ... | jump 1`
+
+  Imagine that `10` is selected, and you replace it with `0`,  and jump to `i`
+
+    `for (int [i] = 0; [i] < 0; [i]++) {}`
+
+  Accordingly to jump stack:
+
+    `0, [i], 0, <, ++, ... | jump 2`
+
+  Next jump will be `0` of `i = 0` part.  Which is fine, however  after  every
+  jump SimpleSnippets checks if current placeholder was changed, by  searching
+  for old placeholder's body, which is `0` in this case.  So imagine that  you
+  have changed `0` to `10`, and moved on to `<`.  Simple  snippets  will  look
+  over the snippets body and will found `0` in `i < 0` part.  It  will  assume
+  that  no  changes  were  made.   Therefore  jump  stack   state   will   be:
+
+    `0, i, 0, [<], ++, ... | jump 3`
+
+  You will end with two placeholders which state is deadlocked with `0` state.
+  To workaround this complex constructions inside placeholder's  body  can  be
+  used:  `${3:=  0}`,   however   this   will   lead   to   more   keystrokes.
 
 Even with these limitations you can  use  advanced  snippets,  with  vimscript
 functions, shell commands, mirroring, and more.  If You still want to use this
@@ -839,12 +859,12 @@ file should contain expanded and edited snippet.
 
 Test consists of test script `test.sh` and reference file, both located at
 `testing/tests/testname/` folder. Reference file must be called `reference`
-and contain expanded and edited snipppet. Test script consists of three
+and contain expanded and edited snippet. Test script consists of three
 functions: `before_test()`, `test_function()` and `after_test()`. This script
 defines a bash variable called `test_file` and creates this file with touch.
-Then `before_test()` sends input to tmus session, which name is stored in
+Then `before_test()` sends input to tmux session, which name is stored in
 `$tmux_session` variable, and opens `$test_file` editor stored in `$vim`
-variable. Then it starts the redir to log file, to log messages. Sampple
+variable. Then it starts the `redir` to log file, to log messages. Sample
 `before_test()` function:
 
   `test_file=lorem`
@@ -862,7 +882,7 @@ to tmux with keys needed to expand a snippet:
 
 Note that at the end of key sequence you can spot strange `Qq`. This is test
 inoremap that emulates <Esc> key in tmux. I don't know why, but sometimes
-Escape just do not work. there is another `inoremap` for save and quit from
+Escape just do not work. There is another `inoremap` for save and quit from
 insert mode: `Qw`.
 
 The last function is `after_test()`, which stops redir and saves the file:
@@ -871,7 +891,7 @@ The last function is `after_test()`, which stops redir and saves the file:
   `    tmux send-keys -t $tmux_session ":redir END" enter ":x" enter`
   `}`
 
-Theese functions are being sourced by another script, therefore no need to
+These functions are being sourced by another script, therefore no need to
 include shebang in this file.
 
 
