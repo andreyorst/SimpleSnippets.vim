@@ -8,7 +8,7 @@ let s:current_file = ''
 let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
 let s:trigger = ''
-let s:search_sequence = 1
+let s:search_sequence = 0
 
 let s:jump_stack = []
 let s:type_stack = []
@@ -274,7 +274,6 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	if l:disable_lazyredraw == 1
 		set nolazyredraw
 	endif
-	call SimpleSnippets#printJumpStackState()
 	call setpos("'q", save_q_mark)
 	call setpos("'p", save_p_mark)
 endfunction
