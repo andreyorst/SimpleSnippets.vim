@@ -8,6 +8,7 @@ let s:current_file = ''
 let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
 let s:trigger = ''
+let s:search_sequence = 1
 
 let s:jump_stack = []
 let s:type_stack = []
@@ -229,25 +230,38 @@ function! SimpleSnippets#printJumpStackState()
 		let l:i += 1
 	endfor
 	echon " | current_jump = ". s:current_jump
-	sleep 1
+	"sleep 1
 endfunction
 
 function! SimpleSnippets#jumpNormal(placeholder)
 	let l:ph = a:placeholder
+	let save_q_mark = getpos("'q")
+	let save_p_mark = getpos("'p")
 	call cursor(s:snip_start, 1)
 	if l:ph =~ "\\n"
 		let l:ph = join(split(l:ph), "\\n")
 		let l:echo = l:ph
-	elseif l:ph !~ "\\W"
+		call search(split(l:ph, '\\n')[0], 'c', s:snip_end)
+		normal! mq
+		call search(split(l:ph, '\\n')[-1], 'ce', s:snip_end)
+		normal! mp
+	else
 		let l:echo = a:placeholder
-		let l:ph = '\<' . l:ph . '\>'
+		if search('\<'.l:ph.'\>', 'c', s:snip_end) == 0
+			let s:search_sequence = 1
+			call search(l:ph, 'c', s:snip_end)
+		else
+			let s:search_sequence = 0
+		endif
+		normal! mq
+		if search('\<'.l:ph.'\>', 'ce', s:snip_end) == 0
+			let s:search_sequence = 1
+			call search(l:ph, 'ce', s:snip_end)
+		else
+			let s:search_sequence = 0
+		endif
+		normal! mp
 	endif
-	let save_q_mark = getpos("'q")
-	let save_p_mark = getpos("'p")
-	call search(split(l:ph, '\\n')[0], 'c', s:snip_end)
-	normal! mq
-	call search(split(l:ph, '\\n')[-1], 'ce', s:snip_end)
-	normal! mp
 	let s:ph_start = getpos("'q")
 	let s:ph_end = getpos("'p")
 	if &lazyredraw != 1
@@ -260,6 +274,7 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	if l:disable_lazyredraw == 1
 		set nolazyredraw
 	endif
+	call SimpleSnippets#printJumpStackState()
 	call setpos("'q", save_q_mark)
 	call setpos("'p", save_p_mark)
 endfunction
@@ -269,13 +284,22 @@ function! SimpleSnippets#checkIfChangesWereMade(jump)
 		let l:cursor_pos = getpos(".")
 		let l:prev_ph = get(s:jump_stack, a:jump)
 		if l:prev_ph !~ "\\W"
-			let l:prev_ph = '\<' . l:prev_ph . '\>'
+			call cursor(s:snip_start, 1)
+			if s:search_sequence == 1
+				if search(l:prev_ph, "c", s:snip_end) == 0
+					let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
+				endif
+			else
+				if search('\<'.l:prev_ph.'\>', "c", s:snip_end) == 0
+					let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
+				endif
+			endif
 		else
 			let l:prev_ph = escape(l:prev_ph, '/\*~')
-		endif
-		call cursor(s:snip_start, 1)
-		if search(l:prev_ph, "c", s:snip_end) == 0
-			let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
+			call cursor(s:snip_start, 1)
+			if search(l:prev_ph, "c", s:snip_end) == 0
+				let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
+			endif
 		endif
 		call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	endif
