@@ -14,7 +14,18 @@ for dep in ${dependencies[*]}; do
 done
 
 vim_versions=("nvim" "vim" "vim-7.4.1689" "vim-7.4.001")
-tests=("lorem" "forward_jumping" "backward_jumping" "for" "cla" "shell" "create_snippet" "flash")
+
+tests=(
+    "lorem"
+    "forward_jumping"
+    "backward_jumping"
+    "for"
+    "cla"
+    "shell"
+    "create_snippet"
+    "flash"
+    "inword_placeholders"
+)
 
 cd $(dirname $0)
 
