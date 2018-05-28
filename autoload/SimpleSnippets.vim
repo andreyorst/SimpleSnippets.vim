@@ -8,6 +8,7 @@ let s:current_file = ''
 let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
 let s:trigger = ''
+let s:search_sequence = 1
 
 let s:jump_stack = []
 let s:type_stack = []
@@ -247,11 +248,17 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	else
 		let l:echo = a:placeholder
 		if search('\<'.l:ph.'\>', 'c', s:snip_end) == 0
+			let s:search_sequence = 1
 			call search(l:ph, 'c', s:snip_end)
+		else
+			let s:search_sequence = 0
 		endif
 		normal! mq
 		if search('\<'.l:ph.'\>', 'ce', s:snip_end) == 0
+			let s:search_sequence = 1
 			call search(l:ph, 'ce', s:snip_end)
+		else
+			let s:search_sequence = 0
 		endif
 		normal! mp
 	endif
@@ -278,11 +285,13 @@ function! SimpleSnippets#checkIfChangesWereMade(jump)
 		let l:prev_ph = get(s:jump_stack, a:jump)
 		if l:prev_ph !~ "\\W"
 			call cursor(s:snip_start, 1)
-			if search('\<'.l:prev_ph.'\>', "c", s:snip_end) == 0
-				if l:prev_ph !~ "\\d"
-					if search(l:prev_ph, "c", s:snip_end) == 0
-						let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
-					endif
+			if s:search_sequence == 1
+				if search(l:prev_ph, "c", s:snip_end) == 0
+					let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
+				endif
+			else
+				if search('\<'.l:prev_ph.'\>', "c", s:snip_end) == 0
+					let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
 				endif
 			endif
 		else
