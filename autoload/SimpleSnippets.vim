@@ -215,24 +215,6 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 	endif
 endfunction
 
-" debug function
-function! SimpleSnippets#printJumpStackState()
-	let l:i = 0
-	for item in s:jump_stack
-		if l:i != s:current_jump - 1
-			echon string(item)
-		else
-			echon "[".string(item)."]"
-		endif
-		if l:i != len(s:jump_stack) - 1
-			echon ", "
-		endif
-		let l:i += 1
-	endfor
-	echon " | current_jump = ". s:current_jump
-	"sleep 1
-endfunction
-
 function! SimpleSnippets#jumpNormal(placeholder)
 	let l:ph = a:placeholder
 	let save_q_mark = getpos("'q")
@@ -972,7 +954,6 @@ endfunction
 
 
 " 7.4 compability layer
-
 function! SimpleSnippets#execute(command, ...)
 	if a:0 != 0
 		let l:silent = a:1
@@ -1021,3 +1002,23 @@ function! SimpleSnippets#createSplit(path, trigger, filetype)
 		exec "setf " . a:filetype
 	endif
 endfunction
+
+
+" Debug functions
+function! SimpleSnippets#printJumpStackState()
+	let l:i = 0
+	for item in s:jump_stack
+		if l:i != s:current_jump - 1
+			echon string(item)
+		else
+			echon "[".string(item)."]"
+		endif
+		if l:i != len(s:jump_stack) - 1
+			echon ", "
+		endif
+		let l:i += 1
+	endfor
+	echon " | jump ". s:current_jump
+	"sleep 1
+endfunction
+
