@@ -9,6 +9,7 @@ let s:snip_edit_buf = 0
 let s:snip_edit_win = 0
 let s:trigger = ''
 let s:search_sequence = 0
+let s:escape_pattern = '/\*~.$^!#'
 
 let s:jump_stack = []
 let s:type_stack = []
@@ -159,7 +160,7 @@ function! SimpleSnippets#jump()
 		if s:current_jump - 2 >= 0
 			call SimpleSnippets#checkIfChangesWereMade(s:current_jump - 2)
 		endif
-		let l:current_ph = escape(l:current_ph, '/\*~')
+		let l:current_ph = escape(l:current_ph, s:escape_pattern)
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, '3') == 0
@@ -183,7 +184,7 @@ function! SimpleSnippets#jumpBackwards()
 		if s:current_jump - 1 >= 0
 			call SimpleSnippets#checkIfChangesWereMade(s:current_jump)
 		endif
-		let l:current_ph = escape(l:current_ph, '/\*~')
+		let l:current_ph = escape(l:current_ph, s:escape_pattern)
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, '3') == 0
@@ -204,7 +205,7 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 		let s:current_jump = len(s:jump_stack)
 		let l:current_type = s:type_stack[-1]
 		call SimpleSnippets#checkIfChangesWereMade(s:prev_jump)
-		let l:current_ph = escape(s:jump_stack[-1], '/\*~')
+		let l:current_ph = escape(s:jump_stack[-1], s:escape_pattern)
 		if match(l:current_type, '1') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, '3') == 0
@@ -276,7 +277,7 @@ function! SimpleSnippets#checkIfChangesWereMade(jump)
 				endif
 			endif
 		else
-			let l:prev_ph = escape(l:prev_ph, '/\*~')
+			let l:prev_ph = escape(l:prev_ph, s:escape_pattern)
 			call cursor(s:snip_start, 1)
 			if search(l:prev_ph, "c", s:snip_end) == 0
 				let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
@@ -336,7 +337,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	call SimpleSnippets#restoreCMappings()
 	let s:result_line_count = len(split(l:rename, '\\r'))
 	if l:rename != ''
-		let l:cnt = SimpleSnippets#execute(s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . l:rename . '/g')
+		let l:cnt = SimpleSnippets#execute(s:snip_start . ',' . s:snip_end . 's/' . l:ph . '/' . escape(l:rename, s:escape_pattern) . '/g')
 		call histdel("/", -1)
 		let l:subst_amount = strpart(l:cnt, 0, stridx(l:cnt, " "))
 		let l:subst_amount = substitute(l:subst_amount, '\v%^\_s+|\_s+%$', '', 'g')
