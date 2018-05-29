@@ -140,6 +140,7 @@ If you expanded a snippet, and you try to expand snippet inside this one, you wi
 - [x] Command placeholders, that output is more then single line can't be jumped.
 - [x] Trigger must be separated from everything
 - [x] No back jumping.
+- [x] Placeholders must be separated from each other and another text.
 
 After reading this list you may want to ask me this question:
 
