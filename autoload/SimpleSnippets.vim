@@ -115,7 +115,7 @@ function! SimpleSnippets#parseAndInit()
 	let s:current_file = @%
 
 	let l:cursor_pos = getpos(".")
-	let l:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!|\|)')
+	let l:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!)')
 	if l:ph_amount != 0
 		call SimpleSnippets#parseSnippet(l:ph_amount)
 		if s:snip_line_count != 1
