@@ -844,11 +844,27 @@ function! SimpleSnippets#edit(trigg)
 		return -1
 	endif
 	if l:trigger != ''
-		call SimpleSnippets#createSplit(l:path, l:trigger, l:filetype)
+		call SimpleSnippets#createSplit(l:path, l:trigger)
+		setf l:filetype
 	else
 		redraw
 		echo "Empty trigger"
 	endif
+endfunction
+
+function! SimpleSnippets#editDescriptions(ft)
+	if a:ft != ''
+		let l:filetype = a:ft
+	else
+		let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
+	endif
+	let l:path = g:SimpleSnippets_search_path . l:filetype
+	let s:snip_edit_buf = 0
+	if !isdirectory(l:path)
+		call mkdir(l:path, "p")
+	endif
+	let l:descriptions = l:filetype.'.snippets.descriptions.txt'
+	call SimpleSnippets#createSplit(l:path, l:descriptions)
 endfunction
 
 function! SimpleSnippets#listSnippets()
@@ -977,14 +993,13 @@ function! SimpleSnippets#execute(command, ...)
 	return l:result
 endfunction
 
-function! SimpleSnippets#createSplit(path, trigger, filetype)
+function! SimpleSnippets#createSplit(path, trigger)
 	if exists("*win_gotoid")
 		if win_gotoid(s:snip_edit_win)
 			try
 				exec "buffer " . s:snip_edit_buf
 			catch
 				exec "edit " . a:path . '/' . a:trigger
-				exec "setf " . a:filetype
 			endtry
 		else
 			vertical new
@@ -992,7 +1007,6 @@ function! SimpleSnippets#createSplit(path, trigger, filetype)
 				exec "buffer " . s:snip_edit_buf
 			catch
 				execute "edit " . a:path . '/' . a:trigger
-				execute "setf " . a:filetype
 				let s:snip_edit_buf = bufnr("")
 			endtry
 			let s:snip_edit_win = win_getid()
@@ -1000,7 +1014,6 @@ function! SimpleSnippets#createSplit(path, trigger, filetype)
 	else
 		vertical new
 		exec "edit " . a:path . '/' . a:trigger
-		exec "setf " . a:filetype
 	endif
 endfunction
 

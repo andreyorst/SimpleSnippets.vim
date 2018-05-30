@@ -46,5 +46,6 @@ else
 endif
 
 command! -nargs=? SimpleSnippetsEdit call SimpleSnippets#edit("<args>")
+command! -nargs=? SimpleSnippetsEditDescriptions call SimpleSnippets#editDescriptions("<args>")
 command! SimpleSnippetsList call SimpleSnippets#listSnippets()
 
