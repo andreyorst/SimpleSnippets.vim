@@ -10,6 +10,7 @@ let s:snip_edit_win = 0
 let s:trigger = ''
 let s:search_sequence = 0
 let s:escape_pattern = '/\*~.$^!#'
+let s:visual_contents = ''
 
 let s:jump_stack = []
 let s:type_stack = []
@@ -259,6 +260,7 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	endif
 	call setpos("'q", save_q_mark)
 	call setpos("'p", save_p_mark)
+	call SimpleSnippets#printJumpStackState()
 endfunction
 
 function! SimpleSnippets#checkIfChangesWereMade(jump)
@@ -621,12 +623,18 @@ endfunction
 
 function! SimpleSnippets#initNormal(current)
 	let l:placeholder = '\v(\$\{'.a:current.':)@<=.{-}(\}($|[^\}]))@='
-	let l:result = matchstr(getline('.'), l:placeholder)
-	call add(s:jump_stack, l:result)
 	let l:save_quote = @"
-	let save_q_mark = getpos("'q")
-	exe "normal! f{mq%i\<Del>\<Esc>g`qF$df:"
-	call setpos("'q", save_q_mark)
+	if search('\v(\$\{'.a:current.':)@<=\$\{VISUAL\}(\}($|[^\}]))@=', 'c', line('.')) != 0
+		exe "normal! F{%vF$;c"
+		let l:result = SimpleSnippets#initVisual()
+		call SimpleSnippets#removeTrailings(l:result)
+	else
+		let l:result = matchstr(getline('.'), l:placeholder)
+		let save_q_mark = getpos("'q")
+		exe "normal! f{mq%i\<Del>\<Esc>g`qF$df:"
+		call setpos("'q", save_q_mark)
+	endif
+	call add(s:jump_stack, l:result)
 	let @" = l:save_quote
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
@@ -679,6 +687,20 @@ function! SimpleSnippets#initCommand(current)
 		call add(s:type_stack, 1)
 	endif
 	noh
+endfunction
+
+function! SimpleSnippets#initVisual()
+	if s:visual_contents != ''
+		let l:visual = s:visual_contents
+		let s:visual_contents = ''
+	else
+		let l:visual = 'body'
+	endif
+	let l:save_s = @s
+	let @s = l:visual
+	normal! "sp
+	let @s = l:save_s
+	return l:visual
 endfunction
 
 function! SimpleSnippets#countPlaceholders(pattern)
@@ -892,6 +914,14 @@ function! SimpleSnippets#listSnippets()
 			call SimpleSnippets#printSnippets('Plugin \"all\" snippets:', l:plug_snips, 'all')
 		endif
 	endif
+endfunction
+
+function! SimpleSnippets#getVisual()
+	let l:save_v = @v
+	normal! g`<vg`>"vc
+	let s:visual_contents = @v
+	let @v = l:save_v
+	startinsert!
 endfunction
 
 function! SimpleSnippets#printSnippets(message, path, filetype)

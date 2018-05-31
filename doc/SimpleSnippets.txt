@@ -39,10 +39,11 @@ CONTENTS                                               *SimpleSnippets-contents*
       4.1.1 Snippets descriptions ...... |SimpleSnippets-snippets-descriptions|
       4.1.2 Flash Snippets .................... |SimpleSnippets-flash-snippets|
     4.2 Placeholder Syntax ................ |SimpleSnippets-placeholder-syntax|
-      4.2.1 Normal Placeholders ........... |SimpleSnippets-normal-placeholder|
-      4.2.2 Mirror Placeholders ........... |SimpleSnippets-mirror-placeholder|
-      4.2.3 Command Placeholders ......... |SimpleSnippets-command-placeholder|
+      4.2.1 Normal Placeholder ............ |SimpleSnippets-normal-placeholder|
+      4.2.2 Mirror Placeholder ............ |SimpleSnippets-mirror-placeholder|
+      4.2.3 Command Placeholder .......... |SimpleSnippets-command-placeholder|
       4.2.4 Repeaters ............................... |SimpleSnippets-repeater|
+      4.2.5 Visual Placeholder ............ |SimpleSnippets-visual-placeholder|
     4.3 Snippets Examples ................... |SimpleSnippets-snippet-examples|
  5. Contributing ................................ |SimpleSnippets-contributing|
     5.1 Running tests .......................... |SimpleSnippets-running-tests|
@@ -365,7 +366,7 @@ so:
   `    \"\<Cr>" : "\<Cr>"`
   `snoremap <silent><expr><Tab> SimpleSnippets#isExpandableOrJumpable() ?`
   `    \"<Esc>:call SimpleSnippets#expandOrJump()<Cr>" : "\<Tab>"`
-  `    snoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ?`
+  `snoremap <silent><expr><S-Tab> SimpleSnippets#isJumpable() ?`
   `    \"<Esc>:call SimpleSnippets#jumpBackwards()<Cr>" :`
   `    \"\<S-Tab>"`
 
@@ -378,6 +379,8 @@ expand with single key.
 SimpleSnippets also remaps Tab in command mode.  It is done  to  jump  out  of
 mirrored placeholder.  You  can  read  more  about  mirrored  placeholders  at
 |SimpleSnippets-mirror-placeholder|.
+
+There is also a special `xnoremap` for |visual-placeholder|.
 
 
 3.4 Functions                                         *SimpleSnippets-functions*
@@ -645,7 +648,8 @@ should be contained inside snippet file is the snippet's body. No `startsnippet`
 or `endsnippet` entries are necessary.
 
 
-  4.2.1 Normal Placeholders                  *SimpleSnippets-normal-placeholder*
+  4.2.1 Normal Placeholder                   *SimpleSnippets-normal-placeholder*
+                                                            *normal-placeholder*
   ----------------------------------------------------------------------------~
 
   Normal placeholder contains text entry that will be placed in your  expanded
@@ -667,14 +671,16 @@ or `endsnippet` entries are necessary.
   snippet.
 
 
-  4.2.2 Mirror Placeholders                  *SimpleSnippets-mirror-placeholder*
+  4.2.2 Mirror Placeholder                   *SimpleSnippets-mirror-placeholder*
+                                                            *mirror-placeholder*
   ----------------------------------------------------------------------------~
 
-  Mirrored placeholder shares same syntax as normal and  placeholder,  however
-  the implementation of mirrored placeholders in this plugin is very different
-  form other snippet plugins.  What  differs  `normal`  and  `shell`   placeholder
-  from `mirrored` one  is  occurrence of |repeater|s.  If  `repeater` is defined for
-  normal placeholder this placeholder becomes mirrored  one.   For example:
+  Mirrored placeholder shares same syntax as normal and  command  placeholder,
+  however the implementation of mirrored placeholders in this plugin  is  very
+  different  form  other  snippet  plugins.  What  differs  `normal`  and  `shell`
+  placeholder from `mirrored`  one  is  occurrence  of  |repeater|s.   If `repeater`
+  is defined  for |normal-placeholder|  or  |command-placeholder| this placeholder
+  becomes  mirrored  one. For example:
 
     `class ${1:Name} {`
     `public:`
@@ -702,40 +708,16 @@ or `endsnippet` entries are necessary.
   pressed it acts the same way if you would hit <Esc>.  Mirrored  placeholders
   are automatically executing next jump for you.
 
-  However  for  `Command`  placeholder  this  is  not  that   simple.    `Command`
-  placeholders are not jumpable by itself, and therefore are not  mirrored  by
-  default.  Repeaters will repeat their contents across snippet's body, but no
-  prompt will be shown, because no jump were made.   If  you  want  to  mirror
-  `Command` placeholder, consider wrapping it with normal one like so:
 
-    `${2:${1!command}} $2`
-
-  Note,  that  in this  example  `Normal`  placeholder  is  the  one  who  being
-  mirrored, because of the fact that placeholders  are  being  parsed  in  the
-  order  of  their  indexes,  `Command`   placeholder  is  being  parsed  before
-  `Normal` one, and it's body becomes  a  body for normal placeholder, which  is
-  being parsed next  after `Command` one.  Then  repeaters  are  receiving  same
-  body as `Normal` one, and upon jump mirroring is activated.
-
-  4.2.3 Command Placeholders                *SimpleSnippets-command-placeholder*
+  4.2.3 Command Placeholder                 *SimpleSnippets-command-placeholder*
+                                                           *command-placeholder*
   ----------------------------------------------------------------------------~
 
   The implementation of `Command` placeholders relies on Vim  `system()` function.
-  Shell placeholders executes their contents as  a  command  *which  can't  be
-  jumped later, and yank it to your file via `@s` register. If you want  to jump
-  to such placeholder, consider wrapping it inside normal placeholder like so:
-  `${2:${1!uname}`. This  also  makes mirroring easy, because nor you can mirror
-  `$1` if you  don't  want  to  jump to the results, or `$2` if you want  to  make
-  this placeholder jumpable and mirrored.  However, commands that result  more
-  then single line of text are currently broke jumping.  So if  you  want   to
-  yank a file inside snippet's  body,  don't  wrap  `Command`  placeholder  with
-  normal one, because it will break snippet expanding.
-  Example of multiline shell output may be:
-
-    `${0!cat /usr/share/licenses/clang/LICENSE}`
-
-  Placeholder. It can be expanded, but can't be wrapped in `normal` placeholder.
-  For example here is the `uname` snippet:
+  Command placeholder accepts viml facilities like registers, or any command
+  that can be echoed, as well as shell command that provides text output. The
+  syntax is similar to |normal-placeholder| but uses `!` instead of `:`.
+  Consider some examples:
 
   `My current Linux Kernel is:`
   `${0!uname --operating-system --kernel-release}`
@@ -764,10 +746,8 @@ or `endsnippet` entries are necessary.
 
     `"CURRENTLY/EDITED/FILENAME"`
 
-  Viml support is currently experimental.
 
-
-  4.2.4 Repeaters                             *repeater* *SimpleSnippets-repeater*
+  4.2.4 Repeater                              *repeater* *SimpleSnippets-repeater*
   ----------------------------------------------------------------------------~
 
   Repeaters are used to repeat placeholder's body across snippet's  body.   So
@@ -776,17 +756,27 @@ or `endsnippet` entries are necessary.
   on snippet expanding that paceholder's body will  be  substituted  to  every
   occurrence of `$1` inside snippet's body. This also will make that placeholder
   `mirrored` type instead of `normal` type.   Repeaters can be used to any kind of
-  placeholder: `normal`  and  `Command`.    However these two will behave slightly
-  different, as `Command` placeholder  will be  just substituted but not jumped,
-  therefore `Command` `repeater`s will not be jumped either.  You can wrap `Command`
-  placeholder  with  `normal`  placeholder,  and  use  a  `repeater`s  of   `normal`
-  placeholder, to jump and mirror `Command` one
+  placeholder: `normal`  and  `Command`.
 
   Repeaters was added to change core mechanics for mirroring, to make it  more
   easy and maintainable.  This also should add some layer of capability   with
   other  snippet  managers.   Previously  mirroring  was  done  with  separate
   placeholder   type `${1|text}`, and it's  body  must  have  been  repeated  in
   snippet's body. Now this is deprecated.
+
+
+  4.2.5 Visual Placeholder                   *SimpleSnippets-visual-placeholder*
+                                                            *visual-placeholder*
+  ----------------------------------------------------------------------------~
+
+  Visual placeholder is used to place your last visually selected text  inside
+  snippet body. Visual   placeholder is defined with `${VISUAL}` syntax. You can
+  use like so, or nested   inside   |normal-placeholder|: `${0:${VISUAL}}`. To use
+  visual placeholder you need to select text with visual mode, and press  your
+  expand or jump hot key. The text will disappear. Now you can write a trigger
+  and expand snippet.  Your  text  will  be pasted  inside  the snippet's body
+  if  `${VISUAL}` placeholder  is defined.  If  no  text  were  selected  visual
+  placeholder will be removed from jump list.
 
 
 4.3 Snippet Examples                           *SimpleSnippets-snippet-examples*
