@@ -628,13 +628,19 @@ function! SimpleSnippets#initNormal(current)
 		exe "normal! F{%vF$;c"
 		let l:result = SimpleSnippets#initVisual()
 		call SimpleSnippets#removeTrailings(l:result)
+		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
+		if l:result_line_count > 1
+			let s:snip_end += l:result_line_count
+		endif
 	else
 		let l:result = matchstr(getline('.'), l:placeholder)
 		let save_q_mark = getpos("'q")
 		exe "normal! f{mq%i\<Del>\<Esc>g`qF$df:"
 		call setpos("'q", save_q_mark)
 	endif
-	call add(s:jump_stack, l:result)
+	if l:result != ''
+		call add(s:jump_stack, l:result)
+	endif
 	let @" = l:save_quote
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
@@ -694,7 +700,7 @@ function! SimpleSnippets#initVisual()
 		let l:visual = s:visual_contents
 		let s:visual_contents = ''
 	else
-		let l:visual = 'body'
+		let l:visual = ''
 	endif
 	let l:save_s = @s
 	let @s = l:visual
