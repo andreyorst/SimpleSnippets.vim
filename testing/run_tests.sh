@@ -25,6 +25,7 @@ tests=(
     "create_snippet"
     "flash"
     "inword_placeholders"
+    "visual"
 )
 
 cd $(dirname $0)

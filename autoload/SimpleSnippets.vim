@@ -10,6 +10,7 @@ let s:snip_edit_win = 0
 let s:trigger = ''
 let s:search_sequence = 0
 let s:escape_pattern = '/\*~.$^!#'
+let s:visual_contents = ''
 
 let s:jump_stack = []
 let s:type_stack = []
@@ -118,6 +119,8 @@ function! SimpleSnippets#parseAndInit()
 	let l:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!)')
 	if l:ph_amount != 0
 		call SimpleSnippets#parseSnippet(l:ph_amount)
+		call SimpleSnippets#initRemainingVisuals()
+		let s:visual_contents = ''
 		if s:snip_line_count != 1
 			let l:indent_lines = s:snip_line_count - 1
 			call cursor(s:snip_start, 1)
@@ -134,6 +137,24 @@ function! SimpleSnippets#parseAndInit()
 		let s:active = 0
 		call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	endif
+endfunction
+
+function! SimpleSnippets#initRemainingVisuals()
+	let l:visual_amount = SimpleSnippets#countPlaceholders('\v\$\{VISUAL\}')
+	let i = 0
+	while i < l:visual_amount
+		call cursor(s:snip_start, 1)
+		call search('\v\$\{VISUAL\}', 'c', s:snip_end)
+		exe "normal! f{%vF$c"
+		let l:result = SimpleSnippets#initVisual('', '')
+		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
+		if l:result_line_count > 1
+			silent exec 'normal! V'
+			silent exec 'normal!'. l:result_line_count .'j='
+			let s:snip_end += l:result_line_count
+		endif
+		let i += 1
+	endwhile
 endfunction
 
 function! SimpleSnippets#jump()
@@ -621,12 +642,36 @@ endfunction
 
 function! SimpleSnippets#initNormal(current)
 	let l:placeholder = '\v(\$\{'.a:current.':)@<=.{-}(\}($|[^\}]))@='
-	let l:result = matchstr(getline('.'), l:placeholder)
-	call add(s:jump_stack, l:result)
 	let l:save_quote = @"
-	let save_q_mark = getpos("'q")
-	exe "normal! f{mq%i\<Del>\<Esc>g`qF$df:"
-	call setpos("'q", save_q_mark)
+	let l:before = ''
+	let l:after = ''
+	if search('\v(\$\{'.a:current.':(.{-})?)@<=\$\{VISUAL\}((.{-})?\}($|[^\}]))@=', 'c', line('.')) != 0
+		let l:cursor_pos = getpos(".")
+		call cursor(line('.'), 1)
+		if search('\v(\$\{'.a:current.':)@<=.{-}(\$\{VISUAL\}.*\})@=', 'cn', line('.')) != 0
+			let l:before = matchstr(getline('.'), '\v(\$\{'.a:current.':)@<=.{-}(\$\{VISUAL\}.*\})@=')
+		endif
+		if search('\v(\$\{'.a:current.':.{-}\$\{VISUAL\})@<=.{-}(\})@=', 'cn', line('.')) != 0
+			let l:after = matchstr(getline('.'), '\v(\$\{'.a:current.':.{-}\$\{VISUAL\})@<=.{-}(\})@=')
+		endif
+		call cursor(l:cursor_pos[1], l:cursor_pos[2])
+		exe "normal! F{%vF$;c"
+		let l:result = SimpleSnippets#initVisual(l:before, l:after)
+		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
+		if l:result_line_count > 1
+			silent exec 'normal! V'
+			silent exec 'normal!'. l:result_line_count .'j='
+			let s:snip_end += l:result_line_count
+		endif
+	else
+		let l:result = matchstr(getline('.'), l:placeholder)
+		let save_q_mark = getpos("'q")
+		exe "normal! f{mq%i\<Del>\<Esc>g`qF$df:"
+		call setpos("'q", save_q_mark)
+	endif
+	if l:result != ''
+		call add(s:jump_stack, l:result)
+	endif
 	let @" = l:save_quote
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
@@ -679,6 +724,21 @@ function! SimpleSnippets#initCommand(current)
 		call add(s:type_stack, 1)
 	endif
 	noh
+endfunction
+
+function! SimpleSnippets#initVisual(before, after)
+	if s:visual_contents != ''
+		let l:visual = s:visual_contents
+	else
+		let l:visual = ''
+	endif
+	let l:save_s = @s
+	let l:visual = SimpleSnippets#removeTrailings(l:visual)
+	let l:visual = a:before . l:visual . a:after
+	let @s = l:visual
+	normal! "sp
+	let @s = l:save_s
+	return l:visual
 endfunction
 
 function! SimpleSnippets#countPlaceholders(pattern)
@@ -844,11 +904,27 @@ function! SimpleSnippets#edit(trigg)
 		return -1
 	endif
 	if l:trigger != ''
-		call SimpleSnippets#createSplit(l:path, l:trigger, l:filetype)
+		call SimpleSnippets#createSplit(l:path, l:trigger)
+		setf l:filetype
 	else
 		redraw
 		echo "Empty trigger"
 	endif
+endfunction
+
+function! SimpleSnippets#editDescriptions(ft)
+	if a:ft != ''
+		let l:filetype = a:ft
+	else
+		let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
+	endif
+	let l:path = g:SimpleSnippets_search_path . l:filetype
+	let s:snip_edit_buf = 0
+	if !isdirectory(l:path)
+		call mkdir(l:path, "p")
+	endif
+	let l:descriptions = l:filetype.'.snippets.descriptions.txt'
+	call SimpleSnippets#createSplit(l:path, l:descriptions)
 endfunction
 
 function! SimpleSnippets#listSnippets()
@@ -876,6 +952,14 @@ function! SimpleSnippets#listSnippets()
 			call SimpleSnippets#printSnippets('Plugin \"all\" snippets:', l:plug_snips, 'all')
 		endif
 	endif
+endfunction
+
+function! SimpleSnippets#getVisual()
+	let l:save_v = @v
+	normal! g`<vg`>"vc
+	let s:visual_contents = @v
+	let @v = l:save_v
+	startinsert!
 endfunction
 
 function! SimpleSnippets#printSnippets(message, path, filetype)
@@ -977,14 +1061,13 @@ function! SimpleSnippets#execute(command, ...)
 	return l:result
 endfunction
 
-function! SimpleSnippets#createSplit(path, trigger, filetype)
+function! SimpleSnippets#createSplit(path, trigger)
 	if exists("*win_gotoid")
 		if win_gotoid(s:snip_edit_win)
 			try
 				exec "buffer " . s:snip_edit_buf
 			catch
 				exec "edit " . a:path . '/' . a:trigger
-				exec "setf " . a:filetype
 			endtry
 		else
 			vertical new
@@ -992,7 +1075,6 @@ function! SimpleSnippets#createSplit(path, trigger, filetype)
 				exec "buffer " . s:snip_edit_buf
 			catch
 				execute "edit " . a:path . '/' . a:trigger
-				execute "setf " . a:filetype
 				let s:snip_edit_buf = bufnr("")
 			endtry
 			let s:snip_edit_win = win_getid()
@@ -1000,7 +1082,6 @@ function! SimpleSnippets#createSplit(path, trigger, filetype)
 	else
 		vertical new
 		exec "edit " . a:path . '/' . a:trigger
-		exec "setf " . a:filetype
 	endif
 endfunction
 

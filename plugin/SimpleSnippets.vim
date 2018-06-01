@@ -35,9 +35,11 @@ if s:allow_remap == 1
 	exec "nnoremap <silent><expr>".g:SimpleSnippetsJumpToLastTrigger.' SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\'.g:SimpleSnippetsJumpToLastTrigger.'"'
 	exec "inoremap <silent><expr>".g:SimpleSnippetsJumpToLastTrigger.' SimpleSnippets#isJumpable() ? "<esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\'.g:SimpleSnippetsJumpToLastTrigger.'"'
 	exec "snoremap <silent><expr>".g:SimpleSnippetsJumpToLastTrigger.' SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\'.g:SimpleSnippetsJumpToLastTrigger.'"'
+	exec "snoremap <silent><expr>".g:SimpleSnippetsJumpToLastTrigger.' SimpleSnippets#isJumpable() ? "<Esc>:call SimpleSnippets#jumpToLastPlaceholder()<Cr>" : "\'.g:SimpleSnippetsJumpToLastTrigger.'"'
 endif
+exec "xnoremap <silent>".g:SimpleSnippetsExpandOrJumpTrigger.' <Esc>:call SimpleSnippets#getVisual()<Cr>'
 
-let s:similar_filetypes = [['tex', 'plaintex'], ['bash', 'zsh', 'sh']]
+let s:similar_filetypes = [['tex', 'plaintex'], ['sh', 'zsh', 'bash']]
 
 if exists('g:SimpleSnippets_similar_filetypes')
 	let g:SimpleSnippets_similar_filetypes += s:similar_filetypes
@@ -46,5 +48,6 @@ else
 endif
 
 command! -nargs=? SimpleSnippetsEdit call SimpleSnippets#edit("<args>")
+command! -nargs=? SimpleSnippetsEditDescriptions call SimpleSnippets#editDescriptions("<args>")
 command! SimpleSnippetsList call SimpleSnippets#listSnippets()
 
