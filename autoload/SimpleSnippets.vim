@@ -119,6 +119,8 @@ function! SimpleSnippets#parseAndInit()
 	let l:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!)')
 	if l:ph_amount != 0
 		call SimpleSnippets#parseSnippet(l:ph_amount)
+		call SimpleSnippets#initRemainingVisuals()
+		let s:visual_contents = ''
 		if s:snip_line_count != 1
 			let l:indent_lines = s:snip_line_count - 1
 			call cursor(s:snip_start, 1)
@@ -135,6 +137,25 @@ function! SimpleSnippets#parseAndInit()
 		let s:active = 0
 		call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	endif
+endfunction
+
+function! SimpleSnippets#initRemainingVisuals()
+	let l:visual_amount = SimpleSnippets#countPlaceholders('\v\$\{VISUAL\}')
+	let i = 0
+	while i < l:visual_amount
+		call cursor(s:snip_start, 1)
+		call search('\v\$\{VISUAL\}', 'c', s:snip_end)
+		exe "normal! f{%vF$c"
+		let l:result = SimpleSnippets#initVisual()
+		call SimpleSnippets#removeTrailings(l:result)
+		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
+		if l:result_line_count > 1
+			silent exec 'normal! V'
+			silent exec 'normal!'. l:result_line_count .'j='
+			let s:snip_end += l:result_line_count
+		endif
+		let i += 1
+	endwhile
 endfunction
 
 function! SimpleSnippets#jump()
@@ -630,6 +651,8 @@ function! SimpleSnippets#initNormal(current)
 		call SimpleSnippets#removeTrailings(l:result)
 		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
 		if l:result_line_count > 1
+			silent exec 'normal! V'
+			silent exec 'normal!'. l:result_line_count .'j='
 			let s:snip_end += l:result_line_count
 		endif
 	else
@@ -698,7 +721,6 @@ endfunction
 function! SimpleSnippets#initVisual()
 	if s:visual_contents != ''
 		let l:visual = s:visual_contents
-		let s:visual_contents = ''
 	else
 		let l:visual = ''
 	endif
