@@ -23,7 +23,8 @@ CONTENTS                                               *SimpleSnippets-contents*
       3.1.1 Similar filetypes .............. |SimpleSnippets-similar-filetypes|
     3.2 Commands .................................... |SimpleSnippets-commands|
       3.1 SimpleSnippetsEdit ............................ |:SimpleSnippetsEdit|
-      3.2 SimpleSnippetsList ............................ |:SimpleSnippetsList|
+      3.2 SimpleSnippetsEditDescriptions .... |:SimpleSnippetsEditDescriptions|
+      3.3 SimpleSnippetsList ............................ |:SimpleSnippetsList|
     3.3 Mappings .................................... |SimpleSnippets-mappings|
     3.4 Functions .................................. |SimpleSnippets-functions|
       3.4.1 isExpandableOrJumpable() .. |SimpleSnippets#isExpandableOrJumpable|
@@ -282,8 +283,16 @@ filetypes mean same thing to SimpleSnippets.
   and opens vertical split. You can define snippet's body there. Upon save the
   snippet is ready for use. No need to reload the editor.
 
+  3.2.2 SimpleSnippetsEditDescriptions         *:SimpleSnippetsEditDescriptions*
+  ----------------------------------------------------------------------------~
 
-  3.2.2 SimpleSnippetsList                                 *:SimpleSnippetsList*
+  The   `:SimpleSnippetsEditDescriptions` command opens  descriptions  file  for
+  current filetype, so you can easily edit  descriptions  for  your  snippets.
+  This function accepts optional argument which is a filetype, if you want  to
+  edit descriptions for another filetype.
+
+
+  3.2.3 SimpleSnippetsList                                 *:SimpleSnippetsList*
   ----------------------------------------------------------------------------~
 
   The `:SimpleSnippetsList`  command  prints  list  of  snippets  available  for
