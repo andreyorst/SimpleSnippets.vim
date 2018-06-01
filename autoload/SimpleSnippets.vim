@@ -146,8 +146,7 @@ function! SimpleSnippets#initRemainingVisuals()
 		call cursor(s:snip_start, 1)
 		call search('\v\$\{VISUAL\}', 'c', s:snip_end)
 		exe "normal! f{%vF$c"
-		let l:result = SimpleSnippets#initVisual()
-		call SimpleSnippets#removeTrailings(l:result)
+		let l:result = SimpleSnippets#initVisual('', '')
 		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
 		if l:result_line_count > 1
 			silent exec 'normal! V'
@@ -281,7 +280,6 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	endif
 	call setpos("'q", save_q_mark)
 	call setpos("'p", save_p_mark)
-	call SimpleSnippets#printJumpStackState()
 endfunction
 
 function! SimpleSnippets#checkIfChangesWereMade(jump)
@@ -645,10 +643,20 @@ endfunction
 function! SimpleSnippets#initNormal(current)
 	let l:placeholder = '\v(\$\{'.a:current.':)@<=.{-}(\}($|[^\}]))@='
 	let l:save_quote = @"
-	if search('\v(\$\{'.a:current.':)@<=\$\{VISUAL\}(\}($|[^\}]))@=', 'c', line('.')) != 0
+	let l:before = ''
+	let l:after = ''
+	if search('\v(\$\{'.a:current.':(.{-})?)@<=\$\{VISUAL\}((.{-})?\}($|[^\}]))@=', 'c', line('.')) != 0
+		let l:cursor_pos = getpos(".")
+		call cursor(line('.'), 1)
+		if search('\v(\$\{'.a:current.':)@<=.{-}(\$\{VISUAL\}.*\})@=', 'cn', line('.')) != 0
+			let l:before = matchstr(getline('.'), '\v(\$\{'.a:current.':)@<=.{-}(\$\{VISUAL\}.*\})@=')
+		endif
+		if search('\v(\$\{'.a:current.':.{-}\$\{VISUAL\})@<=.{-}(\})@=', 'cn', line('.')) != 0
+			let l:after = matchstr(getline('.'), '\v(\$\{'.a:current.':.{-}\$\{VISUAL\})@<=.{-}(\})@=')
+		endif
+		call cursor(l:cursor_pos[1], l:cursor_pos[2])
 		exe "normal! F{%vF$;c"
-		let l:result = SimpleSnippets#initVisual()
-		call SimpleSnippets#removeTrailings(l:result)
+		let l:result = SimpleSnippets#initVisual(l:before, l:after)
 		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
 		if l:result_line_count > 1
 			silent exec 'normal! V'
@@ -718,13 +726,15 @@ function! SimpleSnippets#initCommand(current)
 	noh
 endfunction
 
-function! SimpleSnippets#initVisual()
+function! SimpleSnippets#initVisual(before, after)
 	if s:visual_contents != ''
 		let l:visual = s:visual_contents
 	else
 		let l:visual = ''
 	endif
 	let l:save_s = @s
+	let l:visual = SimpleSnippets#removeTrailings(l:visual)
+	let l:visual = a:before . l:visual . a:after
 	let @s = l:visual
 	normal! "sp
 	let @s = l:save_s
