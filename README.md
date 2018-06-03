@@ -60,7 +60,7 @@ SimpleSnippets supports these kinds of placeholders:
 - `${4!echo "shell or viml"}` - command placeholder  
   Command placeholder can execute shell, or vimscript commands, which can be echoed.
 
-For the information about missing types of placeholders please check [limitations section](https://github.com/andreyorst/SimpleSnippets.vim/blob/dev/README.md#list-of-limitations--design-flaws)
+For the information about missing types of placeholders please check [limitations section](https://github.com/andreyorst/SimpleSnippets.vim#list-of-limitations--design-flaws)
 
 ## Why?
 
