@@ -274,6 +274,13 @@ filetypes mean same thing to SimpleSnippets.
 3.2 Commands                                           *SimpleSnippets-commands*
 ------------
 
+These commands will allow user to edit create, or view snippet files, and
+descriptions for them. By default edit commands will open vertical split, but
+this can be changed by setting a variable `g:SimpleSnippets_split_horizontal`
+to `1`
+
+  `g:SimpleSnippets_split_horizontal = 1`
+
   3.2.1 SimpleSnippetsEdit                                 *:SimpleSnippetsEdit*
   ----------------------------------------------------------------------------~
 

@@ -17,6 +17,7 @@ let s:type_stack = []
 let s:current_jump = 0
 let s:ph_start = []
 let s:ph_end = []
+let s:choicelist = []
 
 
 "Functions
@@ -429,7 +430,7 @@ function! SimpleSnippets#jumpMirrorChoice(placeholder)
 	call SimpleSnippets#saveUserCMappings()
 	exec "cnoremap <silent><Cr> <Cr><Esc>:call SimpleSnippets#jump()<Cr>"
 	let l:rename = input('Replace placeholder "'.l:echo.'" with: ', "", "customlist,SimpleSnippets#getChoiceList")
-	let s:choicelist = ''
+	let s:choicelist = []
 	call SimpleSnippets#restoreCMappings()
 	normal! :
 	let s:result_line_count = len(split(l:rename, '\\r'))
@@ -1252,7 +1253,15 @@ function! SimpleSnippets#createSplit(path, trigger)
 				exec "edit " . a:path . '/' . a:trigger
 			endtry
 		else
-			vertical new
+			if exists('g:SimpleSnippets_split_horizontal')
+				if g:SimpleSnippets_split_horisontal != 0
+					new
+				else
+					vertical new
+				endif
+			else
+				vertical new
+			endif
 			try
 				exec "buffer " . s:snip_edit_buf
 			catch
@@ -1262,7 +1271,15 @@ function! SimpleSnippets#createSplit(path, trigger)
 			let s:snip_edit_win = win_getid()
 		endif
 	else
-		vertical new
+		if exists('g:SimpleSnippets_split_horizontal')
+			if g:SimpleSnippets_split_horisontal != 0
+				new
+			else
+				vertical new
+			endif
+		else
+			vertical new
+		endif
 		exec "edit " . a:path . '/' . a:trigger
 	endif
 endfunction
