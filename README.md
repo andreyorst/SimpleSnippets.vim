@@ -1,4 +1,5 @@
-# SimpleSnippets.vim 
+# SimpleSnippets.vim
+
 [![GitHub release](https://img.shields.io/github/release/andreyorst/simplesnippets.vim.svg)](https://github.com/andreyorst/SimpleSnippets.vim/releases)
 [![GitHub Release Date](https://img.shields.io/github/release-date/andreyorst/SimpleSnippets.vim.svg)](https://github.com/andreyorst/SimpleSnippets.vim/releases)
 ![Github commits (since latest release)](https://img.shields.io/github/commits-since/andreyorst/Simplesnippets.vim/latest.svg)
@@ -40,9 +41,26 @@ let g:SimpleSnippetsExpandOrJumpTrigger = "<Tab>"
 let g:SimpleSnippetsJumpBackwardTrigger = "<S-Tab>"
 let g:SimpleSnippetsJumpToLastTrigger = "<C-j>"
 ```
-to your vimrc. If you want to disable default mappings, to write your own using functions, append `let g:SimpleSnippets_dont_remap_tab = 1` to those settings. For other settings please read the documentation.
+to your `.vimrc` or `init.vim`. If you want to disable default mappings, to write your own using functions, append `let g:SimpleSnippets_dont_remap_tab = 1` to those settings. For other settings please read the documentation.
 
-Plugin was created and being maintained by [@andreyorst](https://github.com/andreyorst). It is being tested against Vim 8.0, Vim 7.4.1689 and NeoVim 0.3.0. Other versions are not supported, but might work. If you found an issue, or want to propose a change, you're welcome to do so at SimpleSnippets.vim GitHub repository: https://github.com/andreyorst/SimpleSnippets.vim
+If you want a horizontal split while editing a snippet, instead of vertical one, add `let g:SimpleSnippets_split_horizontal = 1` to your `.vimrc` or `init.vim`.
+
+Plugin was created and being maintained by [@andreyorst](https://github.com/andreyorst). It is being tested against Vim 8.0, Vim 7.4.1689 and NeoVim 0.3.0. Other versions are not officially supported, but might work. If you found an issue, or want to propose a change, you're welcome to do so at SimpleSnippets.vim GitHub repository: https://github.com/andreyorst/SimpleSnippets.vim
+
+## Syntax
+
+SimpleSnippets supports these kinds of placeholders:
+
+- `${1:text}` - normal placeholder  
+  Normal placeholder's body must be some unique text, which will be later searched over the snippet's body, and selected.
+- `${2:text} $2` - mirroring  
+  For the mirroring Simplesnippets uses the same syntax as most of other plugins, however mirroring of empty tabstops is not possible. Mirroring is also non-realtime.
+- `${3|option1, option2|}` - choice placeholder  
+  Choice placeholder lets you choose the candidate, or write your own instead.
+- `${4!echo "shell or viml"}` - command placeholder  
+  Command placeholder can execute shell, or vimscript commands, which can be echoed.
+
+For the information about missing types of placeholders please check [limitations section](https://github.com/andreyorst/SimpleSnippets.vim/blob/dev/README.md#list-of-limitations--design-flaws)
 
 ## Why?
 
@@ -119,19 +137,18 @@ I may extend the functionality of this plugin in the future, if I figure out how
 implement things in better way, without using third party plugins, or other
 languages.
 
-#### List Of Limitations
+#### List Of Limitations / design flaws
+
 Here I'll try to list all limitations that you may encounter when using Simple Snippets:
 
 - [ ] No tabstops.  
-Why? Well, jumping is based on text searching. Because placeholders are deleted from snippet body when it is pasted to your file there is no way to find empty ones, because text behind them for example may change. If NeoVim will add ability to use multicursor and position it in text like in other modern editors this may be implemented. Because of this limitation mirroring is done differently too.
-- [ ] Placeholders have slightly different syntax than other plugins use.  
-SimpleSnippets supports normal: `${1:text}`, command: `${2!command}`, and repeater `$3` placeholders.
+  Why? Well, jumping is based on text searching. Because placeholders are deleted from snippet body when it is pasted to your file there is no way to find empty ones, because text behind them for example may change. If NeoVim will add ability to use multicursor and position it in text like in other modern editors this may be implemented. Because of this limitation mirroring is done differently too.
 - [ ] Normal placeholders should contain per snippet unique bodies.  
-So you can't use `${2:text_a} ${0:text_b} ${1:text_a}` constructions. SimpleSnippets will jump to first match of `text_a` in snippet body. This is major limitation.
+  So you can't use `${2:text_a} ${0:text_b} ${1:text_a}` constructions. SimpleSnippets will jump to first match of `text_a` in snippet body. This is major limitation.
 - [ ] Jumping is based on searching for a string.  
-As was already said before. So if you replace some part of snippets in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
+  As was already said before. So if you replace some part of snippets in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
 - [ ] Single snippet editing at time.  
-If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet.
+  If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet.
 - [ ] No nested placeholders.  
 - There may be more, which I've not thought about.
 
@@ -141,6 +158,7 @@ If you expanded a snippet, and you try to expand snippet inside this one, you wi
 - [x] Trigger must be separated from everything
 - [x] No back jumping.
 - [x] Placeholders must be separated from each other and another text.
+- [x] Placeholders have slightly different syntax than other plugins use.
 
 After reading this list you may want to ask me this question:
 
