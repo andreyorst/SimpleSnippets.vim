@@ -201,3 +201,8 @@ provided with the plugins to understand how things work. If you encounter any pr
 #### Jumping back and forth
 
 ![backjumping](https://user-images.githubusercontent.com/19470159/40218859-b84e4c06-5a7b-11e8-8841-95ccbf45636f.gif)
+
+#### Choice placeholders
+
+ ![choice](https://user-images.githubusercontent.com/19470159/40890243-b9e65e98-677b-11e8-958f-a36c7da58251.gif)
+ 
