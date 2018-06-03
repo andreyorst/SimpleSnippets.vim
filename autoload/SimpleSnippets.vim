@@ -1212,7 +1212,7 @@ function! SimpleSnippets#createSplit(path, trigger)
 			endtry
 		else
 			if exists('g:SimpleSnippets_split_horizontal')
-				if g:SimpleSnippets_split_horisontal != 0
+				if g:SimpleSnippets_split_horizontal != 0
 					new
 				else
 					vertical new
@@ -1230,7 +1230,7 @@ function! SimpleSnippets#createSplit(path, trigger)
 		endif
 	else
 		if exists('g:SimpleSnippets_split_horizontal')
-			if g:SimpleSnippets_split_horisontal != 0
+			if g:SimpleSnippets_split_horizontal != 0
 				new
 			else
 				vertical new
