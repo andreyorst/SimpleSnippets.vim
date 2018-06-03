@@ -116,7 +116,7 @@ function! SimpleSnippets#parseAndInit()
 	let s:current_file = @%
 
 	let l:cursor_pos = getpos(".")
-	let l:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!)')
+	let l:ph_amount = SimpleSnippets#countPlaceholders('\v\$\{[0-9]+(:|!|\|)')
 	if l:ph_amount != 0
 		call SimpleSnippets#parseSnippet(l:ph_amount)
 		call SimpleSnippets#initRemainingVisuals()
@@ -181,11 +181,15 @@ function! SimpleSnippets#jump()
 		if s:current_jump - 2 >= 0
 			call SimpleSnippets#checkIfChangesWereMade(s:current_jump - 2)
 		endif
-		let l:current_ph = escape(l:current_ph, s:escape_pattern)
+		if current_type != 'choice'
+			let l:current_ph = escape(l:current_ph, s:escape_pattern)
+		endif
 		if match(l:current_type, 'normal') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, 'mirror') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
+		elseif match(l:current_type, 'choice') == 0
+			call SimpleSnippets#jumpChoice(l:current_ph)
 		endif
 	else
 		echo "[WARN]: Can't jump outside of snippet's body"
@@ -210,6 +214,8 @@ function! SimpleSnippets#jumpBackwards()
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, 'mirror') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
+		elseif match(l:current_type, 'choice') == 0
+			call SimpleSnippets#jumpChoice(l:current_ph)
 		endif
 	else
 		echo "[WARN]: Can't jump outside of snippet's body"
@@ -231,6 +237,8 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 			call SimpleSnippets#jumpNormal(l:current_ph)
 		elseif match(l:current_type, 'mirror') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
+		elseif match(l:current_type, 'choice') == 0
+			call SimpleSnippets#jumpChoice(l:current_ph)
 		endif
 	else
 		echo "[WARN]: Can't jump outside of snippet's body"
@@ -280,43 +288,6 @@ function! SimpleSnippets#jumpNormal(placeholder)
 	endif
 	call setpos("'q", save_q_mark)
 	call setpos("'p", save_p_mark)
-endfunction
-
-function! SimpleSnippets#checkIfChangesWereMade(jump)
-	if s:type_stack[a:jump] != 3
-		let l:cursor_pos = getpos(".")
-		let l:prev_ph = get(s:jump_stack, a:jump)
-		if l:prev_ph !~ "\\W"
-			call cursor(s:snip_start, 1)
-			if s:search_sequence == 1
-				if search(l:prev_ph, "c", s:snip_end) == 0
-					let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
-				endif
-			else
-				if search('\<'.l:prev_ph.'\>', "c", s:snip_end) == 0
-					let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
-				endif
-			endif
-		else
-			let l:prev_ph = escape(l:prev_ph, s:escape_pattern)
-			call cursor(s:snip_start, 1)
-			if search(l:prev_ph, "c", s:snip_end) == 0
-				let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
-			endif
-		endif
-		call cursor(l:cursor_pos[1], l:cursor_pos[2])
-	endif
-endfunction
-
-function! SimpleSnippets#getLastInput()
-	let l:save_quote = @"
-	let save_q_mark = getpos("'q")
-	call setpos("'q", s:ph_start)
-	normal! g`qvg`.y
-	call setpos("'q", save_q_mark)
-	let l:user_input = @"
-	let @" = l:save_quote
-	return l:user_input
 endfunction
 
 function! SimpleSnippets#jumpMirror(placeholder)
@@ -374,6 +345,86 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		set cursorline
 	endif
 	redraw
+endfunction
+
+function! SimpleSnippets#jumpChoice(placeholder)
+	let l:ph = a:placeholder[0]
+	let save_q_mark = getpos("'q")
+	let save_p_mark = getpos("'p")
+	call cursor(s:snip_start, 1)
+	let l:echo = a:placeholder
+	if search('\<'.l:ph.'\>', 'c', s:snip_end) == 0
+		let s:search_sequence = 1
+		call search(l:ph, 'c', s:snip_end)
+	else
+		let s:search_sequence = 0
+	endif
+	normal! mq
+	if search('\<'.l:ph.'\>', 'ce', s:snip_end) == 0
+		let s:search_sequence = 1
+		call search(l:ph, 'ce', s:snip_end)
+	else
+		let s:search_sequence = 0
+	endif
+	normal! mp
+	let s:ph_start = getpos("'q")
+	let s:ph_end = getpos("'p")
+	if &lazyredraw != 1
+		set lazyredraw
+		let l:disable_lazyredraw = 1
+	else
+		let l:disable_lazyredraw = 0
+	endif
+	exec "normal! g`qvg`px"
+	let l:string = string(a:placeholder)
+	call feedkeys("a\<C-R>=SimpleSnippets#listChoice(".l:string.")\<CR>\<c-p>", "n")
+	if l:disable_lazyredraw == 1
+		set nolazyredraw
+	endif
+	call setpos("'q", save_q_mark)
+	call setpos("'p", save_p_mark)
+endfunction
+
+function! SimpleSnippets#listChoice(list)
+	call complete(col('.'), a:list)
+	return ''
+endfunction
+
+function! SimpleSnippets#checkIfChangesWereMade(jump)
+	if s:type_stack[a:jump] != 3
+		let l:cursor_pos = getpos(".")
+		let l:prev_ph = get(s:jump_stack, a:jump)
+		if l:prev_ph !~ "\\W"
+			call cursor(s:snip_start, 1)
+			if s:search_sequence == 1
+				if search(l:prev_ph, "c", s:snip_end) == 0
+					let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
+				endif
+			else
+				if search('\<'.l:prev_ph.'\>', "c", s:snip_end) == 0
+					let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
+				endif
+			endif
+		else
+			let l:prev_ph = escape(l:prev_ph, s:escape_pattern)
+			call cursor(s:snip_start, 1)
+			if search(l:prev_ph, "c", s:snip_end) == 0
+				let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
+			endif
+		endif
+		call cursor(l:cursor_pos[1], l:cursor_pos[2])
+	endif
+endfunction
+
+function! SimpleSnippets#getLastInput()
+	let l:save_quote = @"
+	let save_q_mark = getpos("'q")
+	call setpos("'q", s:ph_start)
+	normal! g`qvg`.y
+	call setpos("'q", save_q_mark)
+	let l:user_input = @"
+	let @" = l:save_quote
+	return l:user_input
 endfunction
 
 function! SimpleSnippets#saveUserCMappings()
@@ -746,14 +797,13 @@ function! SimpleSnippets#initChoice(current)
 	let l:save_quote = @"
 	let l:before = ''
 	let l:after = ''
-	let l:result = matchstr(getline('.'), l:placeholder)
+	let l:result = split(matchstr(getline('.'), l:placeholder), ',')
 	let save_q_mark = getpos("'q")
 	exe "normal! f,df|xF$df|"
 	call setpos("'q", save_q_mark)
 	call add(s:jump_stack, l:result)
 	let @" = l:save_quote
 	call add(s:type_stack, 'choice')
-	endif
 endfunction
 
 function! SimpleSnippets#countPlaceholders(pattern)
