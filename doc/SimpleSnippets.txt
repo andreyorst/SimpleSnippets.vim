@@ -88,8 +88,7 @@ Limitations:~
   3. Single snippet editing at time.
      Expanding another snippet  will  make  jumping  unavailable  in  previous
      snippet.
-  4. Placeholder syntax differs form other plugins.
-  5. Jumping is based on searching for a string.
+  4. Jumping is based on searching for a string.
 
 
 Known bugs / design flaws~
