@@ -741,6 +741,21 @@ function! SimpleSnippets#initVisual(before, after)
 	return l:visual
 endfunction
 
+function! SimpleSnippets#initChoice(current)
+	let l:placeholder = '\v(\$\{'.a:current.'\|)@<=.{-}(\|\})@='
+	let l:save_quote = @"
+	let l:before = ''
+	let l:after = ''
+	let l:result = matchstr(getline('.'), l:placeholder)
+	let save_q_mark = getpos("'q")
+	exe "normal! f,df|xF$df|"
+	call setpos("'q", save_q_mark)
+	call add(s:jump_stack, l:result)
+	let @" = l:save_quote
+	call add(s:type_stack, 'choice')
+	endif
+endfunction
+
 function! SimpleSnippets#countPlaceholders(pattern)
 	let l:cnt = SimpleSnippets#execute('%s/' . a:pattern . '//gn', "silent!")
 	call histdel("/", -1)
@@ -791,6 +806,8 @@ function! SimpleSnippets#getPlaceholderType()
 		return 'normal'
 	elseif match(l:ph, '\v\$\{[0-9]+!.{-}\}') == 0
 		return 'command'
+	elseif match(l:ph, '\v\$\{[0-9]+\|.{-}\|\}') == 0
+		return 'choice'
 	endif
 endfunction
 
@@ -799,6 +816,8 @@ function! SimpleSnippets#initPlaceholder(current, type)
 		call SimpleSnippets#initNormal(a:current)
 	elseif a:type == 'command'
 		call SimpleSnippets#initCommand(a:current)
+	elseif a:type == 'choice'
+		call SimpleSnippets#initChoice(a:current)
 	endif
 endfunction
 
