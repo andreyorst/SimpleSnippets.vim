@@ -45,6 +45,7 @@ CONTENTS                                               *SimpleSnippets-contents*
       4.2.3 Command Placeholder .......... |SimpleSnippets-command-placeholder|
       4.2.4 Repeaters ............................... |SimpleSnippets-repeater|
       4.2.5 Visual Placeholder ............ |SimpleSnippets-visual-placeholder|
+      4.2.6 Choice Placeholder ............ |SimpleSnippets-choice-placeholder|
     4.3 Snippets Examples ................... |SimpleSnippets-snippet-examples|
  5. Contributing ................................ |SimpleSnippets-contributing|
     5.1 Running tests .......................... |SimpleSnippets-running-tests|
@@ -793,6 +794,18 @@ or `endsnippet` entries are necessary.
   and expand snippet.  Your  text  will  be pasted  inside  the snippet's body
   if  `${VISUAL}` placeholder  is defined.  If  no  text  were  selected  visual
   placeholder will be removed from jump list.
+
+
+  4.2.6 Choice Placeholder                   *SimpleSnippets-choice-placeholder*
+                                                            *choice-placeholder*
+  ----------------------------------------------------------------------------~
+
+  Choice placeholders can have several values. The syntax is a comma separated
+  enumeration  of  values,  enclosed  with  the  pipe-character,  for  example
+  `${1|option1,option2|}`.  When  the  snippet is inserted and  the  placeholder
+  selected, choices will prompt the user to pick one of the values.  After the
+  first jump this placeholder is being converted  to  a  normal,  or  mirrored
+  type, so no further usage of list with options is possible.
 
 
 4.3 Snippet Examples                           *SimpleSnippets-snippet-examples*

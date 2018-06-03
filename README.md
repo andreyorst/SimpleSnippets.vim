@@ -1,4 +1,5 @@
-# SimpleSnippets.vim 
+# SimpleSnippets.vim
+
 [![GitHub release](https://img.shields.io/github/release/andreyorst/simplesnippets.vim.svg)](https://github.com/andreyorst/SimpleSnippets.vim/releases)
 [![GitHub Release Date](https://img.shields.io/github/release-date/andreyorst/SimpleSnippets.vim.svg)](https://github.com/andreyorst/SimpleSnippets.vim/releases)
 ![Github commits (since latest release)](https://img.shields.io/github/commits-since/andreyorst/Simplesnippets.vim/latest.svg)
@@ -119,20 +120,19 @@ I may extend the functionality of this plugin in the future, if I figure out how
 implement things in better way, without using third party plugins, or other
 languages.
 
-#### List Of Limitations
+#### List Of Limitations / design flaws
+
 Here I'll try to list all limitations that you may encounter when using Simple Snippets:
 
-- [ ] No tabstops.  
-Why? Well, jumping is based on text searching. Because placeholders are deleted from snippet body when it is pasted to your file there is no way to find empty ones, because text behind them for example may change. If NeoVim will add ability to use multicursor and position it in text like in other modern editors this may be implemented. Because of this limitation mirroring is done differently too.
-- [ ] Placeholders have slightly different syntax than other plugins use.  
-SimpleSnippets supports normal: `${1:text}`, command: `${2!command}`, and repeater `$3` placeholders.
-- [ ] Normal placeholders should contain per snippet unique bodies.  
-So you can't use `${2:text_a} ${0:text_b} ${1:text_a}` constructions. SimpleSnippets will jump to first match of `text_a` in snippet body. This is major limitation.
-- [ ] Jumping is based on searching for a string.  
-As was already said before. So if you replace some part of snippets in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
-- [ ] Single snippet editing at time.  
-If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet.
-- [ ] No nested placeholders.  
+- [ ] No tabstops.
+  Why? Well, jumping is based on text searching. Because placeholders are deleted from snippet body when it is pasted to your file there is no way to find empty ones, because text behind them for example may change. If NeoVim will add ability to use multicursor and position it in text like in other modern editors this may be implemented. Because of this limitation mirroring is done differently too.
+- [ ] Normal placeholders should contain per snippet unique bodies.
+  So you can't use `${2:text_a} ${0:text_b} ${1:text_a}` constructions. SimpleSnippets will jump to first match of `text_a` in snippet body. This is major limitation.
+- [ ] Jumping is based on searching for a string.
+  As was already said before. So if you replace some part of snippets in the same way, how your next placeholder is defined, you may jump to it instead of that placeholder.
+- [ ] Single snippet editing at time.
+  If you expanded a snippet, and you try to expand snippet inside this one, you will lose ability to jump in your previous snippet.
+- [ ] No nested placeholders.
 - There may be more, which I've not thought about.
 
 **Withdrawn limitations:**
@@ -141,6 +141,7 @@ If you expanded a snippet, and you try to expand snippet inside this one, you wi
 - [x] Trigger must be separated from everything
 - [x] No back jumping.
 - [x] Placeholders must be separated from each other and another text.
+- [x] Placeholders have slightly different syntax than other plugins use.
 
 After reading this list you may want to ask me this question:
 
