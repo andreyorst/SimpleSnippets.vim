@@ -182,9 +182,9 @@ function! SimpleSnippets#jump()
 			call SimpleSnippets#checkIfChangesWereMade(s:current_jump - 2)
 		endif
 		let l:current_ph = escape(l:current_ph, s:escape_pattern)
-		if match(l:current_type, '1') == 0
+		if match(l:current_type, 'normal') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
-		elseif match(l:current_type, '3') == 0
+		elseif match(l:current_type, 'mirror') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
 	else
@@ -206,9 +206,9 @@ function! SimpleSnippets#jumpBackwards()
 			call SimpleSnippets#checkIfChangesWereMade(s:current_jump)
 		endif
 		let l:current_ph = escape(l:current_ph, s:escape_pattern)
-		if match(l:current_type, '1') == 0
+		if match(l:current_type, 'normal') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
-		elseif match(l:current_type, '3') == 0
+		elseif match(l:current_type, 'mirror') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
 	else
@@ -227,9 +227,9 @@ function! SimpleSnippets#jumpToLastPlaceholder()
 		let l:current_type = s:type_stack[-1]
 		call SimpleSnippets#checkIfChangesWereMade(s:prev_jump)
 		let l:current_ph = escape(s:jump_stack[-1], s:escape_pattern)
-		if match(l:current_type, '1') == 0
+		if match(l:current_type, 'normal') == 0
 			call SimpleSnippets#jumpNormal(l:current_ph)
-		elseif match(l:current_type, '3') == 0
+		elseif match(l:current_type, 'mirror') == 0
 			call SimpleSnippets#jumpMirror(l:current_ph)
 		endif
 	else
@@ -675,10 +675,10 @@ function! SimpleSnippets#initNormal(current)
 	let @" = l:save_quote
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
-		call add(s:type_stack, 3)
+		call add(s:type_stack, 'mirror')
 		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
 	else
-		call add(s:type_stack, 1)
+		call add(s:type_stack, 'normal')
 	endif
 endfunction
 
@@ -718,10 +718,10 @@ function! SimpleSnippets#initCommand(current)
 	let l:repeater_count = SimpleSnippets#countPlaceholders('\v\$' . a:current)
 	call add(s:jump_stack, l:result)
 	if l:repeater_count != 0
-		call add(s:type_stack, 3)
+		call add(s:type_stack, 'mirror')
 		call SimpleSnippets#initRepeaters(a:current, l:result, l:repeater_count)
 	else
-		call add(s:type_stack, 1)
+		call add(s:type_stack, 'normal')
 	endif
 	noh
 endfunction
@@ -788,16 +788,16 @@ function! SimpleSnippets#getPlaceholderType()
 	let l:col = col('.')
 	let l:ph = matchstr(getline('.'), '\v%'.l:col.'c\$\{[0-9]+.{-}\}')
 	if match(l:ph, '\v\$\{[0-9]+:.{-}\}') == 0
-		return 1
+		return 'normal'
 	elseif match(l:ph, '\v\$\{[0-9]+!.{-}\}') == 0
-		return 2
+		return 'command'
 	endif
 endfunction
 
 function! SimpleSnippets#initPlaceholder(current, type)
-	if a:type == 1
+	if a:type == 'normal'
 		call SimpleSnippets#initNormal(a:current)
-	elseif a:type == 2
+	elseif a:type == 'command'
 		call SimpleSnippets#initCommand(a:current)
 	endif
 endfunction
