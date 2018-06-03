@@ -375,9 +375,9 @@ function! SimpleSnippets#jumpChoice(placeholder)
 	else
 		let l:disable_lazyredraw = 0
 	endif
-	exec "normal! g`qvg`px"
+	exec "normal! g`qvg`pc "
 	let l:string = string(a:placeholder)
-	call feedkeys("a\<C-R>=SimpleSnippets#listChoice(".l:string.")\<CR>\<c-p>", "n")
+	call feedkeys("i\<Del>\<C-R>=SimpleSnippets#listChoice(".l:string.")\<CR>\<c-p>", "n")
 	if l:disable_lazyredraw == 1
 		set nolazyredraw
 	endif
@@ -391,7 +391,8 @@ function! SimpleSnippets#listChoice(list)
 endfunction
 
 function! SimpleSnippets#checkIfChangesWereMade(jump)
-	if s:type_stack[a:jump] != 3
+	let l:type = s:type_stack[a:jump]
+	if l:type == 'normal'
 		let l:cursor_pos = getpos(".")
 		let l:prev_ph = get(s:jump_stack, a:jump)
 		if l:prev_ph !~ "\\W"
@@ -413,6 +414,22 @@ function! SimpleSnippets#checkIfChangesWereMade(jump)
 			endif
 		endif
 		call cursor(l:cursor_pos[1], l:cursor_pos[2])
+	elseif l:type == 'choice'
+		let l:prev_ph = get(s:jump_stack, a:jump)
+		call cursor(s:snip_start, 1)
+		let l:found = 0
+		for item in l:prev_ph
+			if search(item, "c", s:snip_end) != 0
+				let l:found = 1
+				let s:jump_stack[a:jump] = item
+				let s:type_stack[a:jump] = 'normal'
+				break
+			endif
+		endfor
+		if l:found == 0
+			let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
+			let s:type_stack[a:jump] = 'normal'
+		endif
 	endif
 endfunction
 
