@@ -342,7 +342,7 @@ function! SimpleSnippets#jumpMirror(placeholder)
 	if s:type_stack[s:current_jump - 1] != 'mirror_choice'
 		let l:rename = input('Replace placeholder "'.l:echo.'" with: ')
 	else
-		let l:rename = input('Replace placeholder "'.l:echo.'" with: ', "", "customlist,SimpleSnippets#getChoiceList")
+		let l:rename = input('Replaice choice placeholder "'.l:echo.'" with (press tab to select): ', "", "customlist,SimpleSnippets#getChoiceList")
 	endif
 	normal! :
 	call SimpleSnippets#restoreCMappings()
@@ -353,9 +353,11 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:subst_amount = strpart(l:cnt, 0, stridx(l:cnt, " "))
 		let l:subst_amount = substitute(l:subst_amount, '\v%^\_s+|\_s+%$', '', 'g')
 		let s:snip_end = s:snip_end + (s:result_line_count * l:subst_amount) - (s:placeholder_line_count * l:subst_amount)
-		let s:jump_stack[s:current_jump - 1] = l:rename
 		if s:type_stack[s:current_jump - 1] == 'mirror_choice'
-			let s:type_stack[s:current_jump - 1] = 'mirror'
+			call insert(s:jump_stack[s:current_jump - 1], l:rename)
+			"let s:type_stack[s:current_jump - 1] = 'mirror'
+		else
+			let s:jump_stack[s:current_jump - 1] = l:rename
 		endif
 		noh
 	endif
@@ -447,14 +449,12 @@ function! SimpleSnippets#checkIfChangesWereMade(jump)
 		for item in l:prev_ph
 			if search(item, "c", s:snip_end) != 0
 				let l:found = 1
-				let s:jump_stack[a:jump] = item
-				let s:type_stack[a:jump] = 'normal'
+				call insert(s:jump_stack[a:jump], item)
 				break
 			endif
 		endfor
 		if l:found == 0
-			let s:jump_stack[a:jump] = SimpleSnippets#getLastInput()
-			let s:type_stack[a:jump] = 'normal'
+			call insert(s:jump_stack[a:jump], SimpleSnippets#getLastInput())
 		endif
 	endif
 endfunction
@@ -1257,7 +1257,9 @@ function! SimpleSnippets#printJumpStackState(t)
 		endif
 		let l:i += 1
 	endfor
-	echon " | jump ". s:current_jump
+	echon " | jump: ". s:current_jump
+	echon " | type: ". s:type_stack[s:current_jump - 1]
+	redraw
 	exec "sleep ".a:t
 endfunction
 
