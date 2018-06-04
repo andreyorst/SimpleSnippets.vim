@@ -354,8 +354,9 @@ function! SimpleSnippets#jumpMirror(placeholder)
 		let l:subst_amount = substitute(l:subst_amount, '\v%^\_s+|\_s+%$', '', 'g')
 		let s:snip_end = s:snip_end + (s:result_line_count * l:subst_amount) - (s:placeholder_line_count * l:subst_amount)
 		if s:type_stack[s:current_jump - 1] == 'mirror_choice'
-			call insert(s:jump_stack[s:current_jump - 1], l:rename)
-			"let s:type_stack[s:current_jump - 1] = 'mirror'
+			if index(s:jump_stack[s:current_jump - 1], l:rename) == -1
+				call insert(s:jump_stack[s:current_jump - 1], l:rename)
+			endif
 		else
 			let s:jump_stack[s:current_jump - 1] = l:rename
 		endif
@@ -449,12 +450,19 @@ function! SimpleSnippets#checkIfChangesWereMade(jump)
 		for item in l:prev_ph
 			if search(item, "c", s:snip_end) != 0
 				let l:found = 1
+				if index(s:jump_stack[a:jump], item) >= 0
+					call remove(s:jump_stack[a:jump], index(s:jump_stack[a:jump], item))
+				endif
 				call insert(s:jump_stack[a:jump], item)
 				break
 			endif
 		endfor
 		if l:found == 0
-			call insert(s:jump_stack[a:jump], SimpleSnippets#getLastInput())
+			let l:input = SimpleSnippets#getLastInput()
+			if index(s:jump_stack[a:jump], l:input) >= 0
+				call remove(s:jump_stack[a:jump], index(s:jump_stack[a:jump], l:input))
+			endif
+			call insert(s:jump_stack[a:jump], l:input)
 		endif
 	endif
 endfunction
