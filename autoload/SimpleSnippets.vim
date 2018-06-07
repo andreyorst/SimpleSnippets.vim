@@ -1122,7 +1122,8 @@ function! SimpleSnippets#printSnippets(message, path, filetype)
 				let l:max = l:len
 			endif
 		endfor
-		echo system('echo -n '.a:message)
+		echo a:message
+		echo "\n"
 		let l:string = string(l:snippets)
 		let l:string = substitute(l:string, "',", '\n', 'g')
 		let l:string = substitute(l:string, " '", '', 'g')
@@ -1146,9 +1147,8 @@ function! SimpleSnippets#printSnippets(message, path, filetype)
 		let l:string = substitute(l:string, "':", ': ', 'g')
 		let l:string = substitute(l:string, '\\n', '\\\n', 'g')
 		let l:string = substitute(l:string, '\\r', '\\\\r', 'g')
-		let l:string = substitute(l:string, '\n', '\\n', 'g')
-		echo system('echo -n ' . shellescape(l:string) . '| nl')
-		echo system('echo ')
+		echon l:string
+		echo "\n"
 	endif
 endfunction
 
