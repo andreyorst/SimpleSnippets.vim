@@ -1,7 +1,6 @@
 *SimpleSnippets.txt*    For Vim 8.0 and NeoVim 0.3.0 or later.
 *snippet* *snippets* *SimpleSnippets*
 
-==============================================================================
                _               _~
               /_`._ _  _  /_  /_`_  ._  _  _ _/_ _   ._ _~
              ._/// / //_///_'._// ///_//_//_'/ _\.|/// / /~
@@ -77,7 +76,7 @@ plugin at all.  I've developed this plugin to be as simple as possible, to use
 it on smartphone, and weak devices, like netbooks, which I  still  use  during
 trips.
 
-Limitations:~
+Limitations:
 
   1. No empty placeholders.
      Which means no tabstops, like `if ($1) {$2}$0`, this syntax  is  used  by
@@ -91,7 +90,7 @@ Limitations:~
   4. Jumping is based on searching for a string.
 
 
-Known bugs / design flaws~
+Known bugs / design flaws:
 
   1. If you  replace one placeholder with body of another placeholder, changes
      of this placeholder's text can't be tracked later on,  until  the  second
@@ -664,8 +663,8 @@ should be contained inside snippet file is the snippet's body. No `startsnippet`
 or `endsnippet` entries are necessary.
 
 
-  4.2.1 Normal Placeholder                   *SimpleSnippets-normal-placeholder*
-                                                            *normal-placeholder*
+                                             *SimpleSnippets-normal-placeholder*
+  4.2.1 Normal Placeholder                                  *normal-placeholder*
   ----------------------------------------------------------------------------~
 
   Normal placeholder contains text entry that will be placed in your  expanded
@@ -687,8 +686,8 @@ or `endsnippet` entries are necessary.
   snippet.
 
 
-  4.2.2 Mirror Placeholder                   *SimpleSnippets-mirror-placeholder*
-                                                            *mirror-placeholder*
+                                             *SimpleSnippets-mirror-placeholder*
+  4.2.2 Mirror Placeholder                                  *mirror-placeholder*
   ----------------------------------------------------------------------------~
 
   Mirrored placeholder shares same syntax as normal and  command  placeholder,
@@ -725,8 +724,8 @@ or `endsnippet` entries are necessary.
   are automatically executing next jump for you.
 
 
-  4.2.3 Command Placeholder                 *SimpleSnippets-command-placeholder*
-                                                           *command-placeholder*
+                                            *SimpleSnippets-command-placeholder*
+  4.2.3 Command Placeholder                                *command-placeholder*
   ----------------------------------------------------------------------------~
 
   The implementation of `Command` placeholders relies on Vim  `system()` function.
@@ -781,8 +780,8 @@ or `endsnippet` entries are necessary.
   snippet's body. Now this is deprecated.
 
 
-  4.2.5 Visual Placeholder                   *SimpleSnippets-visual-placeholder*
-                                                            *visual-placeholder*
+                                             *SimpleSnippets-visual-placeholder*
+  4.2.5 Visual Placeholder                                  *visual-placeholder*
   ----------------------------------------------------------------------------~
 
   Visual placeholder is used to place your last visually selected text  inside
@@ -795,8 +794,8 @@ or `endsnippet` entries are necessary.
   placeholder will be removed from jump list.
 
 
-  4.2.6 Choice Placeholder                   *SimpleSnippets-choice-placeholder*
-                                                            *choice-placeholder*
+                                             *SimpleSnippets-choice-placeholder*
+  4.2.6 Choice Placeholder                                  *choice-placeholder*
   ----------------------------------------------------------------------------~
 
   Choice placeholders can have several values. The syntax is a comma separated
