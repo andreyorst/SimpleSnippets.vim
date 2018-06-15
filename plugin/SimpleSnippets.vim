@@ -51,3 +51,13 @@ command! -nargs=? SimpleSnippetsEdit call SimpleSnippets#edit("<args>")
 command! -nargs=? SimpleSnippetsEditDescriptions call SimpleSnippets#editDescriptions("<args>")
 command! SimpleSnippetsList call SimpleSnippets#listSnippets()
 
+if !exists("SimpleSnippets_autocmd_loaded")
+	let SimpleSnippets_autocmd_loaded = 1
+	autocmd InsertCharPre * call SimpleSnippets#input#handleUserPreInput()
+	autocmd TextChangedI  * call SimpleSnippets#input#handleUserInput()
+	autocmd TextChangedP  * call SimpleSnippets#input#handleUserInput()
+	autocmd InsertEnter   * call SimpleSnippets#input#handleUserInput()
+	autocmd InsertLeave   * call SimpleSnippets#input#fixUserInput()
+	autocmd CursorHoldI   * call SimpleSnippets#input#Update()
+endif
+
