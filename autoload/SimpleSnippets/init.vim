@@ -129,50 +129,11 @@ function! s:InitRemainingVisuals()
 	let s:visual_contents = ''
 endfunction
 
-function! s:GetSnippetFiletype(snip)
-	call s:CheckExternalSnippetPlugin()
-	let l:filetype = s:GetMainFiletype(g:SimpleSnippets_similar_filetypes)
-	if filereadable(g:SimpleSnippets_search_path . l:filetype . '/' . a:snip)
-		return l:filetype
-	endif
-	if s:FlashSnippetExists(a:snip)
-		return 'flash'
-	endif
-	if s:SimpleSnippets_snippets_plugin_installed == 1
-		let l:plugin_filetype = s:GetMainFiletype(g:SimpleSnippets_snippets_similar_filetypes)
-		if filereadable(g:SimpleSnippets_snippets_plugin_path . l:plugin_filetype . '/' . a:snip)
-			return l:plugin_filetype
-		endif
-	endif
-	if filereadable(g:SimpleSnippets_search_path . 'all/' . a:snip)
-		return 'all'
-	endif
-	if s:SimpleSnippets_snippets_plugin_installed == 1
-		if filereadable(g:SimpleSnippets_snippets_plugin_path . 'all/' . a:snip)
-			return 'all'
-		endif
-	endif
-	return -1
-endfunction
-
 function! s:FlashSnippetExists(snip)
 	if has_key(s:flash_snippets, a:snip)
 		return 1
 	endif
 	return 0
-endfunction
-
-function! s:GetMainFiletype(similar_filetypes)
-	let l:ft = &ft
-	if l:ft == ''
-		return 'all'
-	endif
-	for l:filetypes in a:similar_filetypes
-		if index(l:filetypes, l:ft) != -1
-			return l:filetypes[0]
-		endif
-	endfor
-	return l:ft
 endfunction
 
 function! s:InitNormal(current)
