@@ -142,22 +142,28 @@ endfunction
 
 function! s:InitNormal()
 	let l:save_quote = @"
-	le l:current = matchstr(, '\v(\$\{)@<=[0-9]+(:)@=')
+	let l:save_s = @s
+	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+:')
+	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(:)@=')
 	let save_q_mark = getpos("'q")
-	exe "normal! mqf{%xg`qdf:"
+	exe "normal! mqf{%i\<Del>\<Esc>vg`qf:w\"syg`qdf:"
+	let l:result = @s
 	call setpos("'q", save_q_mark)
 	let @" = l:save_quote
-	let l:repeater_count = s:CountPlaceholders('\v\$' . a:current)
+	let @s = l:save_s
+	let l:repeater_count = s:CountPlaceholders('\v\$' . l:current)
 	if l:repeater_count != 0
-		call s:InitRepeaters(a:current, l:result, l:repeater_count)
+		call s:InitRepeaters(l:current, l:result, l:repeater_count)
 	endif
 endfunction
 
-function! s:InitCommand(current)
+function! s:InitCommand()
 	let l:save_quote = @"
-	let l:placeholder = '\v(\$\{'.a:current.'!)@<=.{-}(\}($|[^\}]))@='
-	let l:command = matchstr(getline('.'), l:placeholder)
-	let g:com = l:command
+	let l:save_s = @s
+	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+!')
+	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(!)@=')
+	execute "normal! mqf{%i\<Del>\<Esc>vg`qf!w\"syg`qdf!"
+	let l:command = @s
 	if executable(substitute(l:command, '\v(^\w+).*', '\1', 'g')) == 1
 		let l:result = system(l:command)
 	else
@@ -167,7 +173,6 @@ function! s:InitCommand(current)
 		endif
 	endif
 	let l:result = s:RemoveTrailings(l:result)
-	let l:save_s = @s
 	let @s = l:result
 	let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g')) + 1
 	if l:result_line_count > 1
@@ -263,7 +268,7 @@ function! s:InitSnippet(amount)
 	call s:InitRemainingVisuals()
 endfunction
 
-" ${1:vaiv}
+" vaiv
 " ${2|daun|}
 " ${3!kuku}
 " $4
