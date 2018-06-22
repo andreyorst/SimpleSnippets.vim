@@ -5,18 +5,14 @@ let s:snip_start = 0
 let s:snip_end = 0
 let s:snip_line_count = 0
 let s:current_file = ''
-let s:snip_edit_buf = 0
-let s:snip_edit_win = 0
 let s:trigger = ''
 let s:escape_pattern = '/\*~.$^!#'
 let s:visual_contents = ''
 
 let s:snippet = []
-let s:jump_stack = []
 let s:type_stack = []
 let s:current_jump = 0
-let s:ph_start = []
-let s:ph_end = []
+let s:amount_of_placeholders = 0
 
 "Functions
 function! SimpleSnippets#init#expand()
@@ -24,35 +20,9 @@ function! SimpleSnippets#init#expand()
 	let s:trigger = ''
 	let l:filetype = s:GetSnippetFiletype(l:trigger)
 	if l:filetype == 'flash'
-		call s:ExpandFlashSnippet(l:trigger)
+		call s:ExpandFlash(l:trigger)
 	else
-		let l:path = s:GetSnippetPath(l:trigger, l:filetype)
-		let l:snippet = readfile(l:path)
-		while l:snippet[0] == ''
-			call remove(l:snippet, 0)
-		endwhile
-		while l:snippet[-1] == ''
-			call remove(l:snippet, -1)
-		endwhile
-		call s:StoreSnippetToMemory(l:snippet)
-		let s:snip_line_count = len(l:snippet)
-		if s:snip_line_count != 0
-			let l:snip_as_str = join(l:snippet, "\n")
-			let l:save_s = @s
-			let @s = l:snip_as_str
-			let l:save_quote = @"
-			if l:trigger =~ "\\W"
-				normal! ciW
-			else
-				normal! ciw
-			endif
-			normal! "sp
-			call s:ParseAndInit()
-			let @" = l:save_quote
-			let @s = l:save_s
-		else
-			echo '[ERROR] Snippet body is empty'
-		endif
+		call s:ExpandNormal(l:trigger, l:filetype)
 	endif
 endfunction
 
@@ -60,16 +30,46 @@ function! s:StoreSnippetToMemory(snippet)
 	let s:snippet = copy(a:snippet)
 endfunction
 
-function! s:ExpandFlashSnippet(snip)
+function! s:ExpandNormal(trigger, filetype)
+	let l:path = s:GetSnippetPath(a:trigger, a:filetype)
+	let l:snippet = readfile(l:path)
+	while l:snippet[0] == ''
+		call remove(l:snippet, 0)
+	endwhile
+	while l:snippet[-1] == ''
+		call remove(l:snippet, -1)
+	endwhile
+	call s:StoreSnippetToMemory(l:snippet)
+	let s:snip_line_count = len(l:snippet)
+	if s:snip_line_count != 0
+		let l:snip_as_str = join(l:snippet, "\n")
+		let l:save_s = @s
+		let @s = l:snip_as_str
+		let l:save_quote = @"
+		if l:trigger =~ "\\W"
+			normal! ciW
+		else
+			normal! ciw
+		endif
+		normal! "sp
+		call s:ParseAndInit()
+		let @" = l:save_quote
+		let @s = l:save_s
+	else
+		echo '[ERROR] Snippet body is empty'
+	endif
+endfunction
+
+function! s:ExpandFlash(trigger)
 	let l:save_quote = @"
-	if a:snip =~ "\\W"
+	if a:trigger =~ "\\W"
 		normal! ciW
 	else
 		normal! ciw
 	endif
 	let l:save_s = @s
-	let @s = s:flash_snippets[a:snip]
-	let s:snip_line_count = len(substitute(s:flash_snippets[a:snip], '[^\n]', '', 'g')) + 1
+	let @s = s:flash_snippets[a:trigger]
+	let s:snip_line_count = len(substitute(s:flash_snippets[a:trigger], '[^\n]', '', 'g')) + 1
 	normal! "sp
 	let @s = l:save_s
 	if s:snip_line_count != 1
@@ -114,7 +114,27 @@ function! s:ParseAndInit()
 	endif
 endfunction
 
-function! s:InitRemainingVisuals()
+function! s:InitSnippet(amount)
+	let l:type = 0
+	let s:snip_start = line(".")
+	let s:snip_end = s:snip_start + s:snip_line_count - 1
+	let l:i = 0
+	while l:i <= a:amount
+		call cursor(s:snip_start, 1)
+		if l:i == l:max
+			let l:current = 0
+		endif
+		if search('\v\$(\{)?[0-9]+(:|!|\|)?', 'c') != 0
+			let l:type = s:GetPlaceholderType()
+			call s:InitPlaceholder(l:type)
+		endif
+		let l:i += 1
+		let l:current = l:i
+	endwhile
+	call s:InitVisuals()
+endfunction
+
+function! s:InitVisuals()
 	let l:visual_amount = s:CountPlaceholders('\v\$\{VISUAL\}')
 	let i = 0
 	while i < l:visual_amount
@@ -133,11 +153,55 @@ function! s:InitRemainingVisuals()
 	let s:visual_contents = ''
 endfunction
 
-function! s:FlashSnippetExists(snip)
-	if has_key(s:flash_snippets, a:snip)
-		return 1
+function! s:InitVisual(before, after)
+	if s:visual_contents != ''
+		let l:visual = s:visual_contents
+	else
+		let l:visual = ''
 	endif
-	return 0
+	let l:save_s = @s
+	let l:visual = s:RemoveTrailings(l:visual)
+	let l:visual = a:before . l:visual . a:after
+	let @s = l:visual
+	normal! "sp
+	let @s = l:save_s
+	return l:visual
+endfunction
+
+function! s:CountPlaceholders(pattern)
+	let l:cnt = s:Execute('%s/' . a:pattern . '//gn', "silent!")
+	call histdel("/", -1)
+	if match(l:cnt, 'not found') >= 0
+		return 0
+	endif
+	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
+	let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
+	return l:count
+endfunction
+
+function! s:GetPlaceholderType()
+	let l:ph = matchstr(getline('.'), '\v%'.col('.').'c\$(\{)?[0-9]+(:|!|\|)?')
+	if match(l:ph, '\v\$\{[0-9]+:') == 0
+		return 'normal'
+	elseif match(l:ph, '\v\$\{[0-9]+!') == 0
+		return 'command'
+	elseif match(l:ph, '\v\$\{[0-9]+\|.{-}\|\}') == 0
+		return 'choice'
+	elseif match(l:ph, '\v\$[0-9]+') == 0
+		return 'tabstop'
+	endif
+endfunction
+
+function! s:InitPlaceholder(type)
+	if a:type == 'normal'
+		call s:InitNormal()
+	elseif a:type == 'command'
+		call s:InitCommand()
+	elseif a:type == 'choice'
+		call s:InitChoice()
+	elseif a:type == 'tabstop'
+		call s:InitTabstop()
+	endif
 endfunction
 
 function! s:InitNormal()
@@ -202,21 +266,6 @@ function! s:InitCommand()
 	noh
 endfunction
 
-function! s:InitVisual(before, after)
-	if s:visual_contents != ''
-		let l:visual = s:visual_contents
-	else
-		let l:visual = ''
-	endif
-	let l:save_s = @s
-	let l:visual = s:RemoveTrailings(l:visual)
-	let l:visual = a:before . l:visual . a:after
-	let @s = l:visual
-	normal! "sp
-	let @s = l:save_s
-	return l:visual
-endfunction
-
 function! s:InitChoice(current)
 	let l:placeholder = '\v(\$\{'.a:current.'\|)@<=.{-}(\|\})@='
 	let l:save_quote = @"
@@ -234,67 +283,6 @@ function! s:InitChoice(current)
 		call s:InitRepeaters(a:current, l:result[0], l:repeater_count)
 	else
 		call add(s:type_stack, 'choice')
-	endif
-endfunction
-
-function! s:CountPlaceholders(pattern)
-	let l:cnt = s:Execute('%s/' . a:pattern . '//gn', "silent!")
-	call histdel("/", -1)
-	if match(l:cnt, 'not found') >= 0
-		return 0
-	endif
-	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
-	let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
-	return l:count
-endfunction
-
-function! s:InitSnippet(amount)
-	let l:type = 0
-	let s:snip_start = line(".")
-	let s:snip_end = s:snip_start + s:snip_line_count - 1
-	let l:i = 0
-	while l:i <= a:amount
-		call cursor(s:snip_start, 1)
-		if l:i == l:max
-			let l:current = 0
-		endif
-		if search('\v\$(\{)?[0-9]+(:|!|\|)?', 'c') != 0
-			let l:type = s:GetPlaceholderType()
-			call s:InitPlaceholder(l:type)
-		endif
-		let l:i += 1
-		let l:current = l:i
-	endwhile
-	call s:InitRemainingVisuals()
-endfunction
-
-" vaiv
-" ${2|daun|}
-" ${3!kuku}
-" $4
-
-function! s:GetPlaceholderType()
-	let l:ph = matchstr(getline('.'), '\v%'.col('.').'c\$(\{)?[0-9]+(:|!|\|)?')
-	if match(l:ph, '\v\$\{[0-9]+:') == 0
-		return 'normal'
-	elseif match(l:ph, '\v\$\{[0-9]+!') == 0
-		return 'command'
-	elseif match(l:ph, '\v\$\{[0-9]+\|.{-}\|\}') == 0
-		return 'choice'
-	elseif match(l:ph, '\v\$[0-9]+') == 0
-		return 'tabstop'
-	endif
-endfunction
-
-function! s:InitPlaceholder(type)
-	if a:type == 'normal'
-		call s:InitNormal()
-	elseif a:type == 'command'
-		call s:InitCommand()
-	elseif a:type == 'choice'
-		call s:InitChoice()
-	elseif a:type == 'tabstop'
-		call s:InitTabstop()
 	endif
 endfunction
 
