@@ -26,10 +26,6 @@ function! SimpleSnippets#init#expand()
 	endif
 endfunction
 
-function! s:StoreSnippetToMemory(snippet)
-	let s:snippet = copy(a:snippet)
-endfunction
-
 function! s:ExpandNormal(trigger, filetype)
 	let l:path = s:GetSnippetPath(a:trigger, a:filetype)
 	let l:snippet = readfile(l:path)
@@ -68,7 +64,9 @@ function! s:ExpandFlash(trigger)
 		normal! ciw
 	endif
 	let l:save_s = @s
-	let @s = s:flash_snippets[a:trigger]
+	let l:snippet = s:flash_snippets[a:trigger]
+	let @s = l:snippet
+	call s:StoreSnippetToMemory(l:snippet)
 	let s:snip_line_count = len(substitute(s:flash_snippets[a:trigger], '[^\n]', '', 'g')) + 1
 	normal! "sp
 	let @s = l:save_s
@@ -79,6 +77,10 @@ function! s:ExpandFlash(trigger)
 		normal! ==
 	endif
 	silent call s:ParseAndInit()
+endfunction
+
+function! s:StoreSnippetToMemory(snippet)
+	let s:snippet = copy(a:snippet)
 endfunction
 
 function! s:ParseAndInit()
@@ -119,17 +121,12 @@ function! s:InitSnippet(amount)
 	let s:snip_start = line(".")
 	let s:snip_end = s:snip_start + s:snip_line_count - 1
 	let l:i = 0
-	while l:i <= a:amount
+	while l:i < a:amount
 		call cursor(s:snip_start, 1)
-		if l:i == l:max
-			let l:current = 0
-		endif
 		if search('\v\$(\{)?[0-9]+(:|!|\|)?', 'c') != 0
-			let l:type = s:GetPlaceholderType()
-			call s:InitPlaceholder(l:type)
+			call s:InitPlaceholder()
 		endif
 		let l:i += 1
-		let l:current = l:i
 	endwhile
 	call s:InitVisuals()
 endfunction
@@ -175,8 +172,20 @@ function! s:CountPlaceholders(pattern)
 		return 0
 	endif
 	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
-	let l:count = substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
-	return l:count
+	return substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
+endfunction
+
+function! s:InitPlaceholder()
+	let l:type = s:GetPlaceholderType()
+	if l:type == 'normal'
+		call s:InitNormal()
+	elseif l:type == 'command'
+		call s:InitCommand()
+	elseif l:type == 'choice'
+		call s:InitChoice()
+	elseif l:type == 'tabstop'
+		call s:InitTabstop()
+	endif
 endfunction
 
 function! s:GetPlaceholderType()
@@ -189,18 +198,6 @@ function! s:GetPlaceholderType()
 		return 'choice'
 	elseif match(l:ph, '\v\$[0-9]+') == 0
 		return 'tabstop'
-	endif
-endfunction
-
-function! s:InitPlaceholder(type)
-	if a:type == 'normal'
-		call s:InitNormal()
-	elseif a:type == 'command'
-		call s:InitCommand()
-	elseif a:type == 'choice'
-		call s:InitChoice()
-	elseif a:type == 'tabstop'
-		call s:InitTabstop()
 	endif
 endfunction
 
@@ -226,7 +223,7 @@ function! s:InitCommand()
 	let l:save_s = @s
 	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+!')
 	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(!)@=')
-	execute "normal! mqf{%i\<Del>\<Esc>vg`qf!w\"syg`qdf!"
+	execute "normal! mqf{%i\<Del>\<Esc>vg`qf!w\"sdg`qcf! "
 	let l:command = @s
 	if executable(substitute(l:command, '\v(^\w+).*', '\1', 'g')) == 1
 		let l:result = system(l:command)
@@ -242,32 +239,21 @@ function! s:InitCommand()
 	if l:result_line_count > 1
 		let s:snip_end += l:result_line_count
 	endif
-	let save_q_mark = getpos("'q")
-	let save_p_mark = getpos("'p")
-	normal! mq
-	call search('\v\$\{'.a:current.'!.{-}\}($|[^\}])@=', 'ce', s:snip_end)
-	normal! mp
-	let s:ph_start = getpos("'q")
-	let s:ph_end = getpos("'p")
-	exe "normal! g`qvg`pr"
+	exe "normal! g`qvr"
 	normal! "sp
 	call setpos("'q", save_q_mark)
-	call setpos("'p", save_p_mark)
 	let @s = l:save_s
 	let @" = l:save_quote
 	let l:repeater_count = s:CountPlaceholders('\v\$' . a:current)
-	call add(s:jump_stack, l:result)
 	if l:repeater_count != 0
-		call add(s:type_stack, 'mirror')
-		call s:InitRepeaters(a:current, l:result, l:repeater_count)
-	else
-		call add(s:type_stack, 'normal')
+		call s:InitRepeaters(l:current, l:result, l:repeater_count)
 	endif
 	noh
 endfunction
 
 function! s:InitChoice(current)
-	let l:placeholder = '\v(\$\{'.a:current.'\|)@<=.{-}(\|\})@='
+	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+!')
+	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(!)@=')
 	let l:save_quote = @"
 	let l:before = ''
 	let l:after = ''
