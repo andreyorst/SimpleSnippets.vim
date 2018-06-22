@@ -37,7 +37,6 @@ function! SimpleSnippets#init#expand()
 		call s:StoreSnippetToMemory(l:snippet)
 		let s:snip_line_count = len(l:snippet)
 		if s:snip_line_count != 0
-			let l:snippet = s:ParseAndInit()
 			let l:snip_as_str = join(l:snippet, "\n")
 			let l:save_s = @s
 			let @s = l:snip_as_str
@@ -48,6 +47,7 @@ function! SimpleSnippets#init#expand()
 				normal! ciw
 			endif
 			normal! "sp
+			call s:ParseAndInit()
 			let @" = l:save_quote
 			let @s = l:save_s
 		else
@@ -93,8 +93,16 @@ function! s:ParseAndInit()
 	let l:cursor_pos = getpos(".")
 	let l:ph_amount = s:CountPlaceholders('\v\$\{[0-9]+(:|!|\|)')
 	let l:ts_amount = s:CountPlaceholders('\v\$[0-9]+')
-	if l:ph_amount != 0 || l:ts_amount
-		call s:InitSnippet(l:ph_amount + l:ts_amount)
+	if l:ph_amount != 0
+		call s:InitSnippet(l:ph_amount)
+		call cursor(s:snip_start, 1)
+	elseif s:ts_amount != 0
+		call s:InitSnippet(l:ts_amount)
+	else
+		let s:active = 0
+		call cursor(l:cursor_pos[1], l:cursor_pos[2])
+	endif
+	if s:active != 0
 		if s:snip_line_count != 1
 			let l:indent_lines = s:snip_line_count - 1
 			call cursor(s:snip_start, 1)
@@ -103,10 +111,6 @@ function! s:ParseAndInit()
 		else
 			normal! ==
 		endif
-		call cursor(s:snip_start, 1)
-	else
-		let s:active = 0
-		call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	endif
 endfunction
 
@@ -136,34 +140,12 @@ function! s:FlashSnippetExists(snip)
 	return 0
 endfunction
 
-function! s:InitNormal(current)
-	let l:placeholder = '\v(\$\{'.a:current.':)@<=.{-}(\}($|[^\}]))@='
+function! s:InitNormal()
 	let l:save_quote = @"
-	let l:before = ''
-	let l:after = ''
-	if search('\v(\$\{'.a:current.':(.{-})?)@<=\$\{VISUAL\}((.{-})?\}($|[^\}]))@=', 'c', line('.')) != 0
-		let l:cursor_pos = getpos(".")
-		call cursor(line('.'), 1)
-		if search('\v(\$\{'.a:current.':)@<=.{-}(\$\{VISUAL\}.*\})@=', 'cn', line('.')) != 0
-			let l:before = matchstr(getline('.'), '\v(\$\{'.a:current.':)@<=.{-}(\$\{VISUAL\}.*\})@=')
-		endif
-		if search('\v(\$\{'.a:current.':.{-}\$\{VISUAL\})@<=.{-}(\})@=', 'cn', line('.')) != 0
-			let l:after = matchstr(getline('.'), '\v(\$\{'.a:current.':.{-}\$\{VISUAL\})@<=.{-}(\})@=')
-		endif
-		call cursor(l:cursor_pos[1], l:cursor_pos[2])
-		exe "normal! F{%vF$;c"
-		let l:result = s:InitVisual(l:before, l:after)
-		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
-		if l:result_line_count > 1
-			silent exec 'normal! V'
-			silent exec 'normal!'. l:result_line_count .'j='
-			let s:snip_end += l:result_line_count
-		endif
-	else
-		let save_q_mark = getpos("'q")
-		exe "normal! f{mq%i\<Del>\<Esc>g`qF$df:"
-		call setpos("'q", save_q_mark)
-	endif
+	le l:current = matchstr(, '\v(\$\{)@<=[0-9]+(:)@=')
+	let save_q_mark = getpos("'q")
+	exe "normal! mqf{%xg`qdf:"
+	call setpos("'q", save_q_mark)
 	let @" = l:save_quote
 	let l:repeater_count = s:CountPlaceholders('\v\$' . a:current)
 	if l:repeater_count != 0
@@ -263,19 +245,17 @@ endfunction
 
 function! s:InitSnippet(amount)
 	let l:type = 0
-	let l:i = 1
-	let l:max = a:amount + 1
-	let l:current = l:i
 	let s:snip_start = line(".")
 	let s:snip_end = s:snip_start + s:snip_line_count - 1
-	while l:i <= l:max
+	let l:i = 0
+	while l:i <= a:amount
 		call cursor(s:snip_start, 1)
 		if l:i == l:max
 			let l:current = 0
 		endif
-		if search('\v\$\{' . l:current, 'c') != 0
+		if search('\v\$(\{)?[0-9]+(:|!|\|)?', 'c') != 0
 			let l:type = s:GetPlaceholderType()
-			call s:InitPlaceholder(l:current, l:type)
+			call s:InitPlaceholder(l:type)
 		endif
 		let l:i += 1
 		let l:current = l:i
@@ -283,23 +263,16 @@ function! s:InitSnippet(amount)
 	call s:InitRemainingVisuals()
 endfunction
 
-function! SimpleSnippets#addFlashSnippet(trigger, snippet_defenition)
-	let s:flash_snippets[a:trigger] = a:snippet_defenition
-endfunction
-
-function! SimpleSnippets#removeFlashSnippet(trigger)
-	let l:i = 0
-	if has_key(s:flash_snippets, a:trigger)
-		unlet![a:trigger]
-	endif
-endfunction
+" ${1:vaiv}
+" ${2|daun|}
+" ${3!kuku}
+" $4
 
 function! s:GetPlaceholderType()
-	let l:col = col('.')
-	let l:ph = matchstr(getline('.'), '\v%'.l:col.'c\$\{[0-9]+.{-}\}')
-	if match(l:ph, '\v\$\{[0-9]+:.{-}\}') == 0
+	let l:ph = matchstr(getline('.'), '\v%'.col('.').'c\$(\{)?[0-9]+(:|!|\|)?')
+	if match(l:ph, '\v\$\{[0-9]+:') == 0
 		return 'normal'
-	elseif match(l:ph, '\v\$\{[0-9]+!.{-}\}') == 0
+	elseif match(l:ph, '\v\$\{[0-9]+!') == 0
 		return 'command'
 	elseif match(l:ph, '\v\$\{[0-9]+\|.{-}\|\}') == 0
 		return 'choice'
@@ -308,15 +281,15 @@ function! s:GetPlaceholderType()
 	endif
 endfunction
 
-function! s:InitPlaceholder(current, type)
+function! s:InitPlaceholder(type)
 	if a:type == 'normal'
-		call s:InitNormal(a:current)
+		call s:InitNormal()
 	elseif a:type == 'command'
-		call s:InitCommand(a:current)
+		call s:InitCommand()
 	elseif a:type == 'choice'
-		call s:InitChoice(a:current)
+		call s:InitChoice()
 	elseif a:type == 'tabstop'
-		call s:InitTabstop(a:current)
+		call s:InitTabstop()
 	endif
 endfunction
 
