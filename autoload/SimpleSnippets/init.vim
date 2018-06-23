@@ -16,15 +16,15 @@ let s:amount_of_placeholders = 0
 
 "Functions
 function! SimpleSnippets#init#expand()
-	let l:trigger = g:trigger
-	let s:trigger = ''
-	let l:filetype = s:GetSnippetFiletype(l:trigger)
+	let s:trigger = SimpleSnippets#core#obtainTrigger()
+	let l:filetype = s:GetSnippetFiletype(s:trigger)
 	if l:filetype == 'flash'
-		call s:ExpandFlash(l:trigger)
+		call s:ExpandFlash(s:trigger)
 	else
-		let l:snippet = s:ObtainSnippet(l:trigger, l:filetype)
+		let l:snippet = s:ObtainSnippet(s:trigger, l:filetype)
 		call s:ExpandNormal(l:snippet)
 	endif
+	let s:trigger = ''
 endfunction
 
 function! s:ExpandNormal(snippet)
@@ -35,7 +35,7 @@ function! s:ExpandNormal(snippet)
 		let l:save_s = @s
 		let @s = l:snip_as_str
 		let l:save_quote = @"
-		if l:trigger =~ "\\W"
+		if s:trigger =~ "\\W"
 			normal! ciW
 		else
 			normal! ciw
