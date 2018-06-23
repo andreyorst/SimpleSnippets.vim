@@ -1,4 +1,18 @@
 function! SimpleSnippets#core#obtainTrigger()
+	return s:trigger
+endfunction
+
+function! SimpleSnippets#core#isExpandable()
+	call s:ObtainTrigger()
+	if SimpleSnippets#getSnipFileType(s:trigger) != -1
+		return 1
+	endif
+	call s:ObtainAlternateTrigger()
+	if SimpleSnippets#getSnipFileType(s:trigger) != -1
+		return 1
+	endif
+	let s:trigger = ''
+	return 0
 endfunction
 
 function! s:ObtainTrigger()
