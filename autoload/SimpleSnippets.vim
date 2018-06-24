@@ -264,16 +264,6 @@ function! s:CheckExternalSnippetPlugin()
 	endif
 endfunction
 
-function! s:GetSnippetPath(snip, filetype)
-	if filereadable(g:SimpleSnippets_search_path . a:filetype . '/' . a:snip)
-		return g:SimpleSnippets_search_path . a:filetype . '/' . a:snip
-	elseif s:SimpleSnippets_snippets_plugin_installed == 1
-		if filereadable(g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip)
-			return g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip
-		endif
-	endif
-endfunction
-
 function! s:TriggerEscape(trigger)
 	let l:trigg = s:RemoveTrailings(a:trigger)
 	if l:trigg =~ "\\s"
