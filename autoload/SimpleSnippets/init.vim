@@ -1,49 +1,54 @@
 " Globals
+let s:snippet = {
+	\'start': 0,
+	\'end': 0,
+	\'line_count': 0,
+	\'file': '',
+	\'ft': '',
+	\'trigger': '',
+	\'visual': '',
+	\'body': [],
+	\'ph_amount': 0,
+	\'ts_amount': 0,
+	\'jump': 0,
+\}
+
 let s:flash_snippets = {}
 let s:active = 0
-let s:snip_start = 0
-let s:snip_end = 0
-let s:snip_line_count = 0
-let s:current_file = ''
-let s:trigger = ''
-let s:escape_pattern = '/\*~.$^!#'
-let s:visual_contents = ''
-
-let s:snippet = []
-let s:type_stack = []
-let s:current_jump = 0
-let s:amount_of_placeholders = 0
 
 "Functions
-function! SimpleSnippets#init#expand()
-	let s:trigger = SimpleSnippets#core#obtainTrigger()
-	let l:filetype = s:GetSnippetFiletype(s:trigger)
-	if l:filetype == 'flash'
-		call s:ExpandFlash(s:trigger)
-	else
-		let l:snippet = s:ObtainSnippet(s:trigger, l:filetype)
-		call s:ExpandNormal(l:snippet)
-	endif
-	let s:trigger = ''
+function! SimpleSnippets#init#getSnippetItem()
+	return s:snippet
 endfunction
 
-function! s:ExpandNormal(snippet)
-	call s:StoreSnippetToMemory(a:snippet)
-	let s:snip_line_count = len(a:snippet)
-	if s:snip_line_count != 0
-		let l:snip_as_str = join(a:snippet, "\n")
+function! SimpleSnippets#init#expand()
+	let s:snippet.trigger = SimpleSnippets#core#obtainTrigger()
+	let s:snippet.ft = s:GetSnippetFiletype(s:snippet.trigger)
+	if s:snippet.ft == 'flash'
+		call s:ExpandFlash(s:snippet.trigger)
+	else
+		let s:snippet.body = s:ObtainSnippet()
+		let s:snippet.line_count = len(s:snippet.body)
+		call s:StoreSnippetToMemory(s:snippet.body)
+		call s:ExpandNormal()
+	endif
+	let s:snippet.trigger = ''
+endfunction
+
+function! s:ExpandNormal()
+	if s:snippet.line_count != 0
 		let l:save_s = @s
-		let @s = l:snip_as_str
+		let @s = join(s:snippet.body, "\n")
 		let l:save_quote = @"
-		if s:trigger =~ "\\W"
+		if s:snippe.trigger =~ "\\W"
 			normal! ciW
 		else
 			normal! ciw
 		endif
 		normal! "sp
-		call s:ParseAndInit()
 		let @" = l:save_quote
 		let @s = l:save_s
+		call s:ParseAndInit()
 	else
 		echohl ErrorMsg
 		echo '[ERROR] Snippet body is empty'
@@ -51,8 +56,8 @@ function! s:ExpandNormal(snippet)
 	endif
 endfunction
 
-function! s:ObtainSnippet(trigger, filetype)
-	let l:path = s:GetSnippetPath(a:trigger, a:filetype)
+function! s:ObtainSnippet()
+	let l:path = s:GetSnippetPath(s:snippet.trigger, s:snippet.filetype)
 	let l:snippet = readfile(l:path)
 	while l:snippet[0] == ''
 		call remove(l:snippet, 0)
@@ -63,22 +68,22 @@ function! s:ObtainSnippet(trigger, filetype)
 	return l:snippet
 endfunction
 
-function! s:ExpandFlash(trigger)
+function! s:ExpandFlash()
 	let l:save_quote = @"
-	if a:trigger =~ "\\W"
+	if s:snippe.trigger =~ "\\W"
 		normal! ciW
 	else
 		normal! ciw
 	endif
 	let l:save_s = @s
-	let l:snippet = s:flash_snippets[a:trigger]
-	let @s = l:snippet
-	call s:StoreSnippetToMemory(l:snippet)
-	let s:snip_line_count = len(substitute(s:flash_snippets[a:trigger], '[^\n]', '', 'g')) + 1
+	let s:snippet.body = s:flash_snippets[s:snippe.trigger]
+	let @s = s:snippet.body
+	call s:StoreSnippetToMemory(s:snippet.body)
+	let s:snippet.line_count = len(substitute(s:flash_snippets[a:trigger], '[^\n]', '', 'g')) + 1
 	normal! "sp
 	let @s = l:save_s
-	if s:snip_line_count != 1
-		let l:indent_lines = s:snip_line_count - 1
+	if s:snippet.line_count != 1
+		let l:indent_lines = s:snippet.line_count - 1
 		silent exec 'normal! V' . l:indent_lines . 'j='
 	else
 		normal! ==
@@ -91,29 +96,26 @@ function! s:StoreSnippetToMemory(snippet)
 endfunction
 
 function! s:ParseAndInit()
-	let s:jump_stack = []
-	let s:type_stack = []
-	let s:current_jump = 0
-	let s:ph_start = []
-	let s:ph_end = []
 	let s:active = 1
-	let s:current_file = @%
+	let s:snippet.jump = 0
+	let s:snippet.file = @%
 
 	let l:cursor_pos = getpos(".")
-	let l:ph_amount = s:CountPlaceholders('\v\$\{[0-9]+(:|!|\|)')
-	let l:ts_amount = s:CountPlaceholders('\v\$[0-9]+')
-	if l:ph_amount != 0
-		call s:InitSnippet(l:ph_amount)
-		call cursor(s:snip_start, 1)
-	elseif s:ts_amount != 0
-		call s:InitSnippet(l:ts_amount)
+	let s:snippet.ph_amount = s:CountPlaceholders('\v\$\{[0-9]+(:|!|\|)')
+	let s:snippe.ts_amount = s:CountPlaceholders('\v\$[0-9]+')
+	if s:snippet.ph_amount != 0
+		call s:InitSnippet(s:snippet.ph_amount)
+		call cursor(s:snippet.start, 1)
+	elseif s:snippe.ts_amount != 0
+		call s:InitSnippet(s:snippe.ts_amount)
+		call cursor(s:snippet.start, 1)
 	else
 		let s:active = 0
 		call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	endif
 	if s:active != 0
-		if s:snip_line_count != 1
-			let l:indent_lines = s:snip_line_count - 1
+		if s:snippet.line_count != 1
+			let l:indent_lines = s:snippet.line_count - 1
 			call cursor(s:snip_start, 1)
 			silent exec 'normal! V'
 			silent exec 'normal!'. l:indent_lines .'j='
@@ -336,25 +338,5 @@ function! s:Execute(command, ...)
 		redir END
 	endif
 	return l:result
-endfunction
-
-" Debug functions
-function! SimpleSnippets#init#printJumpStackState(t)
-	let l:i = 0
-	for item in s:jump_stack
-		if l:i != s:current_jump - 1
-			echon string(item)
-		else
-			echon "[".string(item)."]"
-		endif
-		if l:i != len(s:jump_stack) - 1
-			echon ", "
-		endif
-		let l:i += 1
-	endfor
-	echon " | jump: ". s:current_jump
-	echon " | type: ". s:type_stack[s:current_jump - 1]
-	redraw
-	exec "sleep ".a:t
 endfunction
 
