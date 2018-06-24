@@ -3,14 +3,14 @@ let s:snippet = {
 	\'start': 0,
 	\'end': 0,
 	\'line_count': 0,
-	\'file': '',
+	\'curr_file': '',
 	\'ft': '',
 	\'trigger': '',
 	\'visual': '',
 	\'body': [],
 	\'ph_amount': 0,
 	\'ts_amount': 0,
-	\'jump': 0,
+	\'jump_cnt': 0,
 \}
 
 let s:flash_snippets = {}
@@ -21,24 +21,51 @@ function! SimpleSnippets#init#getSnippetItem()
 	return s:snippet
 endfunction
 
+""	let s:snippet['trigger'] = SimpleSnippets#core#obtainTrigger()
+""	let s:snippet['ft'] = s:GetSnippetFiletype(s:snippet['trigger'])
 function! SimpleSnippets#init#expand()
-	let s:snippet.trigger = SimpleSnippets#core#obtainTrigger()
-	let s:snippet.ft = s:GetSnippetFiletype(s:snippet.trigger)
-	if s:snippet.ft == 'flash'
-		call s:ExpandFlash(s:snippet.trigger)
+	let s:snippet['trigger'] = g:trigger
+	let s:snippet['ft'] = &ft
+	if s:snippet['ft'] == 'flash'
+		let s:snippet['body'] = split(s:flash_snippets[s:snippet['trigger']], '\n')
+		let s:snippet['line_count'] = len(s:snippet['body'])
+		call s:StoreSnippetToMemory(s:snippet['body'])
+		call s:ExpandFlash()
 	else
-		let s:snippet.body = s:ObtainSnippet()
-		let s:snippet.line_count = len(s:snippet.body)
-		call s:StoreSnippetToMemory(s:snippet.body)
+		let s:snippet['body'] = s:ObtainSnippet()
+		let s:snippet['line_count'] = len(s:snippet['body'])
+		call s:StoreSnippetToMemory(s:snippet['body'])
 		call s:ExpandNormal()
 	endif
-	let s:snippet.trigger = ''
+	let s:snippet['trigger'] = ''
+endfunction
+
+function! s:ObtainSnippet()
+	let l:path = s:GetSnippetPath(s:snippet['trigger'], s:snippet['ft'])
+	let l:snippet = readfile(l:path)
+	while l:snippet[0] == ''
+		call remove(l:snippet, 0)
+	endwhile
+	while l:snippet[-1] == ''
+		call remove(l:snippet, -1)
+	endwhile
+	return l:snippet
+endfunction
+
+function! s:GetSnippetPath(snip, filetype)
+	if filereadable(g:SimpleSnippets_search_path . a:filetype . '/' . a:snip)
+		return g:SimpleSnippets_search_path . a:filetype . '/' . a:snip
+	elseif s:SimpleSnippets_snippets_plugin_installed == 1
+		if filereadable(g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip)
+			return g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip
+		endif
+	endif
 endfunction
 
 function! s:ExpandNormal()
-	if s:snippet.line_count != 0
+	if s:snippet['line_count'] != 0
 		let l:save_s = @s
-		let @s = join(s:snippet.body, "\n")
+		let @s = join(s:snippet['body'], "\n")
 		let l:save_quote = @"
 		if s:snippe.trigger =~ "\\W"
 			normal! ciW
@@ -56,18 +83,6 @@ function! s:ExpandNormal()
 	endif
 endfunction
 
-function! s:ObtainSnippet()
-	let l:path = s:GetSnippetPath(s:snippet.trigger, s:snippet.filetype)
-	let l:snippet = readfile(l:path)
-	while l:snippet[0] == ''
-		call remove(l:snippet, 0)
-	endwhile
-	while l:snippet[-1] == ''
-		call remove(l:snippet, -1)
-	endwhile
-	return l:snippet
-endfunction
-
 function! s:ExpandFlash()
 	let l:save_quote = @"
 	if s:snippe.trigger =~ "\\W"
@@ -76,14 +91,11 @@ function! s:ExpandFlash()
 		normal! ciw
 	endif
 	let l:save_s = @s
-	let s:snippet.body = s:flash_snippets[s:snippe.trigger]
-	let @s = s:snippet.body
-	call s:StoreSnippetToMemory(s:snippet.body)
-	let s:snippet.line_count = len(substitute(s:flash_snippets[a:trigger], '[^\n]', '', 'g')) + 1
+	let @s = s:snippet['body']
 	normal! "sp
 	let @s = l:save_s
-	if s:snippet.line_count != 1
-		let l:indent_lines = s:snippet.line_count - 1
+	if s:snippet['line_count'] != 1
+		let l:indent_lines = s:snippet['line_count'] - 1
 		silent exec 'normal! V' . l:indent_lines . 'j='
 	else
 		normal! ==
@@ -97,25 +109,25 @@ endfunction
 
 function! s:ParseAndInit()
 	let s:active = 1
-	let s:snippet.jump = 0
-	let s:snippet.file = @%
+	let s:snippet['jump_cnt'] = 0
+	let s:snippet['curr_file'] = @%
 
 	let l:cursor_pos = getpos(".")
-	let s:snippet.ph_amount = s:CountPlaceholders('\v\$\{[0-9]+(:|!|\|)')
+	let s:snippet['ph_amount'] = s:CountPlaceholders('\v\$\{[0-9]+(:|!|\|)')
 	let s:snippe.ts_amount = s:CountPlaceholders('\v\$[0-9]+')
-	if s:snippet.ph_amount != 0
-		call s:InitSnippet(s:snippet.ph_amount)
-		call cursor(s:snippet.start, 1)
+	if s:snippet['ph_amount'] != 0
+		call s:InitSnippet(s:snippet['ph_amount'])
+		call cursor(s:snippet['start'], 1)
 	elseif s:snippe.ts_amount != 0
 		call s:InitSnippet(s:snippe.ts_amount)
-		call cursor(s:snippet.start, 1)
+		call cursor(s:snippet['start'], 1)
 	else
 		let s:active = 0
 		call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	endif
 	if s:active != 0
-		if s:snippet.line_count != 1
-			let l:indent_lines = s:snippet.line_count - 1
+		if s:snippet['line_count'] != 1
+			let l:indent_lines = s:snippet['line_count'] - 1
 			call cursor(s:snip_start, 1)
 			silent exec 'normal! V'
 			silent exec 'normal!'. l:indent_lines .'j='
@@ -126,7 +138,6 @@ function! s:ParseAndInit()
 endfunction
 
 function! s:InitSnippet(amount)
-	let l:type = 0
 	let s:snip_start = line(".")
 	let s:snip_end = s:snip_start + s:snip_line_count - 1
 	let l:i = 0
@@ -137,45 +148,11 @@ function! s:InitSnippet(amount)
 		endif
 		let l:i += 1
 	endwhile
-	call s:InitVisuals()
-endfunction
-
-function! s:InitVisuals()
-	let l:visual_amount = s:CountPlaceholders('\v\$\{VISUAL\}')
-	let i = 0
-	while i < l:visual_amount
-		call cursor(s:snip_start, 1)
-		call search('\v\$\{VISUAL\}', 'c', s:snip_end)
-		exe "normal! f{%vF$c"
-		let l:result = s:InitVisual('', '')
-		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
-		if l:result_line_count > 1
-			silent exec 'normal! V'
-			silent exec 'normal!'. l:result_line_count .'j='
-			let s:snip_end += l:result_line_count
-		endif
-		let i += 1
-	endwhile
-	let s:visual_contents = ''
-endfunction
-
-function! s:InitVisual(before, after)
-	if s:visual_contents != ''
-		let l:visual = s:visual_contents
-	else
-		let l:visual = ''
-	endif
-	let l:save_s = @s
-	let l:visual = s:RemoveTrailings(l:visual)
-	let l:visual = a:before . l:visual . a:after
-	let @s = l:visual
-	normal! "sp
-	let @s = l:save_s
-	return l:visual
+	call s:InitVisualPlaceholders()
 endfunction
 
 function! s:CountPlaceholders(pattern)
-	let l:cnt = s:Execute('%s/' . a:pattern . '//gn', "silent!")
+	let l:cnt = SimpleSnippets#core#execute('%s/' . a:pattern . '//gn', "silent!")
 	call histdel("/", -1)
 	if match(l:cnt, 'not found') >= 0
 		return 0
@@ -238,7 +215,7 @@ function! s:InitCommand()
 	if executable(substitute(l:command, '\v(^\w+).*', '\1', 'g')) == 1
 		let l:result = system(l:command)
 	else
-		let l:result = s:Execute("echo " . l:command, "silent!")
+		let l:result = SimpleSnippets#core#execute("echo " . l:command, "silent!")
 		if l:result == ''
 			let l:result = l:command
 		endif
@@ -317,26 +294,37 @@ function! s:InitRepeaters(index, content, count)
 	endif
 endfunction
 
-" 7.4 compability layer
-function! s:Execute(command, ...)
-	if a:0 != 0
-		let l:silent = a:1
-	else
-		let l:silent = ""
-	endif
-	if exists("*execute")
-		let l:result = execute(a:command, l:silent)
-	else
-		redir => l:result
-		if l:silent == "silent"
-			silent execute a:command
-		elseif l:silent == "silent!"
-			silent! execute a:command
-		else
-			execute a:command
+function! s:InitVisualPlaceholders()
+	let l:visual_amount = s:CountPlaceholders('\v\$\{VISUAL\}')
+	let i = 0
+	while i < l:visual_amount
+		call cursor(s:snip_start, 1)
+		call search('\v\$\{VISUAL\}', 'c', s:snip_end)
+		exe "normal! f{%vF$c"
+		let l:result = s:InitVisual('', '')
+		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
+		if l:result_line_count > 1
+			silent exec 'normal! V'
+			silent exec 'normal!'. l:result_line_count .'j='
+			let s:snip_end += l:result_line_count
 		endif
-		redir END
+		let i += 1
+	endwhile
+	let s:visual_contents = ''
+endfunction
+
+function! s:InitVisual(before, after)
+	if s:visual_contents != ''
+		let l:visual = s:visual_contents
+	else
+		let l:visual = ''
 	endif
-	return l:result
+	let l:save_s = @s
+	let l:visual = s:RemoveTrailings(l:visual)
+	let l:visual = a:before . l:visual . a:after
+	let @s = l:visual
+	normal! "sp
+	let @s = l:save_s
+	return l:visual
 endfunction
 
