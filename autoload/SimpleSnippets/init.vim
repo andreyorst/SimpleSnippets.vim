@@ -34,10 +34,10 @@ function! SimpleSnippets#init#expand()
 	else
 		let s:snippet['body'] = s:ObtainSnippet()
 		let s:snippet['line_count'] = len(s:snippet['body'])
-		call s:StoreSnippetToMemory(s:snippet['body'])
+		"call s:StoreSnippetToMemory(s:snippet['body'])
 		call s:ExpandNormal()
 	endif
-	let s:snippet['trigger'] = ''
+	let s:snippet = {}
 endfunction
 
 function! s:ObtainSnippet()
@@ -67,7 +67,7 @@ function! s:ExpandNormal()
 		let l:save_s = @s
 		let @s = join(s:snippet['body'], "\n")
 		let l:save_quote = @"
-		if s:snippe.trigger =~ "\\W"
+		if s:snippet.trigger =~ "\\W"
 			normal! ciW
 		else
 			normal! ciw
@@ -85,7 +85,7 @@ endfunction
 
 function! s:ExpandFlash()
 	let l:save_quote = @"
-	if s:snippe.trigger =~ "\\W"
+	if s:snippet.trigger =~ "\\W"
 		normal! ciW
 	else
 		normal! ciw
@@ -114,12 +114,12 @@ function! s:ParseAndInit()
 
 	let l:cursor_pos = getpos(".")
 	let s:snippet['ph_amount'] = s:CountPlaceholders('\v\$\{[0-9]+(:|!|\|)')
-	let s:snippe.ts_amount = s:CountPlaceholders('\v\$[0-9]+')
+	let s:snippet.ts_amount = s:CountPlaceholders('\v\$[0-9]+')
 	if s:snippet['ph_amount'] != 0
 		call s:InitSnippet(s:snippet['ph_amount'])
 		call cursor(s:snippet['start'], 1)
-	elseif s:snippe.ts_amount != 0
-		call s:InitSnippet(s:snippe.ts_amount)
+	elseif s:snippet.ts_amount != 0
+		call s:InitSnippet(s:snippet.ts_amount)
 		call cursor(s:snippet['start'], 1)
 	else
 		let s:active = 0
@@ -138,11 +138,11 @@ function! s:ParseAndInit()
 endfunction
 
 function! s:InitSnippet(amount)
-	let s:snip_start = line(".")
-	let s:snip_end = s:snip_start + s:snip_line_count - 1
+	let s:snippet['start'] = line(".")
+	let s:snippet['end'] = s:snippet['start'] + s:snippet['line_count'] - 1
 	let l:i = 0
 	while l:i < a:amount
-		call cursor(s:snip_start, 1)
+		call cursor(s:snippet['start'], 1)
 		if search('\v\$(\{)?[0-9]+(:|!|\|)?', 'c') != 0
 			call s:InitPlaceholder()
 		endif
@@ -180,7 +180,7 @@ function! s:GetPlaceholderType()
 		return 'normal'
 	elseif match(l:ph, '\v\$\{[0-9]+!') == 0
 		return 'command'
-	elseif match(l:ph, '\v\$\{[0-9]+\|.{-}\|\}') == 0
+	elseif match(l:ph, '\v\$\{[0-9]+\|') == 0
 		return 'choice'
 	elseif match(l:ph, '\v\$[0-9]+') == 0
 		return 'tabstop'
@@ -188,6 +188,8 @@ function! s:GetPlaceholderType()
 endfunction
 
 function! s:InitNormal()
+	redraw
+	sleep
 	let l:save_quote = @"
 	let l:save_s = @s
 	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+:')
@@ -205,6 +207,8 @@ function! s:InitNormal()
 endfunction
 
 function! s:InitCommand()
+	redraw
+	sleep
 	let save_q_mark = getpos("'q")
 	let l:save_quote = @"
 	let l:save_s = @s
@@ -240,14 +244,18 @@ function! s:InitCommand()
 endfunction
 
 function! s:InitChoice()
-	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+!')
-	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(!)@=')
+	redraw
+	sleep
+	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+\|')
+	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(\|)@=')
+	let l:save_s = @s
 	let l:save_quote = @"
 	let save_q_mark = getpos("'q")
 	exec "normal! mqf|wvf,h\"syf,df}udf|xg`qdf|"
 	let l:result = @s
 	call setpos("'q", save_q_mark)
 	let @" = l:save_quote
+	let @s = l:save_s
 	let l:repeater_count = s:CountPlaceholders('\v\$' . l:current)
 	if l:repeater_count != 0
 		call s:InitRepeaters(l:current, l:result, l:repeater_count)
@@ -263,6 +271,9 @@ function! s:RemoveTrailings(text)
 endfunction
 
 function! s:InitRepeaters(index, content, count)
+	redraw
+	echo a:content
+	sleep
 	let l:save_s = @s
 	let l:save_quote = @"
 	let @s = a:content
@@ -273,13 +284,13 @@ function! s:InitRepeaters(index, content, count)
 	let save_p_mark = getpos("'p")
 	while l:i < l:repeater_count
 		call cursor(s:snip_start, 1)
-		call search('\v\$'.a:index, 'c', s:snip_end)
+		call search('\v\$'.a:index, 'c', s:snippet['end'])
 		normal! mq
-		call search('\v\$'.a:index, 'ce', s:snip_end)
+		call search('\v\$'.a:index, 'ce', s:snippet['end'])
 		normal! mp
 		exe "normal! g`qvg`pr"
 		if l:amount_of_lines > 1
-			let s:snip_end += l:amount_of_lines - 1
+			let s:snippet['end'] += l:amount_of_lines - 1
 		endif
 		normal! "sp
 		let l:i += 1
@@ -290,7 +301,7 @@ function! s:InitRepeaters(index, content, count)
 	let @" = l:save_quote
 	call cursor(s:snip_start, 1)
 	if l:amount_of_lines != 1
-		let s:snip_end -= 1
+		let s:snippet['end'] -= 1
 	endif
 endfunction
 
