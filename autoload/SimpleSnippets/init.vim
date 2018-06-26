@@ -73,6 +73,8 @@ function! s:ExpandNormal()
 			normal! ciw
 		endif
 		normal! "sp
+		let s:snippet.start = line(".")
+		let s:snippet.end = s:snippet.start + s:snippet.line_count - 1
 		let @" = l:save_quote
 		let @s = l:save_s
 		call s:ParseAndInit()
@@ -93,6 +95,8 @@ function! s:ExpandFlash()
 	let l:save_s = @s
 	let @s = s:snippet.body
 	normal! "sp
+	let s:snippet.start = line(".")
+	let s:snippet.end = s:snippet.start + s:snippet.line_count - 1
 	let @s = l:save_s
 	if s:snippet.line_count != 1
 		let l:indent_lines = s:snippet.line_count - 1
@@ -138,8 +142,6 @@ function! s:ParseAndInit()
 endfunction
 
 function! s:InitSnippet(amount)
-	let s:snippet.start = line(".")
-	let s:snippet.end = s:snippet.start + s:snippet.line_count - 1
 	let l:i = 0
 	while l:i < a:amount
 		call cursor(s:snippet.start, 1)
@@ -152,7 +154,7 @@ function! s:InitSnippet(amount)
 endfunction
 
 function! s:CountPlaceholders(pattern)
-	let l:cnt = SimpleSnippets#core#execute('%s/' . a:pattern . '//gn', "silent!")
+	let l:cnt = SimpleSnippets#core#execute(s:snippet.start.','.s:snippet.end.'s/' . a:pattern . '//gn', "silent!")
 	call histdel("/", -1)
 	if match(l:cnt, 'not found') >= 0
 		return 0
@@ -193,7 +195,7 @@ function! s:InitNormal()
 	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+:')
 	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(:)@=')
 	let save_q_mark = getpos("'q")
-	exe "normal! mqf{%i\<Del>\<Esc>vg`qf:/\\v\\S\<Cr>\"syg`qdf:"
+	silent exe "normal! mqf{%i\<Del>\<Esc>vg`qf:/\\v\\S\<Cr>\"syg`qdf:"
 	noh
 	call histdel("/", -1)
 	let l:result = @s
@@ -212,7 +214,7 @@ function! s:InitCommand()
 	let l:save_s = @s
 	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+!')
 	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(!)@=')
-	execute "normal! mqf{%i\<Del>\<Esc>vg`qf!/\\v\\S\<Cr>\"sdg`qcf! "
+	silent exe "normal! mqf{%i\<Del>\<Esc>vg`qf!/\\v\\S\<Cr>\"sdg`qcf! "
 	noh
 	call histdel("/", -1)
 	let l:command = @s
@@ -249,7 +251,7 @@ function! s:InitChoice()
 	let l:save_s = @s
 	let l:save_quote = @"
 	let save_q_mark = getpos("'q")
-	exec "normal! mqf|/\\v\\S\<Cr>vf,h\"syf,df|xg`qdf|"
+	silent exe "normal! mqf|/\\v\\S\<Cr>vf,h\"syf,df|xg`qdf|"
 	noh
 	call histdel("/", -1)
 	let l:result = @s
