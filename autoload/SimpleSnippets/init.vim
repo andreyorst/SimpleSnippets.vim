@@ -128,7 +128,7 @@ function! s:ParseAndInit()
 	if s:active != 0
 		if s:snippet['line_count'] != 1
 			let l:indent_lines = s:snippet['line_count'] - 1
-			call cursor(s:snip_start, 1)
+			call cursor(s:snippet['start'], 1)
 			silent exec 'normal! V'
 			silent exec 'normal!'. l:indent_lines .'j='
 		else
@@ -228,7 +228,7 @@ function! s:InitCommand()
 	let @s = l:result
 	let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g')) + 1
 	if l:result_line_count > 1
-		let s:snip_end += l:result_line_count
+		let s:snippet['end'] += l:result_line_count
 	endif
 	exe "normal! g`qvr"
 	normal! "sp
@@ -242,16 +242,19 @@ function! s:InitCommand()
 	endif
 	noh
 endfunction
-
+" ${1|vaiv,daun|}
 function! s:InitChoice()
-	redraw
-	sleep
 	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+\|')
 	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(\|)@=')
 	let l:save_s = @s
 	let l:save_quote = @"
 	let save_q_mark = getpos("'q")
-	exec "normal! mqf|wvf,h\"syf,df}udf|xg`qdf|"
+	redraw
+	sleep 2
+	exec "normal! mqf|wvf,h\"syf,df|xg`qdf|"
+	echo "ok"
+	redraw
+	sleep 4
 	let l:result = @s
 	call setpos("'q", save_q_mark)
 	let @" = l:save_quote
@@ -271,9 +274,6 @@ function! s:RemoveTrailings(text)
 endfunction
 
 function! s:InitRepeaters(index, content, count)
-	redraw
-	echo a:content
-	sleep
 	let l:save_s = @s
 	let l:save_quote = @"
 	let @s = a:content
@@ -283,7 +283,7 @@ function! s:InitRepeaters(index, content, count)
 	let save_q_mark = getpos("'q")
 	let save_p_mark = getpos("'p")
 	while l:i < l:repeater_count
-		call cursor(s:snip_start, 1)
+		call cursor(s:snippet['start'], 1)
 		call search('\v\$'.a:index, 'c', s:snippet['end'])
 		normal! mq
 		call search('\v\$'.a:index, 'ce', s:snippet['end'])
@@ -299,7 +299,7 @@ function! s:InitRepeaters(index, content, count)
 	call setpos("'p", save_p_mark)
 	let @s = l:save_s
 	let @" = l:save_quote
-	call cursor(s:snip_start, 1)
+	call cursor(s:snippet['start'], 1)
 	if l:amount_of_lines != 1
 		let s:snippet['end'] -= 1
 	endif
@@ -309,15 +309,15 @@ function! s:InitVisualPlaceholders()
 	let l:visual_amount = s:CountPlaceholders('\v\$\{VISUAL\}')
 	let i = 0
 	while i < l:visual_amount
-		call cursor(s:snip_start, 1)
-		call search('\v\$\{VISUAL\}', 'c', s:snip_end)
+		call cursor(s:snippet['start'], 1)
+		call search('\v\$\{VISUAL\}', 'c', s:snippet['end'])
 		exe "normal! f{%vF$c"
 		let l:result = s:InitVisual('', '')
 		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
 		if l:result_line_count > 1
 			silent exec 'normal! V'
 			silent exec 'normal!'. l:result_line_count .'j='
-			let s:snip_end += l:result_line_count
+			let s:snippet['end'] += l:result_line_count
 		endif
 		let i += 1
 	endwhile
