@@ -21,27 +21,27 @@ function! SimpleSnippets#init#getSnippetItem()
 	return s:snippet
 endfunction
 
-""	let s:snippet['trigger'] = SimpleSnippets#core#obtainTrigger()
-""	let s:snippet['ft'] = s:GetSnippetFiletype(s:snippet['trigger'])
+""	let s:snippet.trigger = SimpleSnippets#core#obtainTrigger()
+""	let s:snippet.ft = s:GetSnippetFiletype(s:snippet.trigger)
 function! SimpleSnippets#init#expand()
-	let s:snippet['trigger'] = g:trigger
-	let s:snippet['ft'] = &ft
-	if s:snippet['ft'] == 'flash'
-		let s:snippet['body'] = split(s:flash_snippets[s:snippet['trigger']], '\n')
-		let s:snippet['line_count'] = len(s:snippet['body'])
-		call s:StoreSnippetToMemory(s:snippet['body'])
+	let s:snippet.trigger = g:trigger
+	let s:snippet.ft = &ft
+	if s:snippet.ft == 'flash'
+		let s:snippet.body = split(s:flash_snippets[s:snippet.trigger], '\n')
+		let s:snippet.line_count = len(s:snippet.body)
 		call s:ExpandFlash()
+		call s:StoreSnippetToMemory(s:snippet.body)
 	else
-		let s:snippet['body'] = s:ObtainSnippet()
-		let s:snippet['line_count'] = len(s:snippet['body'])
-		"call s:StoreSnippetToMemory(s:snippet['body'])
+		let s:snippet.body = s:ObtainSnippet()
+		let s:snippet.line_count = len(s:snippet.body)
 		call s:ExpandNormal()
+		call s:StoreSnippetToMemory(s:snippet.body)
 	endif
 	let s:snippet = {}
 endfunction
 
 function! s:ObtainSnippet()
-	let l:path = s:GetSnippetPath(s:snippet['trigger'], s:snippet['ft'])
+	let l:path = s:GetSnippetPath(s:snippet.trigger, s:snippet.ft)
 	let l:snippet = readfile(l:path)
 	while l:snippet[0] == ''
 		call remove(l:snippet, 0)
@@ -63,9 +63,9 @@ function! s:GetSnippetPath(snip, filetype)
 endfunction
 
 function! s:ExpandNormal()
-	if s:snippet['line_count'] != 0
+	if s:snippet.line_count != 0
 		let l:save_s = @s
-		let @s = join(s:snippet['body'], "\n")
+		let @s = join(s:snippet.body, "\n")
 		let l:save_quote = @"
 		if s:snippet.trigger =~ "\\W"
 			normal! ciW
@@ -91,11 +91,11 @@ function! s:ExpandFlash()
 		normal! ciw
 	endif
 	let l:save_s = @s
-	let @s = s:snippet['body']
+	let @s = s:snippet.body
 	normal! "sp
 	let @s = l:save_s
-	if s:snippet['line_count'] != 1
-		let l:indent_lines = s:snippet['line_count'] - 1
+	if s:snippet.line_count != 1
+		let l:indent_lines = s:snippet.line_count - 1
 		silent exec 'normal! V' . l:indent_lines . 'j='
 	else
 		normal! ==
@@ -104,31 +104,31 @@ function! s:ExpandFlash()
 endfunction
 
 function! s:StoreSnippetToMemory(snippet)
-	let s:snippet = copy(a:snippet)
+	let s:snippet.body = copy(a:snippet)
 endfunction
 
 function! s:ParseAndInit()
 	let s:active = 1
-	let s:snippet['jump_cnt'] = 0
-	let s:snippet['curr_file'] = @%
+	let s:snippet.jump_cnt = 0
+	let s:snippet.curr_file = @%
 
 	let l:cursor_pos = getpos(".")
-	let s:snippet['ph_amount'] = s:CountPlaceholders('\v\$\{[0-9]+(:|!|\|)')
+	let s:snippet.ph_amount = s:CountPlaceholders('\v\$\{[0-9]+(:|!|\|)')
 	let s:snippet.ts_amount = s:CountPlaceholders('\v\$[0-9]+')
-	if s:snippet['ph_amount'] != 0
-		call s:InitSnippet(s:snippet['ph_amount'])
-		call cursor(s:snippet['start'], 1)
+	if s:snippet.ph_amount != 0
+		call s:InitSnippet(s:snippet.ph_amount)
+		call cursor(s:snippet.start, 1)
 	elseif s:snippet.ts_amount != 0
 		call s:InitSnippet(s:snippet.ts_amount)
-		call cursor(s:snippet['start'], 1)
+		call cursor(s:snippet.start, 1)
 	else
 		let s:active = 0
 		call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	endif
 	if s:active != 0
-		if s:snippet['line_count'] != 1
-			let l:indent_lines = s:snippet['line_count'] - 1
-			call cursor(s:snippet['start'], 1)
+		if s:snippet.line_count != 1
+			let l:indent_lines = s:snippet.line_count - 1
+			call cursor(s:snippet.start, 1)
 			silent exec 'normal! V'
 			silent exec 'normal!'. l:indent_lines .'j='
 		else
@@ -138,11 +138,11 @@ function! s:ParseAndInit()
 endfunction
 
 function! s:InitSnippet(amount)
-	let s:snippet['start'] = line(".")
-	let s:snippet['end'] = s:snippet['start'] + s:snippet['line_count'] - 1
+	let s:snippet.start = line(".")
+	let s:snippet.end = s:snippet.start + s:snippet.line_count - 1
 	let l:i = 0
 	while l:i < a:amount
-		call cursor(s:snippet['start'], 1)
+		call cursor(s:snippet.start, 1)
 		if search('\v\$(\{)?[0-9]+(:|!|\|)?', 'c') != 0
 			call s:InitPlaceholder()
 		endif
@@ -188,14 +188,14 @@ function! s:GetPlaceholderType()
 endfunction
 
 function! s:InitNormal()
-	redraw
-	sleep
 	let l:save_quote = @"
 	let l:save_s = @s
 	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+:')
 	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(:)@=')
 	let save_q_mark = getpos("'q")
-	exe "normal! mqf{%i\<Del>\<Esc>vg`qf:w\"syg`qdf:"
+	exe "normal! mqf{%i\<Del>\<Esc>vg`qf:/\\v\\S\<Cr>\"syg`qdf:"
+	noh
+	call histdel("/", -1)
 	let l:result = @s
 	call setpos("'q", save_q_mark)
 	let @" = l:save_quote
@@ -207,14 +207,14 @@ function! s:InitNormal()
 endfunction
 
 function! s:InitCommand()
-	redraw
-	sleep
 	let save_q_mark = getpos("'q")
 	let l:save_quote = @"
 	let l:save_s = @s
 	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+!')
 	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(!)@=')
-	execute "normal! mqf{%i\<Del>\<Esc>vg`qf!w\"sdg`qcf! "
+	execute "normal! mqf{%i\<Del>\<Esc>vg`qf!/\\v\\S\<Cr>\"sdg`qcf! "
+	noh
+	call histdel("/", -1)
 	let l:command = @s
 	if executable(substitute(l:command, '\v(^\w+).*', '\1', 'g')) == 1
 		let l:result = system(l:command)
@@ -228,7 +228,7 @@ function! s:InitCommand()
 	let @s = l:result
 	let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g')) + 1
 	if l:result_line_count > 1
-		let s:snippet['end'] += l:result_line_count
+		let s:snippet.end += l:result_line_count
 	endif
 	exe "normal! g`qvr"
 	normal! "sp
@@ -242,19 +242,16 @@ function! s:InitCommand()
 	endif
 	noh
 endfunction
-" ${1|vaiv,daun|}
+
 function! s:InitChoice()
 	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+\|')
 	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(\|)@=')
 	let l:save_s = @s
 	let l:save_quote = @"
 	let save_q_mark = getpos("'q")
-	redraw
-	sleep 2
-	exec "normal! mqf|wvf,h\"syf,df|xg`qdf|"
-	echo "ok"
-	redraw
-	sleep 4
+	exec "normal! mqf|/\\v\\S\<Cr>vf,h\"syf,df|xg`qdf|"
+	noh
+	call histdel("/", -1)
 	let l:result = @s
 	call setpos("'q", save_q_mark)
 	let @" = l:save_quote
@@ -283,14 +280,14 @@ function! s:InitRepeaters(index, content, count)
 	let save_q_mark = getpos("'q")
 	let save_p_mark = getpos("'p")
 	while l:i < l:repeater_count
-		call cursor(s:snippet['start'], 1)
-		call search('\v\$'.a:index, 'c', s:snippet['end'])
+		call cursor(s:snippet.start, 1)
+		call search('\v\$'.a:index, 'c', s:snippet.end)
 		normal! mq
-		call search('\v\$'.a:index, 'ce', s:snippet['end'])
+		call search('\v\$'.a:index, 'ce', s:snippet.end)
 		normal! mp
 		exe "normal! g`qvg`pr"
 		if l:amount_of_lines > 1
-			let s:snippet['end'] += l:amount_of_lines - 1
+			let s:snippet.end += l:amount_of_lines - 1
 		endif
 		normal! "sp
 		let l:i += 1
@@ -299,9 +296,9 @@ function! s:InitRepeaters(index, content, count)
 	call setpos("'p", save_p_mark)
 	let @s = l:save_s
 	let @" = l:save_quote
-	call cursor(s:snippet['start'], 1)
+	call cursor(s:snippet.start, 1)
 	if l:amount_of_lines != 1
-		let s:snippet['end'] -= 1
+		let s:snippet.end -= 1
 	endif
 endfunction
 
@@ -309,15 +306,15 @@ function! s:InitVisualPlaceholders()
 	let l:visual_amount = s:CountPlaceholders('\v\$\{VISUAL\}')
 	let i = 0
 	while i < l:visual_amount
-		call cursor(s:snippet['start'], 1)
-		call search('\v\$\{VISUAL\}', 'c', s:snippet['end'])
+		call cursor(s:snippet.start, 1)
+		call search('\v\$\{VISUAL\}', 'c', s:snippet.end)
 		exe "normal! f{%vF$c"
 		let l:result = s:InitVisual('', '')
 		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
 		if l:result_line_count > 1
 			silent exec 'normal! V'
 			silent exec 'normal!'. l:result_line_count .'j='
-			let s:snippet['end'] += l:result_line_count
+			let s:snippet.end += l:result_line_count
 		endif
 		let i += 1
 	endwhile
