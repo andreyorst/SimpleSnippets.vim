@@ -1,25 +1,26 @@
 " Globals
 let s:flash_snippets = {}
 let s:active = 0
-let s:snip_start = 0
-let s:snip_end = 0
-let s:snip_line_count = 0
-let s:current_file = ''
-let s:snip_edit_buf = 0
-let s:snip_edit_win = 0
-let s:trigger = ''
-let s:search_sequence = 0
-let s:escape_pattern = '/\*~.$^!#'
-let s:visual_contents = ''
 
-let s:jump_stack = []
-let s:type_stack = []
-let s:current_jump = 0
-let s:ph_start = []
-let s:ph_end = []
-let s:choicelist = []
+let s:snippet = {
+	\'start': 0,
+	\'end': 0,
+	\'line_count': 0,
+	\'curr_file': '',
+	\'ft': '',
+	\'trigger': '',
+	\'visual': '',
+	\'body': [],
+	\'ph_amount': 0,
+	\'ts_amount': 0,
+	\'jump_cnt': 0,
+\}
 
 "Functions
+function! SimpleSnippets#getSnippetItem()
+	return s:snippet
+endfunction
+
 function! SimpleSnippets#expandOrJump()
 	if SimpleSnippets#core#isExpandable()
 		call SimpleSnippets#expand()
@@ -34,14 +35,14 @@ function! SimpleSnippets#isExpandableOrJumpable()
 	elseif SimpleSnippets#isJumpable()
 		return 1
 	else
-		let s:trigger = ''
+		let s:snippet.trigger = ''
 		return 0
 	endif
 endfunction
 
 function! SimpleSnippets#isJumpable()
 	if SimpleSnippets#core#isInside()
-		if s:IsActive()
+		if s:active == 1
 			return 1
 		endif
 	endif
@@ -52,7 +53,7 @@ endfunction
 function! SimpleSnippets#getVisual()
 	let l:save_v = @v
 	normal! g`<vg`>"vc
-	let s:visual_contents = @v
+	let s:snippet.visual = @v
 	let @v = l:save_v
 	startinsert!
 endfunction
@@ -93,22 +94,22 @@ endfunction
 
 function! SimpleSnippets#isExpandable()
 	call s:ObtainTrigger()
-	if s:GetSnippetFiletype(s:trigger) != -1
+	if s:GetSnippetFiletype(s:snippet.trigger) != -1
 		return 1
 	endif
 	call s:ObtainAlternateTrigger()
-	if s:GetSnippetFiletype(s:trigger) != -1
+	if s:GetSnippetFiletype(s:snippet.trigger) != -1
 		return 1
 	endif
-	let s:trigger = ''
+	let s:snippet.trigger = ''
 	return 0
 endfunction
 
 
 function! SimpleSnippets#isInside()
-	if s:current_file == @%
+	if s:snippet.curr_file == @%
 		let l:current_line = line(".")
-		if l:current_line >= s:snip_start && l:current_line <= s:snip_end
+		if l:current_line >= s:snippet.start && l:current_line <= s:snippet.end
 			return 1
 		else
 			return 0
@@ -191,14 +192,6 @@ function! s:GetSnippetDictonary(dict, path, filetype)
 		endif
 	endif
 	return a:dict
-endfunction
-
-function! s:IsActive()
-	if s:active == 1
-		return 1
-	else
-		return 0
-	endif
 endfunction
 
 function! SimpleSnippets#listSnippets()
