@@ -1,13 +1,19 @@
-function! SimpleSnippets#core#obtainTrigger()
+let s:trigger = ''
+
+function! SimpleSnippets#core#getTrigger()
 	return s:trigger
 endfunction
 
 function! SimpleSnippets#core#isExpandable()
-	call s:ObtainTrigger()
+	let s:trigger = SinpleSnippets#input#getText()
 	if SimpleSnippets#getSnipFileType(s:trigger) != -1
 		return 1
 	endif
-	call s:ObtainAlternateTrigger()
+	let s:trigger =  s:ObtainTrigger()
+	if SimpleSnippets#getSnipFileType(s:trigger) != -1
+		return 1
+	endif
+	let s:trigger = s:ObtainAlternateTrigger()
 	if SimpleSnippets#getSnipFileType(s:trigger) != -1
 		return 1
 	endif
@@ -16,27 +22,29 @@ function! SimpleSnippets#core#isExpandable()
 endfunction
 
 function! s:ObtainTrigger()
-	if s:trigger == ''
+	if l:trigger == ''
 		if mode() == 'i'
 			let l:cursor_pos = getpos(".")
 			call cursor(line('.'), col('.') - 1)
-			let s:trigger = expand("<cWORD>")
+			let l:trigger = expand("<cWORD>")
 			call cursor(l:cursor_pos[1], l:cursor_pos[2])
 		else
-			let s:trigger = expand("<cWORD>")
+			let l:trigger = expand("<cWORD>")
 		endif
 	endif
+	return l:trigger
 endfunction
 
 function! s:ObtainAlternateTrigger()
 	if mode() == 'i'
 		let l:cursor_pos = getpos(".")
 		call cursor(line('.'), col('.') - 1)
-		let s:trigger = expand("<cword>")
+		let l:trigger = expand("<cword>")
 		call cursor(l:cursor_pos[1], l:cursor_pos[2])
 	else
-		let s:trigger = expand("<cword>")
+		let l:trigger = expand("<cword>")
 	endif
+	return l:trigger
 endfunction
 
 " 7.4 compability layer
