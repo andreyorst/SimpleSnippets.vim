@@ -17,7 +17,6 @@ function! SimpleSnippets#input#handleUserInput()
 	call s:ObtainInput()
 	call s:UpdateSnippetInMemory()
 	call s:UpdateMirrors()
-	echo s:text
 	return ''
 endfunction
 
@@ -25,14 +24,12 @@ function! SimpleSnippets#input#fixUserInput()
 	call s:DeactivateInputDetection()
 	call s:UpdateSnippetInMemory()
 	call s:UpdateMirrors()
-	echo s:text
 	return ''
 endfunction
 
 function! SimpleSnippets#input#Update()
 	call s:UpdateSnippetInMemory()
 	call s:UpdateMirrors()
-	echo s:text
 	return ''
 endfunction
 
