@@ -79,6 +79,8 @@ function! SimpleSnippets#expand()
 			normal! "sp
 			let @" = l:save_quote
 			let @s = l:save_s
+			let s:snip_start = line(".")
+			let s:snip_end = s:snip_start + s:snip_line_count - 1
 			silent call SimpleSnippets#parseAndInit()
 		else
 			echo '[ERROR] Snippet body is empty'
@@ -97,6 +99,8 @@ function! SimpleSnippets#expandFlashSnippet(snip)
 	let @s = s:flash_snippets[a:snip]
 	let s:snip_line_count = len(substitute(s:flash_snippets[a:snip], '[^\n]', '', 'g')) + 1
 	normal! "sp
+	let s:snip_start = line(".")
+	let s:snip_end = s:snip_start + s:snip_line_count - 1
 	let @s = l:save_s
 	if s:snip_line_count != 1
 		let l:indent_lines = s:snip_line_count - 1
@@ -887,7 +891,7 @@ function! SimpleSnippets#initChoice(current)
 endfunction
 
 function! SimpleSnippets#countPlaceholders(pattern)
-	let l:cnt = SimpleSnippets#execute('%s/' . a:pattern . '//gn', "silent!")
+	let l:cnt = SimpleSnippets#execute(s:snip_start.','.s:snip_end.'s/' . a:pattern . '//gn', "silent!")
 	call histdel("/", -1)
 	if match(l:cnt, 'not found') >= 0
 		return 0
