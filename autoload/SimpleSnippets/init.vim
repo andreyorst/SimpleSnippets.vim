@@ -1,31 +1,7 @@
-" Globals
-let s:snippet = {
-	\'start': 0,
-	\'end': 0,
-	\'line_count': 0,
-	\'curr_file': '',
-	\'ft': '',
-	\'trigger': '',
-	\'visual': '',
-	\'body': [],
-	\'ph_amount': 0,
-	\'ts_amount': 0,
-	\'jump_cnt': 0,
-\}
-
-let s:flash_snippets = {}
-let s:active = 0
-
-"Functions
-function! SimpleSnippets#init#getSnippetItem()
-	return s:snippet
-endfunction
-
-""	let s:snippet.trigger = SimpleSnippets#core#obtainTrigger()
-""	let s:snippet.ft = s:GetSnippetFiletype(s:snippet.trigger)
 function! SimpleSnippets#init#expand()
-	let s:snippet.trigger = g:trigger
-	let s:snippet.ft = &ft
+	let s:snippet = SimpleSnippets#getSnippetItem()
+	let s:snippet.trigger = SimpleSnippets#core#getTrigger()
+	let s:snippet.ft = s:GetSnippetFiletype(s:snippet.trigger)
 	if s:snippet.ft == 'flash'
 		let s:snippet.body = split(s:flash_snippets[s:snippet.trigger], '\n')
 		let s:snippet.line_count = len(s:snippet.body)
@@ -115,7 +91,6 @@ function! s:ParseAndInit()
 	let s:active = 1
 	let s:snippet.jump_cnt = 0
 	let s:snippet.curr_file = @%
-
 	let l:cursor_pos = getpos(".")
 	let s:snippet.ph_amount = s:CountPlaceholders('\v\$\{[0-9]+(:|!|\|)')
 	let s:snippet.ts_amount = s:CountPlaceholders('\v\$[0-9]+')
@@ -145,12 +120,12 @@ function! s:InitSnippet(amount)
 	let l:i = 0
 	while l:i < a:amount
 		call cursor(s:snippet.start, 1)
-		if search('\v\$(\{)?[0-9]+(:|!|\|)?', 'c') != 0
+		if search('\v\$(\{)?[0-9]+(:|!|\|)?', 'c', s:snippet.end) != 0
 			call s:InitPlaceholder()
 		endif
 		let l:i += 1
 	endwhile
-	call s:InitVisualPlaceholders()
+	call s:InitVisual()
 endfunction
 
 function! s:CountPlaceholders(pattern)
@@ -304,14 +279,17 @@ function! s:InitRepeaters(index, content, count)
 	endif
 endfunction
 
-function! s:InitVisualPlaceholders()
+function! s:InitVisual()
 	let l:visual_amount = s:CountPlaceholders('\v\$\{VISUAL\}')
+	let l:save_s = @s
 	let i = 0
 	while i < l:visual_amount
 		call cursor(s:snippet.start, 1)
 		call search('\v\$\{VISUAL\}', 'c', s:snippet.end)
 		exe "normal! f{%vF$c"
-		let l:result = s:InitVisual('', '')
+		let l:result = s:RemoveTrailings(s:snippet.visual)
+		let @s = l:result
+		normal! "sp
 		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
 		if l:result_line_count > 1
 			silent exec 'normal! V'
@@ -320,21 +298,7 @@ function! s:InitVisualPlaceholders()
 		endif
 		let i += 1
 	endwhile
-	let s:visual_contents = ''
-endfunction
-
-function! s:InitVisual(before, after)
-	if s:visual_contents != ''
-		let l:visual = s:visual_contents
-	else
-		let l:visual = ''
-	endif
-	let l:save_s = @s
-	let l:visual = s:RemoveTrailings(l:visual)
-	let l:visual = a:before . l:visual . a:after
-	let @s = l:visual
-	normal! "sp
 	let @s = l:save_s
-	return l:visual
+	let s:snippet.visual = ''
 endfunction
 
