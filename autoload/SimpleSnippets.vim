@@ -40,7 +40,7 @@ function! SimpleSnippets#isExpandableOrJumpable()
 endfunction
 
 function! SimpleSnippets#isJumpable()
-	if SimpleSnippets#core#isInside()
+	if SimpleSnippets#core#isInside(s:snippet)
 		if s:active == 1
 			return 1
 		endif
@@ -70,19 +70,6 @@ function! SimpleSnippets#isExpandable()
 	return 0
 endfunction
 
-
-function! SimpleSnippets#isInside()
-	if s:snippet.curr_file == @%
-		let l:current_line = line(".")
-		if l:current_line >= s:snippet.start && l:current_line <= s:snippet.end
-			return 1
-		else
-			return 0
-		endif
-	endif
-	let s:active = 0
-	return 0
-endfunction
 
 function! s:TriggerEscape(trigger)
 	let l:trigg = s:RemoveTrailings(a:trigger)
