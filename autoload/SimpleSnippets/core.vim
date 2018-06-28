@@ -1,4 +1,5 @@
 let s:flash_snippets = {}
+let s:snippetPluginInstalled = 1
 let s:trigger = ''
 
 function! SimpleSnippets#core#getTrigger()
@@ -77,8 +78,6 @@ endfunction
 function! s:CheckExternalSnippetPlugin()
 	if exists('g:SimpleSnippets_snippets_plugin_path')
 		let s:snippetPluginInstalled = 1
-	else
-		let s:snippetPluginInstalled = 0
 	endif
 endfunction
 
@@ -170,7 +169,7 @@ function! s:GetSnippetDictonary(dict, path, filetype)
 	return a:dict
 endfunction
 
-function! SimpleSnippets#listSnippets()
+function! SimpleSnippets#core#listSnippets()
 	let l:filetype = s:GetMainFiletype(g:SimpleSnippets_similar_filetypes)
 	call s:CheckExternalSnippetPlugin()
 	let l:user_snips = g:SimpleSnippets_search_path
@@ -253,14 +252,26 @@ function! s:checkFlashSnippetExists(snip)
 	return 0
 endfunction
 
-function! SimpleSnippets#addFlashSnippet(trigger, snippet_defenition)
+function! SimpleSnippets#core#addFlashSnippet(trigger, snippet_defenition)
 	let s:flash_snippets[a:trigger] = a:snippet_defenition
 endfunction
 
-function! SimpleSnippets#removeFlashSnippet(trigger)
+function! SimpleSnippets#core#removeFlashSnippet(trigger)
 	let l:i = 0
 	if has_key(s:flash_snippets, a:trigger)
 		unlet![a:trigger]
 	endif
+endfunction
+
+function! SimpleSnippets#core#isInside(snippet)
+	if a:snippet.curr_file == @%
+		let l:current_line = line(".")
+		if l:current_line >= s:snippet.start && l:current_line <= s:snippet.end
+			return 1
+		else
+			return 0
+		endif
+	endif
+	return 0
 endfunction
 
