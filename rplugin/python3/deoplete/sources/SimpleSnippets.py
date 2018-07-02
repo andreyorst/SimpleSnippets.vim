@@ -12,7 +12,7 @@ class Source(Base):
     def gather_candidates(self, context):
         suggestions = []
         snippets = self.vim.eval(
-            'SimpleSnippets#core#availableSnippets()')
+            'SimpleSnippets#availableSnippets()')
         for trigger in snippets:
             suggestions.append({
                 'word': trigger,
