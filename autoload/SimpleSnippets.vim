@@ -1,7 +1,7 @@
 " Globals
 let s:active = 0
 let s:flash_snippets = {}
-let s:snippetPluginInstalled = 1
+let s:snippetPluginInstalled = 0
 let s:trigger = ''
 
 let s:snippet = {
@@ -19,10 +19,6 @@ let s:snippet = {
 \}
 
 "Functions
-function! SimpleSnippets#getSnippetItem()
-	return s:snippet
-endfunction
-
 function! SimpleSnippets#expandOrJump()
 	if SimpleSnippets#isExpandable()
 		call SimpleSnippets#expand()
@@ -60,19 +56,6 @@ function! SimpleSnippets#getVisual()
 	startinsert!
 endfunction
 
-function! SimpleSnippets#isExpandable()
-	call s:ObtainTrigger()
-	if s:GetSnippetFiletype(s:snippet.trigger) != -1
-		return 1
-	endif
-	call s:ObtainAlternateTrigger()
-	if s:GetSnippetFiletype(s:snippet.trigger) != -1
-		return 1
-	endif
-	let s:snippet.trigger = ''
-	return 0
-endfunction
-
 function! s:TriggerEscape(trigger)
 	let l:trigg = s:RemoveTrailings(a:trigger)
 	if l:trigg =~ "\\s"
@@ -85,21 +68,18 @@ function! s:TriggerEscape(trigger)
 endfunction
 
 function! SimpleSnippets#isExpandable()
-	if s:trigger == ''
-		let s:trigger = SimpleSnippets#input#getText()
-		if s:GetSnippetFiletype(s:trigger) != -1
-			return 1
-		endif
-		let s:trigger =  s:ObtainTrigger()
-		if s:GetSnippetFiletype(s:trigger) != -1
-			return 1
-		endif
-		let s:trigger = s:ObtainAlternateTrigger()
-		if s:GetSnippetFiletype(s:trigger) != -1
-			return 1
-		endif
+	let s:trigger = SimpleSnippets#input#getText()
+	if s:GetSnippetFiletype(s:trigger) != -1
+		return 1
 	endif
-	let s:trigger = ''
+	let s:trigger =  s:ObtainTrigger()
+	if s:GetSnippetFiletype(s:trigger) != -1
+		return 1
+	endif
+	let s:trigger = s:ObtainAlternateTrigger()
+	if s:GetSnippetFiletype(s:trigger) != -1
+		return 1
+	endif
 	return 0
 endfunction
 
@@ -354,8 +334,7 @@ function! s:IsInside(snippet)
 endfunction
 
 function! SimpleSnippets#expand()
-	let s:snippet = SimpleSnippets#getSnippetItem()
-	let s:snippet.trigger = SimpleSnippets#core#getTrigger()
+	let s:snippet.trigger = s:trigger
 	let s:snippet.ft = s:GetSnippetFiletype(s:snippet.trigger)
 	if s:snippet.ft == 'flash'
 		let s:snippet.body = split(s:flash_snippets[s:snippet.trigger], '\n')
@@ -386,7 +365,7 @@ endfunction
 function! s:GetSnippetPath(snip, filetype)
 	if filereadable(g:SimpleSnippets_search_path . a:filetype . '/' . a:snip)
 		return g:SimpleSnippets_search_path . a:filetype . '/' . a:snip
-	elseif s:SimpleSnippets_snippets_plugin_installed == 1
+	elseif s:snippetPluginInstalled == 1
 		if filereadable(g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip)
 			return g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip
 		endif
@@ -484,7 +463,7 @@ function! s:InitSnippet(amount)
 endfunction
 
 function! s:CountPlaceholders(pattern)
-	let l:cnt = SimpleSnippets#core#execute(s:snippet.start.','.s:snippet.end.'s/' . a:pattern . '//gn', "silent!")
+	let l:cnt = SimpleSnippets#execute(s:snippet.start.','.s:snippet.end.'s/' . a:pattern . '//gn', "silent!")
 	call histdel("/", -1)
 	if match(l:cnt, 'not found') >= 0
 		return 0
@@ -551,7 +530,7 @@ function! s:InitCommand()
 	if executable(substitute(l:command, '\v(^\w+).*', '\1', 'g')) == 1
 		let l:result = system(l:command)
 	else
-		let l:result = SimpleSnippets#core#execute("echo " . l:command, "silent!")
+		let l:result = SimpleSnippets#execute("echo " . l:command, "silent!")
 		if l:result == ''
 			let l:result = l:command
 		endif
