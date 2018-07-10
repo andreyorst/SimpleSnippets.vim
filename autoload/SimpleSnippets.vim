@@ -338,11 +338,13 @@ function! SimpleSnippets#expand()
 	let s:snippet.ft = s:GetSnippetFiletype(s:snippet.trigger)
 	if s:snippet.ft == 'flash'
 		let s:snippet.body = split(s:flash_snippets[s:snippet.trigger], '\n')
+		let s:snippet.body = s:PrepareSnippetBodyForParser(s:snippet.body)
 		let s:snippet.line_count = len(s:snippet.body)
 		call s:ExpandFlash()
 		call s:StoreSnippetToMemory(s:snippet.body)
 	else
 		let s:snippet.body = s:ObtainSnippet()
+		let s:snippet.body = s:PrepareSnippetBodyForParser(s:snippet.body)
 		let s:snippet.line_count = len(s:snippet.body)
 		call s:ExpandNormal()
 		call s:StoreSnippetToMemory(s:snippet.body)
@@ -415,10 +417,6 @@ function! s:ExpandFlash()
 		normal! ==
 	endif
 	silent call s:ParseAndInit()
-endfunction
-
-function! s:StoreSnippetToMemory(snippet)
-	let s:snippet.body = copy(a:snippet)
 endfunction
 
 function! s:ParseAndInit()
@@ -511,7 +509,7 @@ function! s:InitNormal()
 	call setpos("'q", save_q_mark)
 	let @" = l:save_quote
 	let @s = l:save_s
-	let l:repeater_count = s:CountPlaceholders('\v\$' . l:current)
+	let l:repeater_count = s:CountPlaceholders('\v\$\{'.l:current.':\}')
 	if l:repeater_count != 0
 		call s:InitRepeaters(l:current, l:result, l:repeater_count)
 	endif
@@ -547,7 +545,7 @@ function! s:InitCommand()
 	call setpos("'q", save_q_mark)
 	let @s = l:save_s
 	let @" = l:save_quote
-	let l:repeater_count = s:CountPlaceholders('\v\$' . l:current)
+	let l:repeater_count = s:CountPlaceholders('\v\$\{'.l:current.':\}')
 	if l:repeater_count != 0
 		call s:InitRepeaters(l:current, l:result, l:repeater_count)
 	endif
@@ -567,7 +565,7 @@ function! s:InitChoice()
 	call setpos("'q", save_q_mark)
 	let @" = l:save_quote
 	let @s = l:save_s
-	let l:repeater_count = s:CountPlaceholders('\v\$' . l:current)
+	let l:repeater_count = s:CountPlaceholders('\v\$\{'.l:current.':\}')
 	if l:repeater_count != 0
 		call s:InitRepeaters(l:current, l:result, l:repeater_count)
 	endif
@@ -592,9 +590,9 @@ function! s:InitRepeaters(index, content, count)
 	let save_p_mark = getpos("'p")
 	while l:i < l:repeater_count
 		call cursor(s:snippet.start, 1)
-		call search('\v\$'.a:index, 'c', s:snippet.end)
+		call search('\v\$\{'.a:index.':\}', 'c', s:snippet.end)
 		normal! mq
-		call search('\v\$'.a:index, 'ce', s:snippet.end)
+		call search('\v\$\{'.a:index.':\}', 'ce', s:snippet.end)
 		normal! mp
 		exe "normal! g`qvg`pr"
 		if l:amount_of_lines > 1
@@ -636,3 +634,36 @@ function! s:InitVisual()
 	let s:snippet.visual = ''
 endfunction
 
+let s:placeholders_info = []
+
+function! s:StoreSnippetToMemory(snippet)
+	let s:snippet.body = copy(a:snippet)
+	let s:snippet.body = s:PrepareSnippetInMemory(s:snippet.body)
+
+endfunction
+
+function! s:PrepareSnippetInMemory(snippet)
+	let i = 0
+	while i < len(a:snippet)
+		if a:snippet[i] =~ '\v\$\d+'
+			let a:snippet[i] = substitute(a:snippet[i], '\v\$(\d+)', '${\1:}', 'g')
+		endif
+		let i += 1
+	endwhile
+	return a:snippet
+endfunction
+
+function! s:PrepareSnippetBodyForParser(snippet)
+	let l:body = copy(a:snippet)
+	let i = 0
+	while i < len(l:body)
+		if l:body[i] =~ '\v\$\d+'
+			let l:body[i] = substitute(l:body[i], '\v\$(\d+)', '${\1:}', 'g')
+		endif
+		if l:body[i] =~ '\v\$\{\d+\}'
+			let l:body[i] = substitute(l:body[i], '\v\$\{(\d+)\}', '${\1:}', 'g')
+		endif
+		let i += 1
+	endwhile
+	return l:body
+endfunction
