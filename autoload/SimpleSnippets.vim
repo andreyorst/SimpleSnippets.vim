@@ -1188,6 +1188,11 @@ function! SimpleSnippets#getSnippetDict(dict, path, filetype)
 			unlet! a:dict['all.snippets.descriptions.txt']
 		endif
 	endif
+	for key in keys(a:dict)
+		if key =~ '\v'.escape(&bex, s:escape_pattern).'$'
+			unlet! a:dict[key]
+		endif
+	endfor
 	return a:dict
 endfunction
 
