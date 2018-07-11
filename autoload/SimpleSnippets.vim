@@ -3,21 +3,7 @@ let s:active = 0
 let s:flash_snippets = {}
 let s:snippetPluginInstalled = 0
 let s:trigger = ''
-
-let s:snippet = {
-	\'start': 0,
-	\'end': 0,
-	\'line_count': 0,
-	\'curr_file': '',
-	\'ft': '',
-	\'trigger': '',
-	\'visual': '',
-	\'body': [],
-	\'ph_amount': 0,
-	\'ts_amount': 0,
-	\'ph_data': [],
-	\'jump_cnt': 0,
-\}
+let s:snippet = {}
 
 "Functions
 function! SimpleSnippets#expandOrJump()
@@ -335,6 +321,20 @@ function! s:IsInside(snippet)
 endfunction
 
 function! SimpleSnippets#expand()
+	let s:snippet = {
+		\'start': 0,
+		\'end': 0,
+		\'line_count': 0,
+		\'curr_file': '',
+		\'ft': '',
+		\'trigger': '',
+		\'visual': '',
+		\'body': [],
+		\'ph_amount': 0,
+		\'ts_amount': 0,
+		\'ph_data': {},
+		\'jump_cnt': 0,
+	\}
 	let s:snippet.trigger = s:trigger
 	let s:snippet.ft = s:GetSnippetFiletype(s:snippet.trigger)
 	if s:snippet.ft == 'flash'
@@ -426,11 +426,12 @@ function! s:ParseAndInit()
 	let s:snippet.curr_file = @%
 	let l:cursor_pos = getpos(".")
 	let s:snippet.ph_amount = s:CountPlaceholders('\v\$\{[0-9]+(:|!|\|)')
-	let s:snippet.ts_amount = s:CountPlaceholders('\v\$[0-9]+')
 	if s:snippet.ph_amount != 0
 		call s:InitSnippet(s:snippet.ph_amount)
 		call cursor(s:snippet.start, 1)
-	elseif s:snippet.ts_amount != 0
+	endif
+	let s:snippet.ts_amount = s:CountPlaceholders('\v\$\{[0-9]+\}')
+	if s:snippet.ts_amount != 0
 		call s:InitSnippet(s:snippet.ts_amount)
 		call cursor(s:snippet.start, 1)
 	else
@@ -506,25 +507,34 @@ function! s:InitNormal()
 	let save_e_mark = getpos("'e")
 	silent exe "normal! mqf{%mei\<Del>\<Esc>vg`qf:/\\v\\S\<Cr>\"syg`qdf:"
 	call histdel("/", -1)
-	call add(s:snippet.ph_data, s:ConstructPhInfo(l:current, getpos("'q"), getpos("'e")))
+	let l:repeater_count = s:CountPlaceholders('\v\$\{'.l:current.':\}')
+	let l:ph_data = s:ConstructPhInfo(l:current, getpos("'q"), getpos("'e"), l:repeater_count)
+	let s:snippet.ph_data[l:ph_data.index] = l:ph_data
 	echo s:snippet.ph_data
+	echo "\n"
 	let l:result = @s
 	call setpos("'q", save_q_mark)
 	call setpos("'e", save_e_mark)
 	let @" = l:save_quote
 	let @s = l:save_s
-	let l:repeater_count = s:CountPlaceholders('\v\$\{'.l:current.':\}')
 	if l:repeater_count != 0
 		call s:InitRepeaters(l:current, l:result, l:repeater_count)
 	endif
 endfunction
 
-function! s:ConstructPhInfo(index, start, end)
+function! s:ConstructPhInfo(index, start, end, repeater_amount)
 	let l:ph = {}
 	let l:ph['index'] = a:index
 	let l:ph['startcol'] = a:start[2]
 	let l:ph['endcol'] = a:end[2]
 	let l:ph['line'] = a:start[1]
+	if a:repeater_amount > 0
+		let l:ph['has_repeaters'] = 1
+		let l:ph['repeater_count'] = a:repeater_amount
+	else
+		let l:ph['has_repeaters'] = 0
+		let l:ph['repeater_count'] = 0
+	endif
 	return l:ph
 endfunction
 
@@ -647,34 +657,15 @@ function! s:InitVisual()
 	let s:snippet.visual = ''
 endfunction
 
-let s:placeholders_info = []
-
-function! s:StoreSnippetToMemory(snippet)
-	let s:snippet.body = copy(a:snippet)
-	let s:snippet.body = s:PrepareSnippetInMemory(s:snippet.body)
-
-endfunction
-
-function! s:PrepareSnippetInMemory(snippet)
-	let i = 0
-	while i < len(a:snippet)
-		if a:snippet[i] =~ '\v\$\d+'
-			let a:snippet[i] = substitute(a:snippet[i], '\v\$(\d+)', '${\1:}', 'g')
-		endif
-		let i += 1
-	endwhile
-	return a:snippet
-endfunction
-
 function! s:PrepareSnippetBodyForParser(snippet)
 	let l:body = copy(a:snippet)
 	let i = 0
 	while i < len(l:body)
 		if l:body[i] =~ '\v\$\d+'
-			let l:body[i] = substitute(l:body[i], '\v\$(\d+)', '${\1:}', 'g')
+			let l:body[i] = substitute(l:body[i], '\v\$([0-9]+)', '${\1:}', 'g')
 		endif
 		if l:body[i] =~ '\v\$\{\d+\}'
-			let l:body[i] = substitute(l:body[i], '\v\$\{(\d+)\}', '${\1:}', 'g')
+			let l:body[i] = substitute(l:body[i], '\v\$\{([0-9]+)\}', '${\1:}', 'g')
 		endif
 		let i += 1
 	endwhile
