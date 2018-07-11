@@ -354,7 +354,6 @@ function! SimpleSnippets#expand()
 		let s:snippet.line_count = len(s:snippet.body)
 		call s:ExpandNormal()
 	endif
-	let s:snippet = {}
 endfunction
 
 function! s:ObtainSnippet()
@@ -515,8 +514,6 @@ function! s:InitNormal()
 	let l:repeater_count = s:CountPlaceholders('\v\$\{'.l:current.':\}')
 	let l:ph_data = s:ConstructPhInfo(l:current, getpos("'q"), getpos("'e"), l:repeater_count)
 	let s:snippet.ph_data[l:ph_data.index] = l:ph_data
-	echo s:snippet.ph_data
-	echo "\n"
 	let l:result = @s
 	call setpos("'q", save_q_mark)
 	call setpos("'e", save_e_mark)
