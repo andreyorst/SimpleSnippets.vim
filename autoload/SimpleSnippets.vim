@@ -4,6 +4,7 @@ let s:flash_snippets = {}
 let s:snippetPluginInstalled = 0
 let s:trigger = ''
 let s:snippet = {}
+let s:escape_pattern = '/\*~.$^!#'
 
 "Functions
 function! SimpleSnippets#expandOrJump()
@@ -153,10 +154,10 @@ function! s:PrintSnippets(message, path, filetype)
 		echo a:message
 		echo "\n"
 		let l:string = string(l:snippets)
-		let l:string = substitute(l:string, "',", '\n', 'g')
-		let l:string = substitute(l:string, " '", '', 'g')
-		let l:string = substitute(l:string, "{'", '', 'g')
-		let l:string = substitute(l:string, "'}", '', 'g')
+		let l:string = substitute(l:string, "',", '\n', &gdefault ? 'gg' : 'g')
+		let l:string = substitute(l:string, " '", '', &gdefault ? 'gg' : 'g')
+		let l:string = substitute(l:string, "{'", '', &gdefault ? 'gg' : 'g')
+		let l:string = substitute(l:string, "'}", '', &gdefault ? 'gg' : 'g')
 		let l:list = split(l:string, '\n')
 		let i = 0
 		for l:str in l:list
@@ -168,13 +169,13 @@ function! s:PrintSnippets(message, path, filetype)
 				let l:delimeter .= ' '
 				let j += 1
 			endwhile
-			let l:list[i] = substitute(l:str, "':", l:delimeter, 'g')
+			let l:list[i] = substitute(l:str, "':", l:delimeter, &gdefault ? 'gg' : 'g')
 			let i += 1
 		endfor
 		let l:string = join(l:list, "\n")
-		let l:string = substitute(l:string, "':", ': ', 'g')
-		let l:string = substitute(l:string, '\\n', '\\\n', 'g')
-		let l:string = substitute(l:string, '\\r', '\\\\r', 'g')
+		let l:string = substitute(l:string, "':", ': ', &gdefault ? 'gg' : 'g')
+		let l:string = substitute(l:string, '\\n', '\\\n', &gdefault ? 'gg' : 'g')
+		let l:string = substitute(l:string, '\\r', '\\\\r', &gdefault ? 'gg' : 'g')
 		echon l:string
 		echo "\n"
 	endif
@@ -188,11 +189,11 @@ function! s:GetSnippetDictonary(dict, path, filetype)
 		for i in l:dir_list
 			let l:descr = ''
 			for line in readfile(a:path.a:filetype.'/'.i)
-				let l:descr .= substitute(line, '\v\$\{[0-9]+(:|!)(.{-})\}', '\2', 'g')
+				let l:descr .= substitute(line, '\v\$\{[0-9]+(:|!)(.{-})\}', '\2', &gdefault ? 'gg' : 'g')
 				break
 			endfor
-			let l:descr = substitute(l:descr, '\v(\S+)(\})', '\1 \2', 'g')
-			let l:descr = substitute(l:descr, '\v\{(\s+)?$', '', 'g')
+			let l:descr = substitute(l:descr, '\v(\S+)(\})', '\1 \2', &gdefault ? 'gg' : 'g')
+			let l:descr = substitute(l:descr, '\v\{(\s+)?$', '', &gdefault ? 'gg' : 'g')
 			let a:dict[i] = l:descr
 		endfor
 	endif
@@ -211,6 +212,11 @@ function! s:GetSnippetDictonary(dict, path, filetype)
 			unlet! a:dict['all.snippets.descriptions.txt']
 		endif
 	endif
+	for key in keys(a:dict)
+		if key =~ '\v'.escape(&bex, s:escape_pattern).'$'
+			unlet! a:dict[key]
+		endif
+	endfor
 	return a:dict
 endfunction
 
@@ -260,7 +266,7 @@ function! SimpleSnippets#availableSnippets()
 	endif
 	if s:flash_snippets != {}
 		for trigger in keys(s:flash_snippets)
-			let l:snippets[trigger] = substitute(s:flash_snippets[trigger], '\v\$\{[0-9]+(:|!)(.{-})\}', '\2', 'g')
+			let l:snippets[trigger] = substitute(s:flash_snippets[trigger], '\v\$\{[0-9]+(:|!)(.{-})\}', '\2', &gdefault ? 'gg' : 'g')
 		endfor
 	endif
 	return l:snippets
@@ -342,13 +348,11 @@ function! SimpleSnippets#expand()
 		let s:snippet.body = s:PrepareSnippetBodyForParser(s:snippet.body)
 		let s:snippet.line_count = len(s:snippet.body)
 		call s:ExpandFlash()
-		call s:StoreSnippetToMemory(s:snippet.body)
 	else
 		let s:snippet.body = s:ObtainSnippet()
 		let s:snippet.body = s:PrepareSnippetBodyForParser(s:snippet.body)
 		let s:snippet.line_count = len(s:snippet.body)
 		call s:ExpandNormal()
-		call s:StoreSnippetToMemory(s:snippet.body)
 	endif
 	let s:snippet = {}
 endfunction
@@ -463,13 +467,14 @@ function! s:InitSnippet(amount)
 endfunction
 
 function! s:CountPlaceholders(pattern)
-	let l:cnt = SimpleSnippets#execute(s:snippet.start.','.s:snippet.end.'s/' . a:pattern . '//gn', "silent!")
+	let l:gn = &gdefault ? 'ggn' : 'gn'
+	let l:cnt = SimpleSnippets#execute(s:snippet.start.','.s:snippet.end.'s/'.a:pattern.'//'.l:gn, "silent!")
 	call histdel("/", -1)
 	if match(l:cnt, 'not found') >= 0
 		return 0
 	endif
 	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
-	return substitute(l:count, '\v%^\_s+|\_s+%$', '', 'g')
+	return substitute(l:count, '\v%^\_s+|\_s+%$', '', &gdefault ? 'gg' : 'g')
 endfunction
 
 function! s:InitPlaceholder()
@@ -548,7 +553,7 @@ function! s:InitCommand()
 	noh
 	call histdel("/", -1)
 	let l:command = @s
-	if executable(substitute(l:command, '\v(^\w+).*', '\1', 'g')) == 1
+	if executable(substitute(l:command, '\v(^\w+).*', '\1', &gdefault ? 'gg' : 'g')) == 1
 		let l:result = system(l:command)
 	else
 		let l:result = SimpleSnippets#execute("echo " . l:command, "silent!")
@@ -558,7 +563,7 @@ function! s:InitCommand()
 	endif
 	let l:result = s:RemoveTrailings(l:result)
 	let @s = l:result
-	let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g')) + 1
+	let l:result_line_count = len(substitute(l:result, '[^\n]', '', &gdefault ? 'gg' : 'g')) + 1
 	if l:result_line_count > 1
 		let s:snippet.end += l:result_line_count
 	endif
@@ -645,7 +650,7 @@ function! s:InitVisual()
 		let l:result = s:RemoveTrailings(s:snippet.visual)
 		let @s = l:result
 		normal! "sp
-		let l:result_line_count = len(substitute(l:result, '[^\n]', '', 'g'))
+		let l:result_line_count = len(substitute(l:result, '[^\n]', '', &gdefault ? 'gg' : 'g'))
 		if l:result_line_count > 1
 			silent exec 'normal! V'
 			silent exec 'normal!'. l:result_line_count .'j='
@@ -662,10 +667,10 @@ function! s:PrepareSnippetBodyForParser(snippet)
 	let i = 0
 	while i < len(l:body)
 		if l:body[i] =~ '\v\$\d+'
-			let l:body[i] = substitute(l:body[i], '\v\$([0-9]+)', '${\1:}', 'g')
+			let l:body[i] = substitute(l:body[i], '\v\$([0-9]+)', '${\1:}', &gdefault ? 'gg' : 'g')
 		endif
 		if l:body[i] =~ '\v\$\{\d+\}'
-			let l:body[i] = substitute(l:body[i], '\v\$\{([0-9]+)\}', '${\1:}', 'g')
+			let l:body[i] = substitute(l:body[i], '\v\$\{([0-9]+)\}', '${\1:}', &gdefault ? 'gg' : 'g')
 		endif
 		let i += 1
 	endwhile
