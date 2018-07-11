@@ -15,6 +15,7 @@ let s:snippet = {
 	\'body': [],
 	\'ph_amount': 0,
 	\'ts_amount': 0,
+	\'ph_data': [],
 	\'jump_cnt': 0,
 \}
 
@@ -502,17 +503,29 @@ function! s:InitNormal()
 	let l:placeholder = matchstr(getline('.'), '\v%'.col('.').'c\$\{[0-9]+:')
 	let l:current = matchstr(l:placeholder, '\v(\$\{)@<=[0-9]+(:)@=')
 	let save_q_mark = getpos("'q")
-	silent exe "normal! mqf{%i\<Del>\<Esc>vg`qf:/\\v\\S\<Cr>\"syg`qdf:"
-	noh
+	let save_e_mark = getpos("'e")
+	silent exe "normal! mqf{%mei\<Del>\<Esc>vg`qf:/\\v\\S\<Cr>\"syg`qdf:"
 	call histdel("/", -1)
+	call add(s:snippet.ph_data, s:ConstructPhInfo(l:current, getpos("'q"), getpos("'e")))
+	echo s:snippet.ph_data
 	let l:result = @s
 	call setpos("'q", save_q_mark)
+	call setpos("'e", save_e_mark)
 	let @" = l:save_quote
 	let @s = l:save_s
 	let l:repeater_count = s:CountPlaceholders('\v\$\{'.l:current.':\}')
 	if l:repeater_count != 0
 		call s:InitRepeaters(l:current, l:result, l:repeater_count)
 	endif
+endfunction
+
+function! s:ConstructPhInfo(index, start, end)
+	let l:ph = {}
+	let l:ph['index'] = a:index
+	let l:ph['startcol'] = a:start[2]
+	let l:ph['endcol'] = a:end[2]
+	let l:ph['line'] = a:start[1]
+	return l:ph
 endfunction
 
 function! s:InitCommand()
