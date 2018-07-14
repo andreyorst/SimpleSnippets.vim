@@ -673,3 +673,80 @@ function! s:PrepareSnippetBodyForParser(snippet)
 	endwhile
 	return l:body
 endfunction
+
+function! GetPlaceholderPositions(index, type, snippet)
+	let l:lines = []
+	if a:type == 'normal' || a:type == 'tabstop'
+		let l:ph = '${'.a:index.':'
+	elseif a:type == 'choice'
+		let l:ph = '${'.a:index.'|'
+	elseif a:type == 'command'
+		let l:ph = '${'.a:index.'!'
+	else
+		echo "[ERROR] Unknown placeholder type"
+		return -1
+	endif
+	for line in a:snippet
+		if match(line, l:ph) != -1
+			call add(l:positions, GetSinglePlaceholderPosition(line, l:ph))
+		endif
+	endfor
+endfunction
+
+"${1234:vadfadfasf{${1:vadfasf}}}
+function! GetSinglePlaceholderPosition(line, ph)
+	let l:start = 0
+	let l:end = 0
+	let l:trigger = 0
+	let l:inside = 0
+	let l:opened_braces = 0
+	let l:position = 0
+	let l:ph = split(a:ph, '\zs')
+	let l:ph_len = len(l:ph)
+	let l:match = 0
+	let l:inside_matched = 0
+	let l:inside_another = 0
+	for letter in split(a:line, '\zs')
+		if l:match != l:ph_len
+			if letter == l:ph[l:match]
+				let l:match += 1
+				if l:match == l:ph_len
+					let l:inside_matched = 1
+					let l:start = l:position
+				endif
+			else
+				let l:match = 0
+			endif
+		endif
+		if letter == '$'
+			let l:trigger += 1
+		elseif letter == '{'
+			let l:opened_braces += 1
+			let l:trigger += 1
+		elseif l:trigger != 0 && letter =~ '\d'
+			let l:trigger += 1
+		elseif l:trigger != 0 && letter =~ '\(:\|!\||\)'
+			if l:inside_matched == 0
+				let l:inside_another += 1
+			endif
+			let l:trigger += 1
+		elseif letter == '}'
+			let l:trigger += 1
+			if l:opened_braces != 0
+				let l:opened_braces -= 1
+			endif
+			if l:opened_braces == 0
+				if l:inside_another != 0
+					let l:inside_another -= 1
+				endif
+			endif
+			if l:inside_matched && l:opened_braces == l:inside_another
+				let l:opened_braces -= 1
+				let l:end = l:position
+				break
+			endif
+		endif
+		let l:position += 1
+	endfor
+	return [l:start, l:end]
+endfunction
