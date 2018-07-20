@@ -18,6 +18,7 @@ let s:current_jump = 0
 let s:ph_start = []
 let s:ph_end = []
 let s:choicelist = []
+let g:imported_filetypes = []
 
 
 "Functions
@@ -58,6 +59,9 @@ function! SimpleSnippets#expand()
 		call SimpleSnippets#expandFlashSnippet(l:snip)
 	else
 		let l:path = SimpleSnippets#getSnipPath(l:snip, l:filetype)
+		if l:path == -1
+			return ''
+		endif
 		let l:snippet = readfile(l:path)
 		while l:snippet[0] == ''
 			call remove(l:snippet, 0)
@@ -654,6 +658,18 @@ function! SimpleSnippets#getSnipFileType(snip)
 			return l:plugin_filetype
 		endif
 	endif
+	if !empty(g:imported_filetypes)
+		for l:ft in g:imported_filetypes
+			if filereadable(g:SimpleSnippets_search_path . l:ft . '/' . a:snip)
+				return l:ft
+			endif
+			if s:SimpleSnippets_snippets_plugin_installed == 1
+				if filereadable(g:SimpleSnippets_snippets_plugin_path . l:ft . '/' . a:snip)
+					return l:ft
+				endif
+			endif
+		endfor
+	endif
 	if filereadable(g:SimpleSnippets_search_path . 'all/' . a:snip)
 		return 'all'
 	endif
@@ -670,6 +686,15 @@ function! SimpleSnippets#listSnippets()
 	call SimpleSnippets#checkExternalSnippets()
 	let l:user_snips = g:SimpleSnippets_search_path
 	call SimpleSnippets#printSnippets("User snippets:", l:user_snips, l:filetype)
+	if !empty(g:imported_filetypes)
+		for l:ft in g:imported_filetypes
+			call SimpleSnippets#printSnippets("Imported " .l:ft. " snippets:", l:user_snips, l:ft)
+			if s:SimpleSnippets_snippets_plugin_installed == 1
+				let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
+				call SimpleSnippets#printSnippets("Plugin ". l:ft . " snippets:", l:plug_snips, l:ft)
+			endif
+		endfor
+	endif
 	if s:flash_snippets != {}
 		let l:string = ''
 		echo 'Flash snippets:'
@@ -698,6 +723,15 @@ function! SimpleSnippets#availableSnippets()
 	let l:snippets = {}
 	let l:user_snips = g:SimpleSnippets_search_path
 	let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:user_snips, l:filetype)
+	if !empty(g:imported_filetypes)
+		for l:ft in g:imported_filetypes
+			let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:user_snips, l:ft)
+			if s:SimpleSnippets_snippets_plugin_installed == 1
+				let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
+				let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:plug_snips, l:ft)
+			endif
+		endfor
+	endif
 	if s:SimpleSnippets_snippets_plugin_installed == 1
 		let l:plugin_filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_snippets_similar_filetypes)
 		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
@@ -736,6 +770,7 @@ function! SimpleSnippets#getSnipPath(snip, filetype)
 			return g:SimpleSnippets_snippets_plugin_path . a:filetype . '/' . a:snip
 		endif
 	endif
+	return -1
 endfunction
 
 function! SimpleSnippets#triggerEscape(trigger)
@@ -1081,33 +1116,6 @@ function! SimpleSnippets#editDescriptions(ft)
 	call SimpleSnippets#createSplit(l:path, l:descriptions)
 endfunction
 
-function! SimpleSnippets#listSnippets()
-	let l:filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_similar_filetypes)
-	call SimpleSnippets#checkExternalSnippets()
-	let l:user_snips = g:SimpleSnippets_search_path
-	call SimpleSnippets#printSnippets("User snippets:", l:user_snips, l:filetype)
-	if s:flash_snippets != {}
-		let l:string = ''
-		echo 'Flash snippets:'
-		for snippet in s:flash_snippets
-			let l:item = join(snippet, ": ")
-			let l:string .= l:item .'\n'
-		endfor
-		echo system('echo ' . shellescape(l:string) . '| nl')
-	endif
-	if s:SimpleSnippets_snippets_plugin_installed == 1
-		let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
-		let l:plugin_filetype = SimpleSnippets#filetypeWrapper(g:SimpleSnippets_snippets_similar_filetypes)
-		call SimpleSnippets#printSnippets("Plugin snippets:", l:plug_snips, l:plugin_filetype)
-	endif
-	if l:filetype != 'all'
-		call SimpleSnippets#printSnippets('User \"all\" snippets:', l:user_snips, 'all')
-		if s:SimpleSnippets_snippets_plugin_installed == 1
-			call SimpleSnippets#printSnippets('Plugin \"all\" snippets:', l:plug_snips, 'all')
-		endif
-	endif
-endfunction
-
 function! SimpleSnippets#getVisual()
 	let l:save_v = @v
 	normal! g`<vg`>"vc
@@ -1260,6 +1268,13 @@ function! SimpleSnippets#createSplit(path, trigger)
 	endif
 endfunction
 
+function! SimpleSnippets#importSnippetsForFiletype(...)
+	if a:0 == 0 || a:1 == ''
+		echo "Filetype required"
+		return -1
+	endif
+	call add(g:imported_filetypes, a:1)
+endfunction
 
 " Debug functions
 function! SimpleSnippets#printJumpStackState(t)
@@ -1280,4 +1295,5 @@ function! SimpleSnippets#printJumpStackState(t)
 	redraw
 	exec "sleep ".a:t
 endfunction
+
 
