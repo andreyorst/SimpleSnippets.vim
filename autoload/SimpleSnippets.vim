@@ -1273,7 +1273,9 @@ function! SimpleSnippets#importSnippetsForFiletype(...)
 		echo "Filetype required"
 		return -1
 	endif
-	call add(s:imported_filetypes, a:1)
+	let s:imported_filetypes = extend([a:1], s:imported_filetypes)
+	let s:imported_filetypes = uniq(s:imported_filetypes)
+	return 0
 endfunction
 
 function! SimpleSnippets#unloadSnippetsForFiletype(...)
