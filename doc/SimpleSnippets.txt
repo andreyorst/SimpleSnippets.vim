@@ -21,10 +21,10 @@ CONTENTS                                               *SimpleSnippets-contents*
       3.1.2 Default mappings ................ |SimpleSnippets-default-mappings|
       3.1.1 Similar filetypes .............. |SimpleSnippets-similar-filetypes|
     3.2 Commands .................................... |SimpleSnippets-commands|
-      3.2.1 SimpleSnippetsEdit ............................ |:SimpleSnippetsEdit|
-      3.2.2 SimpleSnippetsEditDescriptions .... |:SimpleSnippetsEditDescriptions|
-      3.2.3 SimpleSnippetsList ............................ |:SimpleSnippetsList|
-      3.2.4 SimpleSnippetsImport ........................ |:SimpleSnippetsImport|
+      3.2.1 SimpleSnippetsEdit .......................... |:SimpleSnippetsEdit|
+      3.2.2 SimpleSnippetsEditDescriptions .. |:SimpleSnippetsEditDescriptions|
+      3.2.3 SimpleSnippetsList .......................... |:SimpleSnippetsList|
+      3.2.4 SimpleSnippetsImport/Unload ........ |:SimpleSnippetsImport/unload|
     3.3 Mappings .................................... |SimpleSnippets-mappings|
     3.4 Functions .................................. |SimpleSnippets-functions|
       3.4.1 isExpandableOrJumpable() .. |SimpleSnippets#isExpandableOrJumpable|
@@ -338,14 +338,17 @@ to `1`
   snippets, and lastly plugin's "all snippets"
 
 
-  3.2.3 SimpleSnippetsImport                             *:SimpleSnippetsImport*
+  3.2.3 SimpleSnippetsImport/Unload               *:SimpleSnippetsImport/Unload*
   ----------------------------------------------------------------------------~
 
-  The `:SimpleSnippetsImport` command allows you to import different filetype
-  snippets into current filetype. For example, when you're editing some
-  `markdown` file, and you want to add some code in it, say, Rust, you can
-  import Rust snippets, so they will become available along with `markdown`
+  The `:SimpleSnippetsImport` command allows you to import different  filetype
+  snippets into current filetype.  For example,  when  you're  editing  some
+  `markdown` file, and you want to add some code in it,  say,  Rust,  you  can
+  import Rust snippets, so they will become available  along  with  `markdown`
   snippets.
+
+  `SimpleSnippetsUnload` unloads imported snippets. You can't unload your main
+  filetype snippets with it.
 
 
 3.2 Mappings                                           *SimpleSnippets-mappings*
