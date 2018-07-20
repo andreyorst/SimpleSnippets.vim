@@ -1,11 +1,9 @@
 set nocompatible
 filetype off
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-Plugin 'VundleVim/Vundle.vim'
-Plugin 'andreyorst/SimpleSnippets.vim'
-Plugin 'andreyorst/SimpleSnippets-snippets'
-call vundle#end()
+call plug#begin('~/.vim/bundle')
+Plug 'andreyorst/SimpleSnippets.vim'
+Plug 'andreyorst/SimpleSnippets-snippets'
+call plug#end()
 filetype plugin indent on
 set noshowmode
 let g:SimpleSnippetsExpandOrJumpTrigger = "<Tab>"
