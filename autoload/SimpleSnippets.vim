@@ -18,7 +18,7 @@ let s:current_jump = 0
 let s:ph_start = []
 let s:ph_end = []
 let s:choicelist = []
-let g:imported_filetypes = []
+let s:imported_filetypes = []
 
 
 "Functions
@@ -658,8 +658,8 @@ function! SimpleSnippets#getSnipFileType(snip)
 			return l:plugin_filetype
 		endif
 	endif
-	if !empty(g:imported_filetypes)
-		for l:ft in g:imported_filetypes
+	if !empty(s:imported_filetypes)
+		for l:ft in s:imported_filetypes
 			if filereadable(g:SimpleSnippets_search_path . l:ft . '/' . a:snip)
 				return l:ft
 			endif
@@ -686,8 +686,8 @@ function! SimpleSnippets#listSnippets()
 	call SimpleSnippets#checkExternalSnippets()
 	let l:user_snips = g:SimpleSnippets_search_path
 	call SimpleSnippets#printSnippets("User snippets:", l:user_snips, l:filetype)
-	if !empty(g:imported_filetypes)
-		for l:ft in g:imported_filetypes
+	if !empty(s:imported_filetypes)
+		for l:ft in s:imported_filetypes
 			call SimpleSnippets#printSnippets("Imported " .l:ft. " snippets:", l:user_snips, l:ft)
 			if s:SimpleSnippets_snippets_plugin_installed == 1
 				let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
@@ -723,8 +723,8 @@ function! SimpleSnippets#availableSnippets()
 	let l:snippets = {}
 	let l:user_snips = g:SimpleSnippets_search_path
 	let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:user_snips, l:filetype)
-	if !empty(g:imported_filetypes)
-		for l:ft in g:imported_filetypes
+	if !empty(s:imported_filetypes)
+		for l:ft in s:imported_filetypes
 			let l:snippets = SimpleSnippets#getSnippetDict(l:snippets, l:user_snips, l:ft)
 			if s:SimpleSnippets_snippets_plugin_installed == 1
 				let l:plug_snips = g:SimpleSnippets_snippets_plugin_path
@@ -1273,7 +1273,18 @@ function! SimpleSnippets#importSnippetsForFiletype(...)
 		echo "Filetype required"
 		return -1
 	endif
-	call add(g:imported_filetypes, a:1)
+	call add(s:imported_filetypes, a:1)
+endfunction
+
+function! SimpleSnippets#unloadSnippetsForFiletype(...)
+	if a:0 == 0 || a:1 == ''
+		echo "Filetype required"
+		return -1
+	endif
+	let l:index = index(s:imported_filetypes, a:1)
+	if l:index != -1
+		call remove(s:imported_filetypes, l:index)
+	endif
 endfunction
 
 " Debug functions

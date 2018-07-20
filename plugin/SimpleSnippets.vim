@@ -49,6 +49,7 @@ endif
 
 command! -nargs=? SimpleSnippetsEdit call SimpleSnippets#edit("<args>")
 command! -nargs=? SimpleSnippetsImport call SimpleSnippets#importSnippetsForFiletype("<args>")
+command! -nargs=? SimpleSnippetsUnload call SimpleSnippets#unloadSnippetsForFiletype("<args>")
 command! -nargs=? SimpleSnippetsEditDescriptions call SimpleSnippets#editDescriptions("<args>")
 command! SimpleSnippetsList call SimpleSnippets#listSnippets()
 
