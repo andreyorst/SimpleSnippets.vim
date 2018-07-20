@@ -350,6 +350,9 @@ to `1`
   `SimpleSnippetsUnload` unloads imported snippets. You can't unload your main
   filetype snippets with it.
 
+  If you've imported snippets for two different languages, and some snippets
+  share same triggers, the last imported language snippet will be used.
+
 
 3.2 Mappings                                           *SimpleSnippets-mappings*
 ------------
