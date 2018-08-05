@@ -1,6 +1,6 @@
 " Settings
 if !exists('g:SimpleSnippets_search_path')
-	let g:SimpleSnippets_search_path = $HOME . '/.vim/snippets/'
+	let g:SimpleSnippets_search_path = $HOME.'/.vim/snippets/'
 endif
 
 let s:allow_remap = 1
