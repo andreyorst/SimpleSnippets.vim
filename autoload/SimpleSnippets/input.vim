@@ -9,10 +9,6 @@ let s:col = 1
 let s:col_pre = 1
 let s:input_active = 0
 
-" Snippet in memory data
-let s:mirrors = []
-let s:current_snip = []
-
 function! SimpleSnippets#input#handleUserInput()
 	call s:ObtainInput()
 	call s:UpdateSnippetInMemory()
@@ -131,12 +127,3 @@ function! s:ObtainInput()
 	endif
 	return ''
 endfunction
-
-function! s:UpdateMirrors()
-	return ''
-endfunction
-
-function! s:UpdateSnippetInMemory()
-	return ''
-endfunction
-
