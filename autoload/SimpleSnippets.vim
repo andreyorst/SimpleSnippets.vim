@@ -710,9 +710,9 @@ function! SimpleSnippets#listSnippets()
 		call SimpleSnippets#printSnippets("Plugin snippets:", l:plug_snips, l:plugin_filetype)
 	endif
 	if l:filetype != 'all'
-		call SimpleSnippets#printSnippets('User \"all\" snippets:', l:user_snips, 'all')
+		call SimpleSnippets#printSnippets('User "all" snippets:', l:user_snips, 'all')
 		if s:SimpleSnippets_snippets_plugin_installed == 1
-			call SimpleSnippets#printSnippets('Plugin \"all\" snippets:', l:plug_snips, 'all')
+			call SimpleSnippets#printSnippets('Plugin "all" snippets:', l:plug_snips, 'all')
 		endif
 	endif
 endfunction
@@ -1273,7 +1273,7 @@ function! SimpleSnippets#importSnippetsForFiletype(...)
 		echo "Filetype required"
 		return -1
 	endif
-	let s:imported_filetypes = extend([a:1], s:imported_filetypes)
+	let s:imported_filetypes = extend([tolower(a:1)], s:imported_filetypes)
 	let s:imported_filetypes = uniq(s:imported_filetypes)
 	return 0
 endfunction
