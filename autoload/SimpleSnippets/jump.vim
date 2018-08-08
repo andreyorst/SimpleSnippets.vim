@@ -1,3 +1,5 @@
+let s:escape_pattern = '/\*~.$^!#'
+
 function! SimpleSnippets#jump#forward()
 	if s:IsInside()
 		let l:cursor_pos = getpos(".")
