@@ -81,3 +81,14 @@ function! s:CreateSplit(path, trigger)
 	endif
 endfunction
 
+function! s:TriggerEscape(trigger)
+	let l:trigg = s:RemoveTrailings(a:trigger)
+	if l:trigg =~ "\\s"
+		return -1
+	elseif l:trigg =~ "\\W"
+		return escape(l:trigg, '/\*#|{}()"'."'")
+	else
+		return l:trigg
+	endif
+endfunction
+
