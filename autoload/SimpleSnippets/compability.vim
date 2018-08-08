@@ -1,5 +1,5 @@
 " 7.4 compability layer
-function! SimpleSnippets#execute(command, ...)
+function! SimpleSnippets#compability#execute(command, ...)
 	if a:0 != 0
 		let l:silent = a:1
 	else
