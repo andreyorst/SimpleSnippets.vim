@@ -7,7 +7,7 @@ about: Create a report to help us improve
 please consider running tests from plugin folder, by executing
 ./tests/run_test.sh. and post resulting log here.
 Please understand, that without clear explanations and useful info
-the issue may be closed as unreproducable. Thatks. -->
+the issue may be closed as unreproducible. Thanks. -->
 
 **Tests log**
 <!-- copy output of run_tests.sh script here -->
