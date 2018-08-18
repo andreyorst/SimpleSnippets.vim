@@ -42,14 +42,14 @@ function! s:InitSnippet(amount)
 endfunction
 
 function! s:CountPlaceholders(pattern)
-	let l:gn = &gdefault ? 'ggn' : 'gn'
+	let l:gn = &gd ? 'ggn' : 'gn'
 	let l:cnt = SimpleSnippets#execute(s:snippet.start.','.s:snippet.end.'s/'.a:pattern.'//'.l:gn, "silent!")
 	call histdel("/", -1)
 	if match(l:cnt, 'not found') >= 0
 		return 0
 	endif
 	let l:count = strpart(l:cnt, 0, stridx(l:cnt, " "))
-	return substitute(l:count, '\v%^\_s+|\_s+%$', '', &gdefault ? 'gg' : 'g')
+	return substitute(l:count, '\v%^\_s+|\_s+%$', '', &gd ? 'gg' : 'g')
 endfunction
 
 function! s:InitPlaceholder()
@@ -126,7 +126,7 @@ function! s:InitCommand()
 	noh
 	call histdel("/", -1)
 	let l:command = @s
-	if executable(substitute(l:command, '\v(^\w+).*', '\1', &gdefault ? 'gg' : 'g')) == 1
+	if executable(substitute(l:command, '\v(^\w+).*', '\1', &gd ? 'gg' : 'g')) == 1
 		let l:result = system(l:command)
 	else
 		let l:result = SimpleSnippets#execute("echo " . l:command, "silent!")
@@ -136,7 +136,7 @@ function! s:InitCommand()
 	endif
 	let l:result = s:RemoveTrailings(l:result)
 	let @s = l:result
-	let l:result_line_count = len(substitute(l:result, '[^\n]', '', &gdefault ? 'gg' : 'g')) + 1
+	let l:result_line_count = len(substitute(l:result, '[^\n]', '', &gd ? 'gg' : 'g')) + 1
 	if l:result_line_count > 1
 		let s:snippet.end += l:result_line_count
 	endif
@@ -223,7 +223,7 @@ function! s:InitVisual()
 		let l:result = s:RemoveTrailings(s:snippet.visual)
 		let @s = l:result
 		normal! "sp
-		let l:result_line_count = len(substitute(l:result, '[^\n]', '', &gdefault ? 'gg' : 'g'))
+		let l:result_line_count = len(substitute(l:result, '[^\n]', '', &gd ? 'gg' : 'g'))
 		if l:result_line_count > 1
 			silent exec 'normal! V'
 			silent exec 'normal!'. l:result_line_count .'j='
@@ -240,10 +240,10 @@ function! s:PrepareSnippetBodyForParser(snippet)
 	let i = 0
 	while i < len(l:body)
 		if l:body[i] =~ '\v\$\d+'
-			let l:body[i] = substitute(l:body[i], '\v\$([0-9]+)', '${\1:}', &gdefault ? 'gg' : 'g')
+			let l:body[i] = substitute(l:body[i], '\v\$([0-9]+)', '${\1:}', &gd ? 'gg' : 'g')
 		endif
 		if l:body[i] =~ '\v\$\{\d+\}'
-			let l:body[i] = substitute(l:body[i], '\v\$\{([0-9]+)\}', '${\1:}', &gdefault ? 'gg' : 'g')
+			let l:body[i] = substitute(l:body[i], '\v\$\{([0-9]+)\}', '${\1:}', &gd ? 'gg' : 'g')
 		endif
 		let i += 1
 	endwhile
