@@ -134,7 +134,7 @@ function! SimpleSnippets#input#obtainTrigger()
 	return l:trigger
 endfunction
 
-function! SimpleSnippets#input#obtainAlternateTrigger()
+function! SimpleSnippets#input#obtainTRIGGER()
 	if mode() == 'i'
 		let l:cursor_pos = getpos(".")
 		call cursor(line('.'), col('.') - 1)
