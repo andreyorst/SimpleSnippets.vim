@@ -1,7 +1,7 @@
 let s:escape_pattern = '/\*~.$^!#'
 
 function! SimpleSnippets#jump#forward()
-	if s:IsInside()
+	if SimpleSnippets#core#isInside()
 		let l:cursor_pos = getpos(".")
 		let l:current_ph = get(s:jump_stack, s:current_jump)
 		let l:current_type = get(s:type_stack, s:current_jump)
@@ -40,7 +40,7 @@ function! SimpleSnippets#jump#forward()
 endfunction
 
 function! SimpleSnippets#jump#backwards()
-	if s:IsInside()
+	if SimpleSnippets#core#isInside()
 		let l:cursor_pos = getpos(".")
 		if s:current_jump - 1 != 0
 			let s:current_jump -= 1
@@ -68,7 +68,7 @@ function! SimpleSnippets#jump#backwards()
 endfunction
 
 function! SimpleSnippets#jump#toLast()
-	if s:IsInside()
+	if SimpleSnippets#core#isInside()
 		let l:cursor_pos = getpos(".")
 		let s:prev_jump = s:current_jump - 1
 		if s:prev_jump >= len(s:jump_stack)
