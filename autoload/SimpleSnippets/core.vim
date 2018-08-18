@@ -1,13 +1,11 @@
 let s:flash_snippets = {}
 let s:escape_pattern = '/\*~.$^!#'
 
-function! s:IsInside(snippet)
-	if a:snippet.curr_file == @%
+function! SimpleSnippets#core#isInside()
+	if s:snippet.curr_file == @%
 		let l:current_line = line(".")
 		if l:current_line >= s:snippet.start && l:current_line <= s:snippet.end
 			return 1
-		else
-			return 0
 		endif
 	endif
 	return 0
@@ -31,7 +29,7 @@ function! SimpleSnippets#core#getAvailableSnippetsDict()
 	endif
 	if s:flash_snippets != {}
 		for trigger in keys(s:flash_snippets)
-			let l:snippets[trigger] = substitute(s:flash_snippets[trigger], '\v\$\{[0-9]+(:|!)(.{-})\}', '\2', &gdefault ? 'gg' : 'g')
+			let l:snippets[trigger] = substitute(s:flash_snippets[trigger], '\v\$\{[0-9]+(:|!)(.{-})\}', '\2', &gd ? 'gg' : 'g')
 		endfor
 	endif
 	return l:snippets
@@ -45,11 +43,11 @@ function! s:GetSnippetDictonary(dict, path, filetype)
 		for i in l:dir_list
 			let l:descr = ''
 			for line in readfile(a:path.a:filetype.'/'.i)
-				let l:descr .= substitute(line, '\v\$\{[0-9]+(:|!)(.{-})\}', '\2', &gdefault ? 'gg' : 'g')
+				let l:descr .= substitute(line, '\v\$\{[0-9]+(:|!)(.{-})\}', '\2', &gd ? 'gg' : 'g')
 				break
 			endfor
-			let l:descr = substitute(l:descr, '\v(\S+)(\})', '\1 \2', &gdefault ? 'gg' : 'g')
-			let l:descr = substitute(l:descr, '\v\{(\s+)?$', '', &gdefault ? 'gg' : 'g')
+			let l:descr = substitute(l:descr, '\v(\S+)(\})', '\1 \2', &gd ? 'gg' : 'g')
+			let l:descr = substitute(l:descr, '\v\{(\s+)?$', '', &gd ? 'gg' : 'g')
 			let a:dict[i] = l:descr
 		endfor
 	endif
@@ -118,10 +116,10 @@ function! s:PrintSnippets(message, path, filetype)
 		echo a:message
 		echo "\n"
 		let l:string = string(l:snippets)
-		let l:string = substitute(l:string, "',", '\n', &gdefault ? 'gg' : 'g')
-		let l:string = substitute(l:string, " '", '', &gdefault ? 'gg' : 'g')
-		let l:string = substitute(l:string, "{'", '', &gdefault ? 'gg' : 'g')
-		let l:string = substitute(l:string, "'}", '', &gdefault ? 'gg' : 'g')
+		let l:string = substitute(l:string, "',", '\n', &gd ? 'gg' : 'g')
+		let l:string = substitute(l:string, " '", '', &gd ? 'gg' : 'g')
+		let l:string = substitute(l:string, "{'", '', &gd ? 'gg' : 'g')
+		let l:string = substitute(l:string, "'}", '', &gd ? 'gg' : 'g')
 		let l:list = split(l:string, '\n')
 		let i = 0
 		for l:str in l:list
@@ -133,13 +131,13 @@ function! s:PrintSnippets(message, path, filetype)
 				let l:delimeter .= ' '
 				let j += 1
 			endwhile
-			let l:list[i] = substitute(l:str, "':", l:delimeter, &gdefault ? 'gg' : 'g')
+			let l:list[i] = substitute(l:str, "':", l:delimeter, &gd ? 'gg' : 'g')
 			let i += 1
 		endfor
 		let l:string = join(l:list, "\n")
-		let l:string = substitute(l:string, "':", ': ', &gdefault ? 'gg' : 'g')
-		let l:string = substitute(l:string, '\\n', '\\\n', &gdefault ? 'gg' : 'g')
-		let l:string = substitute(l:string, '\\r', '\\\\r', &gdefault ? 'gg' : 'g')
+		let l:string = substitute(l:string, "':", ': ', &gd ? 'gg' : 'g')
+		let l:string = substitute(l:string, '\\n', '\\\n', &gd ? 'gg' : 'g')
+		let l:string = substitute(l:string, '\\r', '\\\\r', &gd ? 'gg' : 'g')
 		echon l:string
 		echo "\n"
 	endif
