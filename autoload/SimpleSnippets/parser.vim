@@ -1,3 +1,11 @@
+function! SimpleSnippets#parser#init(snippet)
+endfunction
+
+function! CountRegexMatches(string, regex)
+	let l:submatches = []
+	call substitute(a:string, a:regex, '\=add(l:submatches, submatch(0))', &gd ? 'gg' : 'g')
+	return len(l:submatches)
+endfunction
 
 function! s:ParseAndInit()
 	let s:active = 1
