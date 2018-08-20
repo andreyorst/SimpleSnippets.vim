@@ -1,4 +1,17 @@
 function! SimpleSnippets#parser#init(snippet)
+	let a:snippet.jump_cnt = 0
+	let a:snippet.curr_file = @%
+	let l:parsed_body = []
+	let a:snippet.ph_amount = s:CountRegexMatches(a:snippet.body, '\v\$\{[0-9]+(:|!|\|)')
+	if a:snippet.ph_amount != 0
+		call s:InitSnippet(s:snippet.ph_amount)
+		call cursor(s:snippet.start, 1)
+	endif
+	let a:snippet.ts_amount = s:CountRegexMatches(a:snippet.body, '\v\$\{[0-9]+\}')
+	if a:snippet.ts_amount != 0
+		call s:InitSnippet(s:snippet.ts_amount)
+	endif
+
 endfunction
 
 function! s:CountRegexMatches(expr, regex)
@@ -17,43 +30,13 @@ function! s:CountRegexMatches(expr, regex)
 	return len(l:submatches)
 endfunction
 
-function! s:ParseAndInit()
-	let s:active = 1
-	let s:snippet.jump_cnt = 0
-	let s:snippet.curr_file = @%
-	let l:cursor_pos = getpos(".")
-	let s:snippet.ph_amount = s:CountPlaceholders('\v\$\{[0-9]+(:|!|\|)')
-	if s:snippet.ph_amount != 0
-		call s:InitSnippet(s:snippet.ph_amount)
-		call cursor(s:snippet.start, 1)
-	endif
-	let s:snippet.ts_amount = s:CountPlaceholders('\v\$\{[0-9]+\}')
-	if s:snippet.ts_amount != 0
-		call s:InitSnippet(s:snippet.ts_amount)
-		call cursor(s:snippet.start, 1)
-	else
-		let s:active = 0
-		call cursor(l:cursor_pos[1], l:cursor_pos[2])
-	endif
-	if s:active != 0
-		if s:snippet.line_count != 1
-			let l:indent_lines = s:snippet.line_count - 1
-			call cursor(s:snippet.start, 1)
-			silent exec 'normal! V'
-			silent exec 'normal!'. l:indent_lines .'j='
-		else
-			normal! ==
-		endif
-	endif
-endfunction
-
-function! s:InitSnippet(amount)
+function! s:InitSnippet(snippet)
 	let l:i = 0
 	while l:i < a:amount
-		call cursor(s:snippet.start, 1)
-		if search('\v\$(\{)?[0-9]+(:|!|\|)?', 'c', s:snippet.end) != 0
-			call s:InitPlaceholder()
-		endif
+		for l:i in len(a:snippet.body)
+			if matchstr(a:snippet.body[l:i], '\v\$(\{)?[0-9]+(:|!|\|)?') != ""
+				let a:snippet.body[l:i] = substitute(a:snippet.body[l:i], )
+			endif
 		let l:i += 1
 	endwhile
 	call s:InitVisual()
