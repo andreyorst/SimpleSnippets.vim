@@ -1,9 +1,19 @@
 function! SimpleSnippets#parser#init(snippet)
 endfunction
 
-function! CountRegexMatches(string, regex)
+function! s:CountRegexMatches(expr, regex)
 	let l:submatches = []
-	call substitute(a:string, a:regex, '\=add(l:submatches, submatch(0))', &gd ? 'gg' : 'g')
+	let l:type = type(a:expr)
+	if l:type == 1
+		call substitute(a:expr, a:regex, '\=add(l:submatches, submatch(0))', &gd ? 'gg' : 'g')
+	elseif l:type == 3
+		for l:string in a:expr
+			call substitute(l:string, a:regex, '\=add(l:submatches, submatch(0))', &gd ? 'gg' : 'g')
+		endfor
+	else
+		echo "[Error] wrong arguments"
+		return -1
+	endif
 	return len(l:submatches)
 endfunction
 
