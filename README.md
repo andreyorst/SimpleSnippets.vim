@@ -1,16 +1,3 @@
-# Maintenance warning
-I'm not using Vim as my primary editor anymore, therefore I'm not writing
-Vim Script and not using this plugin. My focus shifted to
-[Kakoune](http://kakoune.org/) editor, which I do like more than Vim and its
-scripting model is more appealing to me.  This plugin works, it is capable to do
-many things, but currently I'm not using it and not planning to. Therefore if
-Vim will change somehow that this plugin will stop working I will not know about
-it and will not be able to fix it. I'll gradually accept pull request that fixes
-the problem, but that's it. If you want to take the task of maintenance and
-improvement of this plugin, contact me via [e-mail](andreyorst@gmail.com) or
-open an issue I'll provide an ownership for this repository, or add a note about
-currently maintained fork.
-
 # SimpleSnippets.vim
 
 [![GitHub release](https://img.shields.io/github/release/andreyorst/simplesnippets.vim.svg)](https://github.com/andreyorst/SimpleSnippets.vim/releases)
